@@ -31,3 +31,11 @@ first.
 Every day must end with a working deploy. Before stopping work, run
 `npm run build` and confirm it succeeds, and make sure the latest commit is
 pushed and deployed on Vercel.
+
+## Commits
+- Commit in small, working increments, not one commit at the end.
+- One commit per coherent step (e.g. "add room store", "wire width input to store", "hide camera-facing walls").
+- Each commit must leave the app in a working state: `npm run build`passes.
+- Use short imperative messages: "Add room store", not "added stuff".
+- Do not mix unrelated changes in one commit.
+- Commit, but do not push, unless I ask. I decide when it goes live.
