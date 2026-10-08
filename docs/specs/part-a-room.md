@@ -47,5 +47,28 @@ Adding objects, selection, object details, dragging, saving.
 - [ ] `npm run build` succeeds with no errors.
 - [ ] Deployed and working on the live Vercel URL.
 
+## Tasks
+- ✅ A.1 Layout
+  - ✅ A.1.1 Split panel 20/80
+  - ✅ A.1.2 Canvas resizes with window
+  - ✅ A.1.3 Draggable divider, panel 15–50% (added 2026-10-08, recorded deviation: built in the layout commit, not in the original spec)
+- ⬜ A.2 Collapsible sections ("Room configuration", "Objects")
+- ⬜ A.3 Room store (`room`, `setRoomSize`)
+- ⬜ A.4 Room inputs
+  - ⬜ A.4.1 Number inputs with "m" label
+  - ⬜ A.4.2 Decimals and arrow keys ±0.1
+  - ⬜ A.4.3 Clamp on blur
+  - ⬜ A.4.4 Empty or invalid input is safe
+- ⬜ A.5 3D room
+  - ⬜ A.5.1 Floor and 4 walls from the store
+  - ⬜ A.5.2 Hide camera-facing walls
+- ⬜ A.6 Build passes and deploy
+
+## Backlog
+- (empty)
+
 ## Open questions
 - None blocking. Decisions above use defaults; update this file if they change.
+
+## Changelog
+- 2026-10-08: Restructured into numbered tasks; recorded A.1.3 draggable divider.

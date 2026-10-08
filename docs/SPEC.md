@@ -37,8 +37,16 @@ Objects are always a list, even with one type.
 | Part | File | Scope | Status |
 |---|---|---|---|
 | A | specs/part-a-room.md | Layout, collapsible panel, room configuration | In progress |
-| B | specs/part-b-objects.md | Objects section, add Sofa | Not started |
+| B | specs/part-b-objects.md | Objects section, add Sofa | Draft |
 | C | specs/part-c-details.md | Selection, Object details section | Not started |
+
+## How we work
+- Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.
+- Tasks are numbered `<Part>.<n>.<m>` (e.g. A.4.3) so they can be referenced directly.
+- A deviation (something we do that wasn't planned) becomes a new numbered task tagged `(added YYYY-MM-DD)`. Existing numbers are never renumbered.
+- When a goal changes, add a dated line to that part's Changelog.
+- A part is done when its acceptance criteria pass and it is deployed. The next part's goals are confirmed before it starts.
+- Ideas outside the current part go to that part's Backlog and are reviewed at the start of the next part.
 
 ## Rules
 - Every day ends with a working deploy on Vercel (branch `master`).
