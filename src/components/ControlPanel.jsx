@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import RoomInputs from './RoomInputs'
 
 function Section({ title, children }) {
   const [open, setOpen] = useState(true)
@@ -23,8 +24,7 @@ export default function ControlPanel() {
   return (
     <div className="control-panel">
       <Section title="Room configuration">
-        {/* A.4: room inputs replace this placeholder */}
-        <p className="panel-placeholder">Room inputs coming soon.</p>
+        <RoomInputs />
       </Section>
       <Section title="Objects">
         <p className="panel-placeholder">No objects yet.</p>

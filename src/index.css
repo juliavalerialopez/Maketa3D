@@ -60,6 +60,37 @@ canvas {
   font-size: 0.9em;
 }
 
+.room-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dimension-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dimension-label {
+  flex: 0 0 56px;
+}
+
+.dimension-input input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 4px 6px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #2a2a2a;
+  color: inherit;
+  font: inherit;
+}
+
+.dimension-unit {
+  color: #888;
+}
+
 .divider {
   flex: 0 0 6px;
   height: 100%;

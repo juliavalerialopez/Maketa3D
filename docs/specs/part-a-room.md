@@ -19,8 +19,9 @@ The user sets room width, depth, and height in a left panel, and the 3D room upd
 - Accept decimals (e.g. 3.25).
 - Up/Down arrow keys change the value by 0.1.
 - Limits: width and depth 2 to 10, height 2 to 4.
-- Values outside limits are clamped when the input loses focus.
-- Empty or invalid input never breaks the scene (scene keeps the last valid value).
+- Any typed number is written to the store immediately, unclamped (the scene may briefly show sizes outside the limits).
+- Values outside limits are clamped when the input loses focus, and the clamped value is written to the store.
+- Empty or invalid input is never written to the store, so the scene keeps the last valid value.
 - Defaults: width 4, depth 3, height 2.6.
 
 ### Store
@@ -54,21 +55,22 @@ Adding objects, selection, object details, dragging, saving.
   - ✅ A.1.3 Draggable divider, panel 15–50% (added 2026-10-08, recorded deviation: built in the layout commit, not in the original spec)
 - ✅ A.2 Collapsible sections ("Room configuration", "Objects")
 - ✅ A.3 Room store (`room`, `setRoomSize`)
-- ⬜ A.4 Room inputs
-  - ⬜ A.4.1 Number inputs with "m" label
-  - ⬜ A.4.2 Decimals and arrow keys ±0.1
-  - ⬜ A.4.3 Clamp on blur
-  - ⬜ A.4.4 Empty or invalid input is safe
+- ✅ A.4 Room inputs
+  - ✅ A.4.1 Number inputs with "m" label
+  - ✅ A.4.2 Decimals and arrow keys ±0.1
+  - ✅ A.4.3 Clamp on blur
+  - ✅ A.4.4 Empty or invalid input is safe
 - ⬜ A.5 3D room
   - ⬜ A.5.1 Floor and 4 walls from the store
   - ⬜ A.5.2 Hide camera-facing walls
 - ⬜ A.6 Build passes and deploy
 
 ## Backlog
-- (empty)
+- Redesign the room inputs (visual polish; behavior from A.4 stays)
 
 ## Open questions
 - None blocking. Decisions above use defaults; update this file if they change.
 
 ## Changelog
 - 2026-10-08: Restructured into numbered tasks; recorded A.1.3 draggable divider.
+- 2026-10-16: Clarified input behavior: typed numbers go to the store unclamped, clamping happens on blur.
