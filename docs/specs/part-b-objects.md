@@ -28,7 +28,7 @@ The user adds a Sofa from the Objects section, and it appears on the room floor.
 - A new sofa is always placed fully inside the room's current walls.
 
 ## Tasks
-- ⬜ B.1 Objects store (`objects`, `addObject`)
+- ✅ B.1 Objects store (`objects`, `addObject`)
 - ⬜ B.2 "Add Sofa" button in the Objects section
 - ⬜ B.3 Sofa primitive (seat, back, arms), rendered from the store, on the floor
 - ⬜ B.4 Placement: centre first, then 0.3 m diagonal offset, kept inside the room
