@@ -59,6 +59,7 @@ The user selects an object from the Objects list, moves and rotates it and chang
   - ✅ C.1.1 `NumberField`: the A.4 input behavior, extracted from `RoomInputs.jsx`; room inputs use it
   - ✅ C.1.2 `Button`: one action button; "Add Sofa" uses it
   - ✅ C.1.3 `ListItem`: one list row; the Objects list uses it (selection wired in C.4)
+  - ✅ C.1.4 `NumberField` handles Up/Down itself, stepping from the current value within min/max (added 2026-10-16: the browser counts steps from `min`, so Up from 0 gave 0.05 with min -1.05)
 - ✅ C.2 Selection store (`selectedId`, `selectObject`, `updateObject`, `removeObject`)
 - ✅ C.3 Stable object numbers (`number` per type, used for labels)
 - ✅ C.4 Select from the Objects list
