@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import ControlPanel from './ControlPanel'
 
 const MIN_PANEL_PERCENT = 15
 const MAX_PANEL_PERCENT = 50
 
-export default function SplitLayout({ children }) {
+export default function SplitLayout({ panel, children }) {
   const [panelPercent, setPanelPercent] = useState(20)
   const draggingRef = useRef(false)
 
@@ -35,10 +34,11 @@ export default function SplitLayout({ children }) {
   return (
     <div className="split-layout">
       <div style={{ width: `${panelPercent}%` }}>
-        <ControlPanel />
+        {panel}
       </div>
       <div className="divider" onMouseDown={handleMouseDown} />
       <div className="scene-pane">{children}</div>
     </div>
   )
 }
+
