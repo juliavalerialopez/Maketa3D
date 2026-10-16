@@ -1,5 +1,5 @@
-import { useObjectsStore } from '../store/objectsStore'
-import Sofa from './Sofa'
+import { useObjectsStore } from '../../store/objectsStore'
+import Sofa from '../objects/Sofa'
 
 const COMPONENTS = {
   sofa: Sofa,

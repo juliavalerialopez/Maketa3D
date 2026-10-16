@@ -1,4 +1,4 @@
-import { useObjectsStore } from '../store/objectsStore'
+import { useObjectsStore } from '../../store/objectsStore'
 
 const TYPE_LABELS = {
   sofa: 'Sofa',

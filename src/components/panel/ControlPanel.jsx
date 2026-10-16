@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import RoomInputs from './RoomInputs'
 import ObjectList from './ObjectList'
-import { useObjectsStore } from '../store/objectsStore'
+import { useObjectsStore } from '../../store/objectsStore'
 
 function Section({ title, children }) {
   const [open, setOpen] = useState(true)

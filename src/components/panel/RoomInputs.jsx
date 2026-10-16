@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useRoomStore } from '../store/roomStore'
+import { useRoomStore } from '../../store/roomStore'
 
 const FIELDS = [
   { key: 'width', label: 'Width', min: 2, max: 10 },

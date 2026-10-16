@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { useRoomStore } from '../store/roomStore'
+import { useRoomStore } from '../../store/roomStore'
 
 const THICKNESS = 0.05
 

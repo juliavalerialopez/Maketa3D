@@ -1,4 +1,4 @@
-import { useRoomStore } from '../store/roomStore'
+import { useRoomStore } from '../../store/roomStore'
 
 export default function Floor() {
   const width = useRoomStore((state) => state.room.width)

@@ -1,8 +1,8 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
-import Scene from './components/Scene'
-import SplitLayout from './components/SplitLayout'
-import ControlPanel from './components/ControlPanel'
+import Scene from './components/scene/Scene'
+import SplitLayout from './components/layout/SplitLayout'
+import ControlPanel from './components/panel/ControlPanel'
 
 export default function App() {
   return (
