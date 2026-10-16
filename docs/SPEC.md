@@ -9,7 +9,7 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 ## Roadmap
 1. Room dimensions
 2. Add objects (Sofa only for now)
-3. Arrange objects (select, move, rotate, delete)
+3. Arrange objects: select from the list, move, rotate, recolor and delete via Object details (Part C); click-to-select and drag in 3D (Part D)
 4. Camera capture (render image from a camera view)
 5. AI restyle (style prompt turns the capture into a photorealistic image)
 
@@ -27,7 +27,9 @@ All units in meters.
 
 ```js
 room: { width, depth, height }
-objects: [{ id, type, position: [x, y, z], rotation, size: { width, depth, height }, color }]
+objects: [{ id, type, number, position: [x, y, z], rotation, size: { width, depth, height }, color }]
+// number: stable per-type count (Sofa 1, Sofa 2, ...), never reused
+// rotation: radians around the vertical (Y) axis
 selectedId: string | null
 ```
 
@@ -38,7 +40,8 @@ Objects are always a list, even with one type.
 |---|---|---|---|
 | A | specs/part-a-room.md | Layout, collapsible panel, room configuration | Done |
 | B | specs/part-b-objects.md | Objects section, add Sofa | Done |
-| C | specs/part-c-details.md | Selection, Object details section | Not started |
+| C | specs/part-c-details.md | Select from list, Object details (position, rotation, color), delete | In progress |
+| D | specs/part-d-arrange.md | Click-to-select in 3D, drag to move and rotate | Not started |
 
 ## How we work
 - Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.
