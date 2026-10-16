@@ -69,7 +69,7 @@ The user selects an object from the Objects list, moves and rotates it and chang
 - ⬜ C.6 Object details section
   - ✅ C.6.1 Section shown only when something is selected, with the object's name
   - ✅ C.6.2 Position inputs (X, Z), clamped to keep the footprint inside the room
-  - ⬜ C.6.3 Rotation input (degrees, ±15°)
+  - ✅ C.6.3 Rotation input (degrees, ±15°)
   - ⬜ C.6.4 Color input
 - ⬜ C.7 Delete
   - ⬜ C.7.1 Delete button

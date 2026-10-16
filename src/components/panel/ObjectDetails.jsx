@@ -3,6 +3,8 @@ import { useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
 import NumberField from '../ui/NumberField'
 
+const DEGREES_PER_RADIAN = 180 / Math.PI
+
 // How far the centre may move from the room centre along x and z so the
 // object's rotated footprint stays inside the walls.
 function positionLimits(object, room) {
@@ -43,6 +45,14 @@ export default function ObjectDetails({ object }) {
         min={-limits.z}
         max={limits.z}
         unit="m"
+      />
+      <NumberField
+        label="Rotation"
+        value={object.rotation * DEGREES_PER_RADIAN}
+        onChange={(value) => updateObject(object.id, { rotation: value / DEGREES_PER_RADIAN })}
+        step={15}
+        unit="°"
+        normalize={(degrees) => ((degrees % 360) + 360) % 360}
       />
     </div>
   )
