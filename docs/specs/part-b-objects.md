@@ -24,14 +24,15 @@ The user adds a Sofa from the Objects section, and it appears on the room floor.
 
 ### Placement
 - The first sofa goes at the room centre.
-- Each next sofa is offset 0.3 m diagonally from the previous one, so sofas don't fully overlap.
+- Each next sofa is offset 0.3 m diagonally from the previous one (+0.3 m in x and in z), so sofas don't fully overlap.
 - A new sofa is always placed fully inside the room's current walls.
+- When the next offset would cross a wall, placement wraps back to the centre and continues from there.
 
 ## Tasks
 - ✅ B.1 Objects store (`objects`, `addObject`)
 - ✅ B.2 "Add Sofa" button in the Objects section
 - ✅ B.3 Sofa primitive (seat, back, arms), rendered from the store, on the floor
-- ⬜ B.4 Placement: centre first, then 0.3 m diagonal offset, kept inside the room
+- ✅ B.4 Placement: centre first, then 0.3 m diagonal offset, kept inside the room
 - ⬜ B.5 List of added objects in the Objects section
 - ⬜ B.6 Build passes and deploy
 
@@ -56,3 +57,4 @@ Selecting, moving, rotating, deleting objects (Part C). Real .glb models.
 ## Changelog
 - 2026-10-08: Draft created.
 - 2026-10-16: Goals confirmed. Decided placement (centre, then 0.3 m diagonal offset), sofa shape (seat + back + arms), color `#b5654a`. Split placement into its own task (B.4); list moved to B.5, deploy to B.6. Panel redesign kept in backlog.
+- 2026-10-16: Placement wraps back to the centre when the next offset would cross a wall.
