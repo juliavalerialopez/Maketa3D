@@ -61,9 +61,9 @@ The user selects an object from the Objects list, moves and rotates it and chang
   - ✅ C.1.3 `ListItem`: one list row; the Objects list uses it (selection wired in C.4)
 - ✅ C.2 Selection store (`selectedId`, `selectObject`, `updateObject`, `removeObject`)
 - ✅ C.3 Stable object numbers (`number` per type, used for labels)
-- ⬜ C.4 Select from the Objects list
+- ✅ C.4 Select from the Objects list
   - ✅ C.4.1 Click to select, click again to deselect, highlight selected item
-  - ⬜ C.4.2 Escape deselects (ignored while typing in an input)
+  - ✅ C.4.2 Escape deselects (ignored while typing in an input)
 - ⬜ C.5 Bounding box on the selected object
 - ⬜ C.6 Object details section
   - ⬜ C.6.1 Section shown only when something is selected, with the object's name
