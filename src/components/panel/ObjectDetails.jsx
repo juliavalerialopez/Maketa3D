@@ -2,6 +2,7 @@ import { objectLabel } from '../objects/catalog'
 import { useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
 import NumberField from '../ui/NumberField'
+import Button from '../ui/Button'
 
 const DEGREES_PER_RADIAN = 180 / Math.PI
 
@@ -22,6 +23,7 @@ function positionLimits(object, room) {
 // so every field starts from the newly selected object's values.
 export default function ObjectDetails({ object }) {
   const updateObject = useObjectsStore((state) => state.updateObject)
+  const removeObject = useObjectsStore((state) => state.removeObject)
   const room = useRoomStore((state) => state.room)
 
   const [x, y, z] = object.position
@@ -63,6 +65,7 @@ export default function ObjectDetails({ object }) {
           onChange={(event) => updateObject(object.id, { color: event.target.value })}
         />
       </label>
+      <Button onClick={() => removeObject(object.id)}>Delete</Button>
     </div>
   )
 }

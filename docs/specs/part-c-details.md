@@ -72,7 +72,7 @@ The user selects an object from the Objects list, moves and rotates it and chang
   - ✅ C.6.3 Rotation input (degrees, ±15°)
   - ✅ C.6.4 Color input
 - ⬜ C.7 Delete
-  - ⬜ C.7.1 Delete button
+  - ✅ C.7.1 Delete button
   - ⬜ C.7.2 Delete/Backspace key (ignored while typing in an input)
 - ⬜ C.8 Build passes and deploy
 
