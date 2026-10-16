@@ -36,8 +36,8 @@ Objects are always a list, even with one type.
 ## Part specs
 | Part | File | Scope | Status |
 |---|---|---|---|
-| A | specs/part-a-room.md | Layout, collapsible panel, room configuration | In progress |
-| B | specs/part-b-objects.md | Objects section, add Sofa | Draft |
+| A | specs/part-a-room.md | Layout, collapsible panel, room configuration | Done |
+| B | specs/part-b-objects.md | Objects section, add Sofa | In progress |
 | C | specs/part-c-details.md | Selection, Object details section | Not started |
 
 ## How we work
