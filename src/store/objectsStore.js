@@ -34,4 +34,16 @@ export const useObjectsStore = create((set) => ({
         ],
       }
     }),
+
+  selectedId: null,
+  selectObject: (id) => set({ selectedId: id }),
+  updateObject: (id, partial) =>
+    set((state) => ({
+      objects: state.objects.map((object) => (object.id === id ? { ...object, ...partial } : object)),
+    })),
+  removeObject: (id) =>
+    set((state) => ({
+      objects: state.objects.filter((object) => object.id !== id),
+      selectedId: state.selectedId === id ? null : state.selectedId,
+    })),
 }))
