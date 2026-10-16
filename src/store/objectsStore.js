@@ -17,15 +17,20 @@ function placementFor(index, size) {
 
 export const useObjectsStore = create((set) => ({
   objects: [],
+  // Last number handed out per type; only grows, so numbers are never reused.
+  lastNumbers: {},
   addObject: (type) =>
     set((state) => {
       const size = { ...OBJECT_TYPES[type].size }
+      const number = (state.lastNumbers[type] ?? 0) + 1
       return {
+        lastNumbers: { ...state.lastNumbers, [type]: number },
         objects: [
           ...state.objects,
           {
             id: crypto.randomUUID(),
             type,
+            number,
             position: placementFor(state.objects.length, size),
             rotation: 0,
             size,

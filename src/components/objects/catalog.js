@@ -9,3 +9,8 @@ export const OBJECT_TYPES = {
     color: '#b5654a',
   },
 }
+
+// Display name of an object, e.g. "Sofa 3".
+export function objectLabel(object) {
+  return `${OBJECT_TYPES[object.type].label} ${object.number}`
+}
