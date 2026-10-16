@@ -12,10 +12,14 @@ export default function useObjectShortcuts() {
   useEffect(() => {
     function handleKeyDown(event) {
       if (isTyping(document.activeElement)) return
-      const { selectedId, selectObject } = useObjectsStore.getState()
+      const { selectedId, selectObject, removeObject } = useObjectsStore.getState()
       if (!selectedId) return
 
       if (event.key === 'Escape') selectObject(null)
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        event.preventDefault()
+        removeObject(selectedId)
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown)
