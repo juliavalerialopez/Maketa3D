@@ -38,15 +38,15 @@ The user sets room width, depth, and height in a left panel, and the 3D room upd
 Adding objects, selection, object details, dragging, saving.
 
 ## Acceptance criteria
-- [ ] Panel takes 20% of the width; scene fills the rest, also after resizing the window.
-- [ ] Clicking "Room configuration" header hides the inputs; clicking again shows them.
-- [ ] Typing 5.5 in width makes the room 5.5 m wide immediately.
-- [ ] Pressing Up in the width field changes 4 to 4.1 and the wall moves.
-- [ ] Typing 20 in width and leaving the field sets it to 10.
-- [ ] Clearing a field does not crash or collapse the room.
-- [ ] Orbiting around the room, the interior is always visible.
-- [ ] `npm run build` succeeds with no errors.
-- [ ] Deployed and working on the live Vercel URL.
+- [x] Panel takes 20% of the width; scene fills the rest, also after resizing the window.
+- [x] Clicking "Room configuration" header hides the inputs; clicking again shows them.
+- [x] Typing 5.5 in width makes the room 5.5 m wide immediately.
+- [x] Pressing Up in the width field changes 4 to 4.1 and the wall moves.
+- [x] Typing 20 in width and leaving the field sets it to 10.
+- [x] Clearing a field does not crash or collapse the room.
+- [x] Orbiting around the room, the interior is always visible.
+- [x] `npm run build` succeeds with no errors.
+- [x] Deployed and working on the live Vercel URL.
 
 ## Tasks
 - ✅ A.1 Layout
@@ -64,7 +64,7 @@ Adding objects, selection, object details, dragging, saving.
   - ✅ A.5.1 Floor and 4 walls from the store
   - ✅ A.5.2 Hide camera-facing walls
   - ✅ A.5.3 Remove demo Box (added 2026-10-16)
-- ⬜ A.6 Build passes and deploy
+- ✅ A.6 Build passes and deploy
 
 ## Backlog
 - Redesign the room inputs (visual polish; behavior from A.4 stays)
@@ -75,3 +75,4 @@ Adding objects, selection, object details, dragging, saving.
 ## Changelog
 - 2026-10-08: Restructured into numbered tasks; recorded A.1.3 draggable divider.
 - 2026-10-16: Clarified input behavior: typed numbers go to the store unclamped, clamping happens on blur.
+- 2026-10-16: Part A complete, deployed on Vercel.
