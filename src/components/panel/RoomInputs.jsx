@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import { useRoomStore } from '../../store/roomStore'
+import NumberField from '../ui/NumberField'
 
 const FIELDS = [
   { key: 'width', label: 'Width', min: 2, max: 10 },
@@ -7,47 +7,22 @@ const FIELDS = [
   { key: 'height', label: 'Height', min: 2, max: 4 },
 ]
 
-function DimensionInput({ field }) {
-  const value = useRoomStore((state) => state.room[field.key])
-  const setRoomSize = useRoomStore((state) => state.setRoomSize)
-  // Local draft so empty or half-typed input never reaches the store.
-  const [draft, setDraft] = useState(String(value))
-
-  function handleChange(event) {
-    const text = event.target.value
-    setDraft(text)
-    const number = parseFloat(text)
-    if (Number.isFinite(number)) setRoomSize({ [field.key]: number })
-  }
-
-  function handleBlur() {
-    const clamped = Math.min(field.max, Math.max(field.min, value))
-    setRoomSize({ [field.key]: clamped })
-    setDraft(String(clamped))
-  }
-
-  return (
-    <label className="dimension-input">
-      <span className="dimension-label">{field.label}</span>
-      <input
-        type="number"
-        step={0.1}
-        min={field.min}
-        max={field.max}
-        value={draft}
-        onChange={handleChange}
-        onBlur={handleBlur}
-      />
-      <span className="dimension-unit">m</span>
-    </label>
-  )
-}
-
 export default function RoomInputs() {
+  const room = useRoomStore((state) => state.room)
+  const setRoomSize = useRoomStore((state) => state.setRoomSize)
+
   return (
-    <div className="room-inputs">
+    <div className="field-stack">
       {FIELDS.map((field) => (
-        <DimensionInput key={field.key} field={field} />
+        <NumberField
+          key={field.key}
+          label={field.label}
+          value={room[field.key]}
+          onChange={(value) => setRoomSize({ [field.key]: value })}
+          min={field.min}
+          max={field.max}
+          unit="m"
+        />
       ))}
     </div>
   )

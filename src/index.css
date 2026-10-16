@@ -60,23 +60,24 @@ canvas {
   font-size: 0.9em;
 }
 
-.room-inputs {
+.field-stack {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.dimension-input {
+/* ui/NumberField */
+.ui-number-field {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.dimension-label {
+.ui-number-field-label {
   flex: 0 0 56px;
 }
 
-.dimension-input input {
+.ui-number-field input {
   flex: 1 1 auto;
   min-width: 0;
   padding: 4px 6px;
@@ -87,7 +88,8 @@ canvas {
   font: inherit;
 }
 
-.dimension-unit {
+.ui-number-field-unit {
+  flex: 0 0 1em;
   color: #888;
 }
 
