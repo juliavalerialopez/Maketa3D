@@ -66,6 +66,12 @@ canvas {
   gap: 8px;
 }
 
+.object-details-name {
+  margin: 0;
+  font-weight: 600;
+  color: #4da3ff;
+}
+
 /* ui/NumberField */
 .ui-number-field {
   display: flex;
