@@ -1,6 +1,7 @@
 import Floor from './Floor'
 import Walls from './Walls'
 import Objects from './Objects'
+import SelectionBox from './SelectionBox'
 
 export default function Scene() {
   return (
@@ -10,6 +11,7 @@ export default function Scene() {
       <Floor />
       <Walls />
       <Objects />
+      <SelectionBox />
     </>
   )
 }
