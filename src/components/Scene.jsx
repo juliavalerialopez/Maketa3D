@@ -1,5 +1,6 @@
 import Floor from './Floor'
 import Walls from './Walls'
+import Objects from './Objects'
 
 export default function Scene() {
   return (
@@ -8,6 +9,7 @@ export default function Scene() {
       <directionalLight position={[5, 10, 5]} intensity={1} castShadow />
       <Floor />
       <Walls />
+      <Objects />
     </>
   )
 }
