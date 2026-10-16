@@ -18,7 +18,14 @@ peer-depends on `react >=19 <19.3`. When bumping React, re-check that peer range
 first.
 
 ## Structure
-- `src/components/`: UI and R3F scene components
+- `src/components/`, grouped by role:
+  - `layout/`: page layout (split panel / scene)
+  - `panel/`: HTML in the left control panel (sections, inputs, lists)
+  - `scene/`: R3F room and rendering (floor, walls, objects renderer)
+  - `objects/`: one 3D model component per placeable type, plus `catalog.js`
+- `src/components/objects/catalog.js`: the single definition of each object type
+  (label, component, default size, color). Adding a type = a model file in
+  `objects/` + one catalog entry; do not define types anywhere else.
 - `src/store/`: Zustand stores
 - `public/models/`: static assets (`.glb`, etc.), referenced as URL strings
   (e.g. `"/models/x.glb"`), **never** as ES imports
