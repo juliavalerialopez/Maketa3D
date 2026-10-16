@@ -1,5 +1,6 @@
 import { useObjectsStore } from '../../store/objectsStore'
 import { OBJECT_TYPES } from '../objects/catalog'
+import ListItem from '../ui/ListItem'
 
 export default function ObjectList() {
   const objects = useObjectsStore((state) => state.objects)
@@ -16,9 +17,9 @@ export default function ObjectList() {
   })
 
   return (
-    <ul className="object-list">
+    <ul className="ui-list">
       {items.map((item) => (
-        <li key={item.id}>{item.label}</li>
+        <ListItem key={item.id} label={item.label} />
       ))}
     </ul>
   )

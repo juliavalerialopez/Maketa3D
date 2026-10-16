@@ -110,15 +110,37 @@ canvas {
   background: #3a3a3a;
 }
 
-.object-list {
+/* ui/ListItem */
+.ui-list {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.object-list li {
-  padding: 4px 0;
+.ui-list li {
   border-bottom: 1px solid #2a2a2a;
+}
+
+.ui-list-item {
+  display: block;
+  width: 100%;
+  padding: 4px 6px;
+  border: none;
+  border-left: 3px solid transparent;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ui-list-item:hover {
+  background: #2a2a2a;
+}
+
+.ui-list-item.selected {
+  border-left-color: #4da3ff;
+  background: #23364a;
 }
 
 .divider {
