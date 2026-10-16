@@ -54,6 +54,15 @@ export default function ObjectDetails({ object }) {
         unit="°"
         normalize={(degrees) => ((degrees % 360) + 360) % 360}
       />
+      <label className="color-field">
+        <span className="ui-number-field-label">Color</span>
+        <input
+          type="color"
+          value={object.color}
+          // React fires onChange on every input event, so the sofa recolors while dragging.
+          onChange={(event) => updateObject(object.id, { color: event.target.value })}
+        />
+      </label>
     </div>
   )
 }
