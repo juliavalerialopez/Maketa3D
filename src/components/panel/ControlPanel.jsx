@@ -1,6 +1,7 @@
 import Section from './Section'
 import RoomInputs from './RoomInputs'
 import ObjectList from './ObjectList'
+import Button from '../ui/Button'
 import { useObjectsStore } from '../../store/objectsStore'
 
 export default function ControlPanel() {
@@ -12,9 +13,7 @@ export default function ControlPanel() {
         <RoomInputs />
       </Section>
       <Section title="Objects">
-        <button type="button" className="panel-button" onClick={() => addObject('sofa')}>
-          Add Sofa
-        </button>
+        <Button onClick={() => addObject('sofa')}>Add Sofa</Button>
         <ObjectList />
       </Section>
     </div>

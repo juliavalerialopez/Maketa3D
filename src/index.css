@@ -93,7 +93,8 @@ canvas {
   color: #888;
 }
 
-.panel-button {
+/* ui/Button */
+.ui-button {
   display: block;
   margin-bottom: 8px;
   padding: 6px 12px;
@@ -105,7 +106,7 @@ canvas {
   cursor: pointer;
 }
 
-.panel-button:hover {
+.ui-button:hover {
   background: #3a3a3a;
 }
 
