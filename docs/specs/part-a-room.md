@@ -52,7 +52,7 @@ Adding objects, selection, object details, dragging, saving.
   - ✅ A.1.1 Split panel 20/80
   - ✅ A.1.2 Canvas resizes with window
   - ✅ A.1.3 Draggable divider, panel 15–50% (added 2026-10-08, recorded deviation: built in the layout commit, not in the original spec)
-- ⬜ A.2 Collapsible sections ("Room configuration", "Objects")
+- ✅ A.2 Collapsible sections ("Room configuration", "Objects")
 - ⬜ A.3 Room store (`room`, `setRoomSize`)
 - ⬜ A.4 Room inputs
   - ⬜ A.4.1 Number inputs with "m" label

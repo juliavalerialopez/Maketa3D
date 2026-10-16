@@ -1,7 +1,34 @@
+import { useState } from 'react'
+
+function Section({ title, children }) {
+  const [open, setOpen] = useState(true)
+
+  return (
+    <section className="panel-section">
+      <button
+        type="button"
+        className="panel-section-header"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <span className="panel-section-arrow">{open ? '▾' : '▸'}</span>
+        {title}
+      </button>
+      {open && <div className="panel-section-body">{children}</div>}
+    </section>
+  )
+}
+
 export default function ControlPanel() {
   return (
     <div className="control-panel">
-      {/* Part A: room configuration inputs go here */}
+      <Section title="Room configuration">
+        {/* A.4: room inputs replace this placeholder */}
+        <p className="panel-placeholder">Room inputs coming soon.</p>
+      </Section>
+      <Section title="Objects">
+        <p className="panel-placeholder">No objects yet.</p>
+      </Section>
     </div>
   )
 }
