@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import RoomInputs from './RoomInputs'
+import { useObjectsStore } from '../store/objectsStore'
 
 function Section({ title, children }) {
   const [open, setOpen] = useState(true)
@@ -21,12 +22,17 @@ function Section({ title, children }) {
 }
 
 export default function ControlPanel() {
+  const addObject = useObjectsStore((state) => state.addObject)
+
   return (
     <div className="control-panel">
       <Section title="Room configuration">
         <RoomInputs />
       </Section>
       <Section title="Objects">
+        <button type="button" className="panel-button" onClick={() => addObject('sofa')}>
+          Add Sofa
+        </button>
         <p className="panel-placeholder">No objects yet.</p>
       </Section>
     </div>

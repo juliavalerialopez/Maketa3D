@@ -91,6 +91,22 @@ canvas {
   color: #888;
 }
 
+.panel-button {
+  display: block;
+  margin-bottom: 8px;
+  padding: 6px 12px;
+  border: 1px solid #555;
+  border-radius: 3px;
+  background: #2f2f2f;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.panel-button:hover {
+  background: #3a3a3a;
+}
+
 .divider {
   flex: 0 0 6px;
   height: 100%;
