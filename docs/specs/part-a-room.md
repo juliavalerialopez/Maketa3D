@@ -60,9 +60,10 @@ Adding objects, selection, object details, dragging, saving.
   - ✅ A.4.2 Decimals and arrow keys ±0.1
   - ✅ A.4.3 Clamp on blur
   - ✅ A.4.4 Empty or invalid input is safe
-- ⬜ A.5 3D room
-  - ⬜ A.5.1 Floor and 4 walls from the store
-  - ⬜ A.5.2 Hide camera-facing walls
+- ✅ A.5 3D room
+  - ✅ A.5.1 Floor and 4 walls from the store
+  - ✅ A.5.2 Hide camera-facing walls
+  - ✅ A.5.3 Remove demo Box (added 2026-10-16)
 - ⬜ A.6 Build passes and deploy
 
 ## Backlog
