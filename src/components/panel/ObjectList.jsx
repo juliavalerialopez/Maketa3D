@@ -1,8 +1,5 @@
 import { useObjectsStore } from '../../store/objectsStore'
-
-const TYPE_LABELS = {
-  sofa: 'Sofa',
-}
+import { OBJECT_TYPES } from '../objects/catalog'
 
 export default function ObjectList() {
   const objects = useObjectsStore((state) => state.objects)
@@ -15,7 +12,7 @@ export default function ObjectList() {
   const counts = {}
   const items = objects.map((object) => {
     counts[object.type] = (counts[object.type] ?? 0) + 1
-    return { id: object.id, label: `${TYPE_LABELS[object.type]} ${counts[object.type]}` }
+    return { id: object.id, label: `${OBJECT_TYPES[object.type].label} ${counts[object.type]}` }
   })
 
   return (

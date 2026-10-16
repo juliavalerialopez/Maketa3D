@@ -1,9 +1,6 @@
 import { create } from 'zustand'
 import { useRoomStore } from './roomStore'
-
-const DEFAULTS = {
-  sofa: { size: { width: 2.0, depth: 0.9, height: 0.8 }, color: '#b5654a' },
-}
+import { OBJECT_TYPES } from '../components/objects/catalog'
 
 const PLACEMENT_STEP = 0.3
 
@@ -22,7 +19,7 @@ export const useObjectsStore = create((set) => ({
   objects: [],
   addObject: (type) =>
     set((state) => {
-      const size = { ...DEFAULTS[type].size }
+      const size = { ...OBJECT_TYPES[type].size }
       return {
         objects: [
           ...state.objects,
@@ -32,7 +29,7 @@ export const useObjectsStore = create((set) => ({
             position: placementFor(state.objects.length, size),
             rotation: 0,
             size,
-            color: DEFAULTS[type].color,
+            color: OBJECT_TYPES[type].color,
           },
         ],
       }

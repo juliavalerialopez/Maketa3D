@@ -1,15 +1,11 @@
 import { useObjectsStore } from '../../store/objectsStore'
-import Sofa from '../objects/Sofa'
-
-const COMPONENTS = {
-  sofa: Sofa,
-}
+import { OBJECT_TYPES } from '../objects/catalog'
 
 export default function Objects() {
   const objects = useObjectsStore((state) => state.objects)
 
   return objects.map((object) => {
-    const Component = COMPONENTS[object.type]
+    const Component = OBJECT_TYPES[object.type].component
     return (
       <Component
         key={object.id}
