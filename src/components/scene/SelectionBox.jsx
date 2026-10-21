@@ -1,15 +1,13 @@
 import { useEffect, useMemo } from 'react'
 import { BoxGeometry, EdgesGeometry } from 'three'
-import { useObjectsStore } from '../../store/objectsStore'
+import { selectSelectedObject, useObjectsStore } from '../../store/objectsStore'
 
 const PADDING = 0.02
 const COLOR = '#4da3ff'
 
 // Wireframe box around the selected object, following its size, position and rotation.
 export default function SelectionBox() {
-  const selected = useObjectsStore((state) =>
-    state.objects.find((object) => object.id === state.selectedId),
-  )
+  const selected = useObjectsStore(selectSelectedObject)
 
   const width = selected?.size.width
   const depth = selected?.size.depth

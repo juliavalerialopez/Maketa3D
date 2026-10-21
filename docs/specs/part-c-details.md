@@ -74,7 +74,11 @@ The user selects an object from the Objects list, moves and rotates it and chang
 - ✅ C.7 Delete
   - ✅ C.7.1 Delete button
   - ✅ C.7.2 Delete/Backspace key (ignored while typing in an input)
-- ⬜ C.8 Build passes and deploy
+- ✅ C.9 Shared `selectSelectedObject` selector; ControlPanel subscribes to `selectedId` only, ObjectDetails reads its own object (added 2026-10-21: code review, editing re-rendered the whole panel)
+- ⬜ C.10 Move `positionLimits` out of ObjectDetails into `src/store/roomBounds.js` (added 2026-10-21: room geometry, needed again in Part D)
+- ⬜ C.11 `ColorField` in `src/components/ui/`; Object details uses it (added 2026-10-21: color input was built inline)
+- ⬜ C.12 Tidy objects store: state before actions, remove `src/store/.gitkeep` (added 2026-10-21)
+- ⬜ C.8 Build passes and deploy (last task of the part)
 
 ## Out of scope
 Editing size. Selecting by clicking in 3D, dragging to move or rotate (Part D). Multi-select, undo.
@@ -104,6 +108,9 @@ Editing size. Selecting by clicking in 3D, dragging to move or rotate (Part D). 
 - New-object placement after a delete can land on an existing object (placement counts objects, not free spots).
 - Keep objects inside the room when the room shrinks or an object is rotated (also in Part B backlog).
 - Color swatches next to the native picker.
+- `NumberField` resyncs its text when `value` changes from outside while not focused (needed once Part D drags objects with Object details open).
+- `Objects.jsx`: subscribe to ids, each object to itself, so editing one object doesn't re-render all (matters for Part D dragging).
+- `SplitLayout`: pointer events with pointer capture (touch/pen), no text selection while dragging the divider.
 
 ## Open questions
 - None blocking.
@@ -112,3 +119,4 @@ Editing size. Selecting by clicking in 3D, dragging to move or rotate (Part D). 
 - 2026-10-16: Draft created. Scope set to select + details + delete; move and rotate moved to Part D. Selection from list only; editable fields size and color; bounding-box highlight; delete via button and Delete/Backspace.
 - 2026-10-16: Review. Size editing dropped (backlog). Position (X, Z) and rotation added as number inputs in Object details; dragging in 3D stays in Part D. Color kept. Stable object numbers (C.2). No delete confirmation. Overlap after delete goes to backlog. Shared number field extracted from the room inputs (C.5.1).
 - 2026-10-16: Shared UI components (`NumberField`, `Button`, `ListItem` in `src/components/ui/`) moved to the front as C.1; tasks renumbered C.2–C.8 (still draft).
+- 2026-10-21: Code review. Cleanup tasks C.9–C.12 added; Part D candidates (NumberField resync, per-object subscriptions, SplitLayout pointer events) added to Backlog.

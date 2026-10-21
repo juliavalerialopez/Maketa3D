@@ -8,9 +8,8 @@ import { useObjectsStore } from '../../store/objectsStore'
 
 export default function ControlPanel() {
   const addObject = useObjectsStore((state) => state.addObject)
-  const selected = useObjectsStore((state) =>
-    state.objects.find((object) => object.id === state.selectedId),
-  )
+  // Only the id: editing the selected object must not re-render the whole panel.
+  const selectedId = useObjectsStore((state) => state.selectedId)
   useObjectShortcuts()
 
   return (
@@ -22,10 +21,10 @@ export default function ControlPanel() {
         <Button onClick={() => addObject('sofa')}>Add Sofa</Button>
         <ObjectList />
       </Section>
-      {selected && (
+      {selectedId && (
         // Keyed by id: a new selection reopens the section and refills its fields.
-        <Section key={selected.id} title="Object details">
-          <ObjectDetails object={selected} />
+        <Section key={selectedId} title="Object details">
+          <ObjectDetails />
         </Section>
       )}
     </div>

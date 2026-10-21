@@ -1,5 +1,5 @@
 import { objectLabel } from '../objects/catalog'
-import { useObjectsStore } from '../../store/objectsStore'
+import { selectSelectedObject, useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
 import NumberField from '../ui/NumberField'
 import Button from '../ui/Button'
@@ -21,10 +21,13 @@ function positionLimits(object, room) {
 
 // Fields for the selected object. ControlPanel remounts this per object,
 // so every field starts from the newly selected object's values.
-export default function ObjectDetails({ object }) {
+export default function ObjectDetails() {
+  const object = useObjectsStore(selectSelectedObject)
   const updateObject = useObjectsStore((state) => state.updateObject)
   const removeObject = useObjectsStore((state) => state.removeObject)
   const room = useRoomStore((state) => state.room)
+
+  if (!object) return null
 
   const [x, y, z] = object.position
   const limits = positionLimits(object, room)

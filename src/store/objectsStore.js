@@ -15,6 +15,10 @@ function placementFor(index, size) {
   return [step, 0, step]
 }
 
+// The selected object, or undefined when nothing is selected.
+export const selectSelectedObject = (state) =>
+  state.objects.find((object) => object.id === state.selectedId)
+
 export const useObjectsStore = create((set) => ({
   objects: [],
   // Last number handed out per type; only grows, so numbers are never reused.
