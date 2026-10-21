@@ -23,6 +23,8 @@ export const useObjectsStore = create((set) => ({
   objects: [],
   // Last number handed out per type; only grows, so numbers are never reused.
   lastNumbers: {},
+  selectedId: null,
+
   addObject: (type) =>
     set((state) => {
       const size = { ...OBJECT_TYPES[type].size }
@@ -43,8 +45,6 @@ export const useObjectsStore = create((set) => ({
         ],
       }
     }),
-
-  selectedId: null,
   selectObject: (id) => set({ selectedId: id }),
   updateObject: (id, partial) =>
     set((state) => ({
