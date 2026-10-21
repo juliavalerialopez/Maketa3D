@@ -12,7 +12,8 @@ The user selects an object from the Objects list, moves and rotates it and chang
   - `NumberField`: label, number input, unit; Part A input behavior (see Object details). Props: `label`, `value`, `onChange`, `min`, `max`, `step`, `unit`.
   - `Button`: one action button style. Props: `onClick`, `children`.
   - `ListItem`: one clickable list row with a selected state. Props: `label`, `selected`, `onClick`.
-- Every number input, action button and list row in the panel uses these: room inputs, "Add Sofa", Object details fields, "Delete", Objects list items.
+  - `ColorField`: label and native color input, `onChange` fires live while dragging. Props: `label`, `value`, `onChange`.
+- Every number input, color input, action button and list row in the panel uses these: room inputs, "Add Sofa", Object details fields, "Delete", Objects list items.
 
 ### Store
 - Add to `src/store/objectsStore.js`:
@@ -76,7 +77,7 @@ The user selects an object from the Objects list, moves and rotates it and chang
   - ✅ C.7.2 Delete/Backspace key (ignored while typing in an input)
 - ✅ C.9 Shared `selectSelectedObject` selector; ControlPanel subscribes to `selectedId` only, ObjectDetails reads its own object (added 2026-10-21: code review, editing re-rendered the whole panel)
 - ✅ C.10 Move `positionLimits` out of ObjectDetails into `src/store/roomBounds.js` (added 2026-10-21: room geometry, needed again in Part D)
-- ⬜ C.11 `ColorField` in `src/components/ui/`; Object details uses it (added 2026-10-21: color input was built inline)
+- ✅ C.11 `ColorField` in `src/components/ui/`; Object details uses it (added 2026-10-21: color input was built inline)
 - ⬜ C.12 Tidy objects store: state before actions, remove `src/store/.gitkeep` (added 2026-10-21)
 - ⬜ C.8 Build passes and deploy (last task of the part)
 

@@ -3,6 +3,7 @@ import { selectSelectedObject, useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
 import { positionLimits } from '../../store/roomBounds'
 import NumberField from '../ui/NumberField'
+import ColorField from '../ui/ColorField'
 import Button from '../ui/Button'
 
 const DEGREES_PER_RADIAN = 180 / Math.PI
@@ -47,15 +48,11 @@ export default function ObjectDetails() {
         unit="°"
         normalize={(degrees) => ((degrees % 360) + 360) % 360}
       />
-      <label className="color-field">
-        <span className="ui-number-field-label">Color</span>
-        <input
-          type="color"
-          value={object.color}
-          // React fires onChange on every input event, so the sofa recolors while dragging.
-          onChange={(event) => updateObject(object.id, { color: event.target.value })}
-        />
-      </label>
+      <ColorField
+        label="Color"
+        value={object.color}
+        onChange={(color) => updateObject(object.id, { color })}
+      />
       <Button onClick={() => removeObject(object.id)}>Delete</Button>
     </div>
   )

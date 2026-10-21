@@ -23,9 +23,9 @@ first.
   - `panel/`: HTML in the left control panel (sections, inputs, lists)
   - `scene/`: R3F room and rendering (floor, walls, objects renderer)
   - `objects/`: one 3D model component per placeable type, plus `catalog.js`
-  - `ui/`: shared panel controls (`NumberField`, `Button`, `ListItem`). Every
-    number input, action button and list row in the panel uses these; change
-    their look or behavior only here.
+  - `ui/`: shared panel controls (`NumberField`, `ColorField`, `Button`,
+    `ListItem`). Every number input, color input, action button and list row
+    in the panel uses these; change their look or behavior only here.
 - `src/components/objects/catalog.js`: the single definition of each object type
   (label, component, default size, color). Adding a type = a model file in
   `objects/` + one catalog entry; do not define types anywhere else.
