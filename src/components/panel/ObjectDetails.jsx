@@ -1,23 +1,11 @@
 import { objectLabel } from '../objects/catalog'
 import { selectSelectedObject, useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
+import { positionLimits } from '../../store/roomBounds'
 import NumberField from '../ui/NumberField'
 import Button from '../ui/Button'
 
 const DEGREES_PER_RADIAN = 180 / Math.PI
-
-// How far the centre may move from the room centre along x and z so the
-// object's rotated footprint stays inside the walls.
-function positionLimits(object, room) {
-  const cos = Math.abs(Math.cos(object.rotation))
-  const sin = Math.abs(Math.sin(object.rotation))
-  const halfX = (cos * object.size.width + sin * object.size.depth) / 2
-  const halfZ = (sin * object.size.width + cos * object.size.depth) / 2
-  return {
-    x: Math.max(0, room.width / 2 - halfX),
-    z: Math.max(0, room.depth / 2 - halfZ),
-  }
-}
 
 // Fields for the selected object. ControlPanel remounts this per object,
 // so every field starts from the newly selected object's values.

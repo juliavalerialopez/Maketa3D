@@ -75,7 +75,7 @@ The user selects an object from the Objects list, moves and rotates it and chang
   - ✅ C.7.1 Delete button
   - ✅ C.7.2 Delete/Backspace key (ignored while typing in an input)
 - ✅ C.9 Shared `selectSelectedObject` selector; ControlPanel subscribes to `selectedId` only, ObjectDetails reads its own object (added 2026-10-21: code review, editing re-rendered the whole panel)
-- ⬜ C.10 Move `positionLimits` out of ObjectDetails into `src/store/roomBounds.js` (added 2026-10-21: room geometry, needed again in Part D)
+- ✅ C.10 Move `positionLimits` out of ObjectDetails into `src/store/roomBounds.js` (added 2026-10-21: room geometry, needed again in Part D)
 - ⬜ C.11 `ColorField` in `src/components/ui/`; Object details uses it (added 2026-10-21: color input was built inline)
 - ⬜ C.12 Tidy objects store: state before actions, remove `src/store/.gitkeep` (added 2026-10-21)
 - ⬜ C.8 Build passes and deploy (last task of the part)
