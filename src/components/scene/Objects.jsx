@@ -6,6 +6,7 @@ import { useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
 import { clampPosition, objectTransform } from '../../store/roomBounds'
 import { OBJECT_TYPES } from '../objects/catalog'
+import { isWidgetActive } from './widgetState'
 
 // Pixels a press may move and still count as a click (same as Fiber's own
 // limit for onPointerMissed).
@@ -19,7 +20,8 @@ const hit = new Vector3()
 // Press and drag moves it on the floor; a click selects it.
 function SceneObject({ id }) {
   const object = useObjectsStore((state) => state.objects.find((item) => item.id === id))
-  const controls = useThree((state) => state.controls)
+  // Read when needed: the default controls (orbit) are paused while dragging.
+  const getThree = useThree((state) => state.get)
   // Active drag: { pointerId, plane, offsetX, offsetZ }.
   const dragRef = useRef(null)
 
@@ -28,6 +30,8 @@ function SceneObject({ id }) {
   function handlePointerDown(event) {
     if (event.button !== 0) return
     event.stopPropagation()
+    // A press on a widget handle belongs to the widget.
+    if (isWidgetActive()) return
     useObjectsStore.getState().selectObject(id)
 
     // Drag on a horizontal plane at the height where the object was grabbed,
@@ -37,6 +41,7 @@ function SceneObject({ id }) {
     const [x, , z] = object.position
     dragRef.current = { pointerId: event.pointerId, plane, offsetX: x - hit.x, offsetZ: z - hit.z }
     event.target.setPointerCapture(event.pointerId)
+    const { controls } = getThree()
     if (controls) controls.enabled = false
   }
 
@@ -57,13 +62,14 @@ function SceneObject({ id }) {
     if (!drag || drag.pointerId !== event.pointerId) return
     dragRef.current = null
     event.target.releasePointerCapture(event.pointerId)
+    const { controls } = getThree()
     if (controls) controls.enabled = true
   }
 
   function handleClick(event) {
     event.stopPropagation()
     // A press that moved more than a few pixels was a drag, not a click.
-    if (event.delta > CLICK_TOLERANCE) return
+    if (event.delta > CLICK_TOLERANCE || isWidgetActive()) return
     useObjectsStore.getState().selectObject(id)
   }
 

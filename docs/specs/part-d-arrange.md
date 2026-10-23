@@ -71,14 +71,14 @@ The room starts bigger. The user clicks a sofa in the 3D scene to select it, dra
   - ✅ D.4.3 Clamp with `positionLimits`, sliding along walls
   - ✅ D.4.4 `OrbitControls` is the default controls (`makeDefault`), so drag and widget can turn it off (added 2026-10-23)
 - ✅ D.5 `NumberField` resyncs its text when `value` changes from outside while not focused
-- ⬜ D.6 Widget
-  - ⬜ D.6.1 `TransformControls` on the selected object, move mode, X and Z only
-  - ⬜ D.6.2 Rotate mode
+- ✅ D.6 Widget
+  - ✅ D.6.1 `TransformControls` on the selected object, move mode, X and Z only
+  - ✅ D.6.2 Rotate mode
   - ⬜ ~~D.6.3 Switch between move and rotate~~ (dropped 2026-10-23: both shown together, see D.6.5)
-  - ⬜ D.6.4 Clamp inside the room after move and rotate
-  - ⬜ D.6.5 Move arrows and rotate ring shown together: two `TransformControls` on the same object (added 2026-10-23)
-  - ⬜ D.6.6 Rotate ring snaps to 15° (added 2026-10-23)
-  - ⬜ D.6.7 Widget rotation stored normalized to 0–360° (added 2026-10-23)
+  - ✅ D.6.4 Clamp inside the room after move and rotate
+  - ✅ D.6.5 Move arrows and rotate ring shown together: two `TransformControls` on the same object (added 2026-10-23)
+  - ✅ D.6.6 Rotate ring snaps to 15° (added 2026-10-23)
+  - ✅ D.6.7 Widget rotation stored normalized to 0–360° (added 2026-10-23)
 - ✅ D.8 Changing rotation in Object details also clamps the position inside the room (added 2026-10-23: Part C gap)
 - ✅ D.9 Drag to change a value in `NumberField`, all number fields (added 2026-10-23)
 - ✅ D.10 Location group in Object details: X and Z side by side (`FieldGroup` in `src/components/ui/`) (added 2026-10-23)

@@ -4,11 +4,14 @@ import Scene from './components/scene/Scene'
 import SplitLayout from './components/layout/SplitLayout'
 import ControlPanel from './components/panel/ControlPanel'
 import { useObjectsStore } from './store/objectsStore'
+import { isWidgetActive } from './components/scene/widgetState'
 
 // A click that hits no object (empty floor, walls, outside the room) deselects.
 // Fiber only calls this for real clicks, not for orbit drags. Floor and walls
-// have no pointer handlers, so they never count as hits.
+// have no pointer handlers, so they never count as hits. Widget handles aren't
+// hits either, so a click on a handle is ignored here.
 function handlePointerMissed() {
+  if (isWidgetActive()) return
   useObjectsStore.getState().selectObject(null)
 }
 

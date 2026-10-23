@@ -2,6 +2,7 @@ import Floor from './Floor'
 import Walls from './Walls'
 import Objects from './Objects'
 import SelectionBox from './SelectionBox'
+import ObjectWidget from './ObjectWidget'
 
 export default function Scene() {
   return (
@@ -12,6 +13,7 @@ export default function Scene() {
       <Walls />
       <Objects />
       <SelectionBox />
+      <ObjectWidget />
     </>
   )
 }
