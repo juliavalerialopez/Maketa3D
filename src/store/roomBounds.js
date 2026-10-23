@@ -36,15 +36,32 @@ export function objectTransform(object) {
   }
 }
 
-// How far an object's centre may move from the room centre along x and z so
-// its rotated footprint stays inside the walls.
+// Allowed range for one axis of the object's position, so its rotated box
+// stays between the walls at -roomSize/2 and +roomSize/2. A tilted box's centre
+// can sit off the origin, so the range is not always symmetric. An object
+// wider than the room gets a single centred value.
+function axisRange(roomSize, centre, extent) {
+  const min = -roomSize / 2 + extent - centre
+  const max = roomSize / 2 - extent - centre
+  if (min <= max) return [min, max]
+  const middle = (min + max) / 2
+  return [middle, middle]
+}
+
+// Allowed [min, max] for the object's x and z, so its rotated (and tilted)
+// box stays inside the walls.
 export function positionLimits(object, room) {
-  const cos = Math.abs(Math.cos(object.rotation[1]))
-  const sin = Math.abs(Math.sin(object.rotation[1]))
-  const halfX = (cos * object.size.width + sin * object.size.depth) / 2
-  const halfZ = (sin * object.size.width + cos * object.size.depth) / 2
+  const { centre, extents } = rotatedBox(object)
   return {
-    x: Math.max(0, room.width / 2 - halfX),
-    z: Math.max(0, room.depth / 2 - halfZ),
+    x: axisRange(room.width, centre[0], extents[0]),
+    z: axisRange(room.depth, centre[2], extents[2]),
   }
+}
+
+// The object's position with x and z clamped inside the walls (y stays 0).
+// Clamping each axis on its own lets an object slide along a wall.
+export function clampPosition(object, room, x, z) {
+  const limits = positionLimits(object, room)
+  const clamp = (value, [min, max]) => Math.min(max, Math.max(min, value))
+  return [clamp(x, limits.x), 0, clamp(z, limits.z)]
 }

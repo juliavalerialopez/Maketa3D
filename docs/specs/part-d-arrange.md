@@ -83,7 +83,7 @@ The room starts bigger. The user clicks a sofa in the 3D scene to select it, dra
 - ✅ D.9 Drag to change a value in `NumberField`, all number fields (added 2026-10-23)
 - ✅ D.10 Location group in Object details: X and Z side by side (`FieldGroup` in `src/components/ui/`) (added 2026-10-23)
 - ✅ D.11 Rotation as `[x, y, z]` (Euler `YXZ`) in the store and rendering; tilted objects lifted onto the floor (added 2026-10-23)
-- ⬜ D.12 Room clamp for tilted objects: `positionLimits` uses the full rotated box (added 2026-10-23)
+- ✅ D.12 Room clamp for tilted objects: `positionLimits` uses the full rotated box (added 2026-10-23)
 - ⬜ D.13 Rotation group in Object details: X, Y, Z side by side, all editable (added 2026-10-23)
 - ⬜ D.7 Build passes and deploy (last task of the part)
 

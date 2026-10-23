@@ -31,16 +31,16 @@ export default function ObjectDetails() {
           label="X"
           value={x}
           onChange={(value) => updateObject(object.id, { position: [value, y, z] })}
-          min={-limits.x}
-          max={limits.x}
+          min={limits.x[0]}
+          max={limits.x[1]}
         />
         <NumberField
           compact
           label="Z"
           value={z}
           onChange={(value) => updateObject(object.id, { position: [x, y, value] })}
-          min={-limits.z}
-          max={limits.z}
+          min={limits.z[0]}
+          max={limits.z[1]}
         />
       </FieldGroup>
       <NumberField
