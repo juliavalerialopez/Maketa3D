@@ -65,10 +65,10 @@ The room starts bigger. The user clicks a sofa in the 3D scene to select it, dra
   - ✅ D.3.1 Click an object to select it
   - ✅ D.3.2 Click empty space deselects (Escape already does)
   - ✅ D.3.3 Orbit drags do not count as clicks
-- ⬜ D.4 Drag to move on the floor
-  - ⬜ D.4.1 Drag moves the object on the floor plane, keeping the grab offset
-  - ⬜ D.4.2 Orbit disabled while dragging
-  - ⬜ D.4.3 Clamp with `positionLimits`, sliding along walls
+- ✅ D.4 Drag to move on the floor
+  - ✅ D.4.1 Drag moves the object on the floor plane, keeping the grab offset
+  - ✅ D.4.2 Orbit disabled while dragging
+  - ✅ D.4.3 Clamp with `positionLimits`, sliding along walls
   - ✅ D.4.4 `OrbitControls` is the default controls (`makeDefault`), so drag and widget can turn it off (added 2026-10-23)
 - ✅ D.5 `NumberField` resyncs its text when `value` changes from outside while not focused
 - ⬜ D.6 Widget
