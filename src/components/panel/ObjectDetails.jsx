@@ -3,6 +3,7 @@ import { selectSelectedObject, useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
 import { positionLimits } from '../../store/roomBounds'
 import NumberField from '../ui/NumberField'
+import FieldGroup from '../ui/FieldGroup'
 import ColorField from '../ui/ColorField'
 import Button from '../ui/Button'
 
@@ -24,22 +25,24 @@ export default function ObjectDetails() {
   return (
     <div className="field-stack">
       <p className="object-details-name">{objectLabel(object)}</p>
-      <NumberField
-        label="X"
-        value={x}
-        onChange={(value) => updateObject(object.id, { position: [value, y, z] })}
-        min={-limits.x}
-        max={limits.x}
-        unit="m"
-      />
-      <NumberField
-        label="Z"
-        value={z}
-        onChange={(value) => updateObject(object.id, { position: [x, y, value] })}
-        min={-limits.z}
-        max={limits.z}
-        unit="m"
-      />
+      <FieldGroup title="Location" unit="m">
+        <NumberField
+          compact
+          label="X"
+          value={x}
+          onChange={(value) => updateObject(object.id, { position: [value, y, z] })}
+          min={-limits.x}
+          max={limits.x}
+        />
+        <NumberField
+          compact
+          label="Z"
+          value={z}
+          onChange={(value) => updateObject(object.id, { position: [x, y, value] })}
+          min={-limits.z}
+          max={limits.z}
+        />
+      </FieldGroup>
       <NumberField
         label="Rotation"
         value={object.rotation * DEGREES_PER_RADIAN}

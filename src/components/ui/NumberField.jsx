@@ -16,7 +16,9 @@ const PIXELS_PER_STEP = 4
 // Pressing in the field and dragging left or right changes the value by one
 // step per few pixels (within min/max); releasing limits it like a blur.
 // A press without dragging focuses the field for typing.
-export default function NumberField({ label, value, onChange, min, max, step = 0.1, unit, normalize }) {
+//
+// `compact` puts the label above the value, for use inside a FieldGroup.
+export default function NumberField({ label, value, onChange, min, max, step = 0.1, unit, normalize, compact }) {
   const [draft, setDraft] = useState(String(round(value)))
   const [focused, setFocused] = useState(false)
   const [lastValue, setLastValue] = useState(value)
@@ -107,7 +109,7 @@ export default function NumberField({ label, value, onChange, min, max, step = 0
   }
 
   return (
-    <label className="ui-number-field">
+    <label className={compact ? 'ui-number-field compact' : 'ui-number-field'}>
       <span className="ui-number-field-label">{label}</span>
       <input
         ref={inputRef}
