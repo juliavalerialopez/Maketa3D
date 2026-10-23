@@ -9,7 +9,7 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 ## Roadmap
 1. Room dimensions
 2. Add objects (Sofa only for now)
-3. Arrange objects: select from the list, move, rotate, recolor and delete via Object details (Part C); click-to-select and drag in 3D (Part D)
+3. Arrange objects: select from the list, move, rotate, recolor and delete via Object details (Part C); bigger start room, click-to-select and drag in 3D, move/rotate widget, tilt on all three axes, drag-to-change number values (Part D)
 4. Camera capture (render image from a camera view)
 5. AI restyle (style prompt turns the capture into a photorealistic image)
 
@@ -27,9 +27,10 @@ All units in meters.
 
 ```js
 room: { width, depth, height }
-objects: [{ id, type, number, position: [x, y, z], rotation, size: { width, depth, height }, color }]
+objects: [{ id, type, number, position: [x, y, z], rotation: [x, y, z], size: { width, depth, height }, color }]
 // number: stable per-type count (Sofa 1, Sofa 2, ...), never reused
-// rotation: radians around the vertical (Y) axis
+// position: y is always 0 (on the floor); a tilted object is lifted by the renderer so its lowest point touches the floor
+// rotation: radians, Euler order 'YXZ': y turns the object on the floor, x and z tilt it
 selectedId: string | null
 ```
 
@@ -41,7 +42,7 @@ Objects are always a list, even with one type.
 | A | specs/part-a-room.md | Layout, collapsible panel, room configuration | Done |
 | B | specs/part-b-objects.md | Objects section, add Sofa | Done |
 | C | specs/part-c-details.md | Select from list, Object details (position, rotation, color), delete | Done |
-| D | specs/part-d-arrange.md | Click-to-select in 3D, drag to move and rotate | Not started |
+| D | specs/part-d-arrange.md | Bigger room, click-to-select in 3D, drag, move/rotate widget, tilt, drag-to-change values | In progress |
 
 ## How we work
 - Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.
