@@ -1,7 +1,7 @@
 import { objectLabel } from '../objects/catalog'
 import { selectSelectedObject, useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
-import { positionLimits } from '../../store/roomBounds'
+import { clampPosition, positionLimits } from '../../store/roomBounds'
 import NumberField from '../ui/NumberField'
 import FieldGroup from '../ui/FieldGroup'
 import ColorField from '../ui/ColorField'
@@ -23,11 +23,13 @@ export default function ObjectDetails() {
   const [x, y, z] = object.position
   const limits = positionLimits(object, room)
 
+  // A new rotation changes the footprint, so the position is clamped with it.
   function setRotation(axisIndex, degrees) {
     const rotation = object.rotation.map((value, index) =>
       index === axisIndex ? degrees / DEGREES_PER_RADIAN : value,
     )
-    updateObject(object.id, { rotation })
+    const position = clampPosition({ ...object, rotation }, room, x, z)
+    updateObject(object.id, { rotation, position })
   }
 
   return (

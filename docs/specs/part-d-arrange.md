@@ -79,7 +79,7 @@ The room starts bigger. The user clicks a sofa in the 3D scene to select it, dra
   - ⬜ D.6.5 Move arrows and rotate ring shown together: two `TransformControls` on the same object (added 2026-10-23)
   - ⬜ D.6.6 Rotate ring snaps to 15° (added 2026-10-23)
   - ⬜ D.6.7 Widget rotation stored normalized to 0–360° (added 2026-10-23)
-- ⬜ D.8 Changing rotation in Object details also clamps the position inside the room (added 2026-10-23: Part C gap)
+- ✅ D.8 Changing rotation in Object details also clamps the position inside the room (added 2026-10-23: Part C gap)
 - ✅ D.9 Drag to change a value in `NumberField`, all number fields (added 2026-10-23)
 - ✅ D.10 Location group in Object details: X and Z side by side (`FieldGroup` in `src/components/ui/`) (added 2026-10-23)
 - ✅ D.11 Rotation as `[x, y, z]` (Euler `YXZ`) in the store and rendering; tilted objects lifted onto the floor (added 2026-10-23)
