@@ -1,6 +1,6 @@
 # Part C: Select, Edit Details, Delete
 
-Status: **In progress**. Builds on Part B (objects store, Sofa, Objects list).
+Status: **Done**. Builds on Part B (objects store, Sofa, Objects list).
 
 ## Goal
 The user selects an object from the Objects list, moves and rotates it and changes its color in the Object details section, and can delete it.
@@ -79,28 +79,28 @@ The user selects an object from the Objects list, moves and rotates it and chang
 - ✅ C.10 Move `positionLimits` out of ObjectDetails into `src/store/roomBounds.js` (added 2026-10-21: room geometry, needed again in Part D)
 - ✅ C.11 `ColorField` in `src/components/ui/`; Object details uses it (added 2026-10-21: color input was built inline)
 - ✅ C.12 Tidy objects store: state before actions, remove `src/store/.gitkeep` (added 2026-10-21)
-- ⬜ C.8 Build passes and deploy (last task of the part)
+- ✅ C.8 Build passes and deploy (last task of the part)
 
 ## Out of scope
 Editing size. Selecting by clicking in 3D, dragging to move or rotate (Part D). Multi-select, undo.
 
 ## Acceptance criteria
-- [ ] Clicking "Sofa 2" in the list highlights it in the list and shows a bounding box around that sofa only.
-- [ ] Clicking "Sofa 2" again, or pressing Escape, deselects it and hides Object details.
-- [ ] Object details is not visible when nothing is selected.
-- [ ] Typing 1 in X moves the selected sofa 1 m to the right immediately; the bounding box follows.
-- [ ] Pressing Up in X changes 0 to 0.1; pressing Up in Rotation changes 0 to 15.
-- [ ] Typing 90 in Rotation turns the sofa a quarter turn; the bounding box turns with it.
-- [ ] Typing 20 in X and leaving the field puts the sofa against the right wall, fully inside the room.
-- [ ] Clearing a field does not crash or move the sofa.
-- [ ] Selecting Sofa 1, then Sofa 2, shows Sofa 2's values in Object details.
-- [ ] Picking a color changes the selected sofa's color live; other sofas keep theirs.
-- [ ] "Delete" removes the selected sofa from the scene and the list; Object details disappears.
-- [ ] After deleting "Sofa 2" of three, the others are still "Sofa 1" and "Sofa 3"; the next one added is "Sofa 4".
-- [ ] Pressing Backspace while typing in a field edits the field and does not delete the sofa.
-- [ ] Orbiting the scene still works and never changes the selection.
-- [ ] `npm run build` succeeds with no errors.
-- [ ] Deployed and working on the live Vercel URL.
+- [x] Clicking "Sofa 2" in the list highlights it in the list and shows a bounding box around that sofa only.
+- [x] Clicking "Sofa 2" again, or pressing Escape, deselects it and hides Object details.
+- [x] Object details is not visible when nothing is selected.
+- [x] Typing 1 in X moves the selected sofa 1 m to the right immediately; the bounding box follows.
+- [x] Pressing Up in X changes 0 to 0.1; pressing Up in Rotation changes 0 to 15.
+- [x] Typing 90 in Rotation turns the sofa a quarter turn; the bounding box turns with it.
+- [x] Typing 20 in X and leaving the field puts the sofa against the right wall, fully inside the room.
+- [x] Clearing a field does not crash or move the sofa.
+- [x] Selecting Sofa 1, then Sofa 2, shows Sofa 2's values in Object details.
+- [x] Picking a color changes the selected sofa's color live; other sofas keep theirs.
+- [x] "Delete" removes the selected sofa from the scene and the list; Object details disappears.
+- [x] After deleting "Sofa 2" of three, the others are still "Sofa 1" and "Sofa 3"; the next one added is "Sofa 4".
+- [x] Pressing Backspace while typing in a field edits the field and does not delete the sofa.
+- [x] Orbiting the scene still works and never changes the selection.
+- [x] `npm run build` succeeds with no errors.
+- [x] Deployed and working on the live Vercel URL.
 
 ## Backlog
 - Click an object in 3D to select it; click empty or Escape to deselect (prototype interaction model). Part D, together with dragging.
@@ -121,3 +121,4 @@ Editing size. Selecting by clicking in 3D, dragging to move or rotate (Part D). 
 - 2026-10-16: Review. Size editing dropped (backlog). Position (X, Z) and rotation added as number inputs in Object details; dragging in 3D stays in Part D. Color kept. Stable object numbers (C.2). No delete confirmation. Overlap after delete goes to backlog. Shared number field extracted from the room inputs (C.5.1).
 - 2026-10-16: Shared UI components (`NumberField`, `Button`, `ListItem` in `src/components/ui/`) moved to the front as C.1; tasks renumbered C.2–C.8 (still draft).
 - 2026-10-21: Code review. Cleanup tasks C.9–C.12 added; Part D candidates (NumberField resync, per-object subscriptions, SplitLayout pointer events) added to Backlog.
+- 2026-10-21: Part C complete, deployed on Vercel.

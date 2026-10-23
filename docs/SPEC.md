@@ -40,7 +40,7 @@ Objects are always a list, even with one type.
 |---|---|---|---|
 | A | specs/part-a-room.md | Layout, collapsible panel, room configuration | Done |
 | B | specs/part-b-objects.md | Objects section, add Sofa | Done |
-| C | specs/part-c-details.md | Select from list, Object details (position, rotation, color), delete | In progress |
+| C | specs/part-c-details.md | Select from list, Object details (position, rotation, color), delete | Done |
 | D | specs/part-d-arrange.md | Click-to-select in 3D, drag to move and rotate | Not started |
 
 ## How we work
