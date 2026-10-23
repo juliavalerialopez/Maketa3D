@@ -8,6 +8,7 @@ import ColorField from '../ui/ColorField'
 import Button from '../ui/Button'
 
 const DEGREES_PER_RADIAN = 180 / Math.PI
+const normalizeDegrees = (degrees) => ((degrees % 360) + 360) % 360
 
 // Fields for the selected object. ControlPanel remounts this per object,
 // so every field starts from the newly selected object's values.
@@ -21,6 +22,13 @@ export default function ObjectDetails() {
 
   const [x, y, z] = object.position
   const limits = positionLimits(object, room)
+
+  function setRotation(axisIndex, degrees) {
+    const rotation = object.rotation.map((value, index) =>
+      index === axisIndex ? degrees / DEGREES_PER_RADIAN : value,
+    )
+    updateObject(object.id, { rotation })
+  }
 
   return (
     <div className="field-stack">
@@ -43,16 +51,19 @@ export default function ObjectDetails() {
           max={limits.z[1]}
         />
       </FieldGroup>
-      <NumberField
-        label="Rotation"
-        value={object.rotation[1] * DEGREES_PER_RADIAN}
-        onChange={(value) =>
-          updateObject(object.id, { rotation: [object.rotation[0], value / DEGREES_PER_RADIAN, object.rotation[2]] })
-        }
-        step={15}
-        unit="°"
-        normalize={(degrees) => ((degrees % 360) + 360) % 360}
-      />
+      <FieldGroup title="Rotation" unit="°">
+        {['X', 'Y', 'Z'].map((axis, index) => (
+          <NumberField
+            key={axis}
+            compact
+            label={axis}
+            value={object.rotation[index] * DEGREES_PER_RADIAN}
+            onChange={(degrees) => setRotation(index, degrees)}
+            step={15}
+            normalize={normalizeDegrees}
+          />
+        ))}
+      </FieldGroup>
       <ColorField
         label="Color"
         value={object.color}
