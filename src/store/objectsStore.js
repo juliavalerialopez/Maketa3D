@@ -38,7 +38,7 @@ export const useObjectsStore = create((set) => ({
             type,
             number,
             position: placementFor(state.objects.length, size),
-            rotation: 0,
+            rotation: [0, 0, 0],
             size,
             color: OBJECT_TYPES[type].color,
           },

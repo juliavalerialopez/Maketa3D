@@ -1,5 +1,6 @@
 import { useShallow } from 'zustand/react/shallow'
 import { useObjectsStore } from '../../store/objectsStore'
+import { objectTransform } from '../../store/roomBounds'
 import { OBJECT_TYPES } from '../objects/catalog'
 
 // One object in the scene. Subscribes to its own entry only, so changing
@@ -9,9 +10,10 @@ function SceneObject({ id }) {
   if (!object) return null
 
   const Component = OBJECT_TYPES[object.type].component
+  const { position, rotation } = objectTransform(object)
   // The scene owns the transform; models only draw themselves at the origin.
   return (
-    <group name={id} position={object.position} rotation={[0, object.rotation, 0]}>
+    <group name={id} position={position} rotation={rotation}>
       <Component size={object.size} color={object.color} />
     </group>
   )

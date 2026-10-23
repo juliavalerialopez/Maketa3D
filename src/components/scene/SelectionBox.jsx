@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { BoxGeometry, EdgesGeometry } from 'three'
 import { selectSelectedObject, useObjectsStore } from '../../store/objectsStore'
+import { objectTransform } from '../../store/roomBounds'
 
 const PADDING = 0.02
 const COLOR = '#4da3ff'
@@ -25,8 +26,9 @@ export default function SelectionBox() {
 
   if (!selected) return null
 
+  const { position, rotation } = objectTransform(selected)
   return (
-    <group position={selected.position} rotation={[0, selected.rotation, 0]}>
+    <group position={position} rotation={rotation}>
       <lineSegments geometry={geometry} position={[0, height / 2, 0]}>
         <lineBasicMaterial color={COLOR} />
       </lineSegments>

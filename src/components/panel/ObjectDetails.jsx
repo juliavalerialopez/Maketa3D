@@ -45,8 +45,10 @@ export default function ObjectDetails() {
       </FieldGroup>
       <NumberField
         label="Rotation"
-        value={object.rotation * DEGREES_PER_RADIAN}
-        onChange={(value) => updateObject(object.id, { rotation: value / DEGREES_PER_RADIAN })}
+        value={object.rotation[1] * DEGREES_PER_RADIAN}
+        onChange={(value) =>
+          updateObject(object.id, { rotation: [object.rotation[0], value / DEGREES_PER_RADIAN, object.rotation[2]] })
+        }
         step={15}
         unit="°"
         normalize={(degrees) => ((degrees % 360) + 360) % 360}
