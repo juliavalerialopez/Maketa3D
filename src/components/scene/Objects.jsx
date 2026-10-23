@@ -9,13 +9,11 @@ function SceneObject({ id }) {
   if (!object) return null
 
   const Component = OBJECT_TYPES[object.type].component
+  // The scene owns the transform; models only draw themselves at the origin.
   return (
-    <Component
-      position={object.position}
-      rotation={object.rotation}
-      size={object.size}
-      color={object.color}
-    />
+    <group name={id} position={object.position} rotation={[0, object.rotation, 0]}>
+      <Component size={object.size} color={object.color} />
+    </group>
   )
 }
 

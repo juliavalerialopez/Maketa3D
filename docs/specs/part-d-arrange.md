@@ -60,7 +60,7 @@ The room starts bigger. The user clicks a sofa in the 3D scene to select it, dra
 - ✅ D.1 Bigger starting room (6 x 5 x 2.6) in `roomStore.js`
 - ✅ D.2 Per-object subscriptions in `Objects.jsx` (prep for dragging)
   - ✅ D.2.1 `ObjectList` subscribes to ids and labels only (`useShallow`) (added 2026-10-23: the list re-rendered on every change to any object)
-  - ⬜ D.2.2 `Objects.jsx` owns each object's transform group; models take only `size` and `color` (added 2026-10-23: clicks, drag and the widget need one group per object owned by the scene)
+  - ✅ D.2.2 `Objects.jsx` owns each object's transform group; models take only `size` and `color` (added 2026-10-23: clicks, drag and the widget need one group per object owned by the scene)
 - ⬜ D.3 Select in 3D
   - ⬜ D.3.1 Click an object to select it
   - ⬜ D.3.2 Click empty space deselects (Escape already does)

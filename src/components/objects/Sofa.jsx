@@ -1,6 +1,7 @@
 // Box-based sofa that fills its size bounds exactly. The back is at local -z,
-// so an unrotated sofa faces +z. Proportions scale with size.
-export default function Sofa({ position, rotation, size, color }) {
+// so an unrotated sofa faces +z. Proportions scale with size. Drawn at the
+// origin, standing on y = 0; the scene places and rotates it.
+export default function Sofa({ size, color }) {
   const { width, depth, height } = size
   const armWidth = width * 0.075
   const armHeight = height * 0.75
@@ -19,13 +20,13 @@ export default function Sofa({ position, rotation, size, color }) {
   ]
 
   return (
-    <group position={position} rotation={[0, rotation, 0]}>
+    <>
       {parts.map((part, index) => (
         <mesh key={index} position={part.position} castShadow receiveShadow>
           <boxGeometry args={part.size} />
           <meshStandardMaterial color={color} />
         </mesh>
       ))}
-    </group>
+    </>
   )
 }
