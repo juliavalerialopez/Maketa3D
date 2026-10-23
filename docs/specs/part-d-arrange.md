@@ -70,7 +70,7 @@ The room starts bigger. The user clicks a sofa in the 3D scene to select it, dra
   - ⬜ D.4.2 Orbit disabled while dragging
   - ⬜ D.4.3 Clamp with `positionLimits`, sliding along walls
   - ⬜ D.4.4 `OrbitControls` is the default controls (`makeDefault`), so drag and widget can turn it off (added 2026-10-23)
-- ⬜ D.5 `NumberField` resyncs its text when `value` changes from outside while not focused
+- ✅ D.5 `NumberField` resyncs its text when `value` changes from outside while not focused
 - ⬜ D.6 Widget
   - ⬜ D.6.1 `TransformControls` on the selected object, move mode, X and Z only
   - ⬜ D.6.2 Rotate mode
