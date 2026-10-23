@@ -17,7 +17,8 @@ export default function App() {
     <SplitLayout panel={<ControlPanel />}>
       <Canvas camera={{ position: [4, 4, 4], fov: 50 }} shadows onPointerMissed={handlePointerMissed}>
         <Scene />
-        <OrbitControls />
+        {/* Default controls, so dragging objects and the widget can pause orbit. */}
+        <OrbitControls makeDefault />
       </Canvas>
     </SplitLayout>
   )
