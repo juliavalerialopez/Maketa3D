@@ -94,6 +94,13 @@ canvas {
   font: inherit;
 }
 
+/* Not focused: press and drag left/right to change the value. */
+.ui-number-field input.ui-number-field-draggable {
+  cursor: ew-resize;
+  user-select: none;
+  touch-action: pan-y;
+}
+
 .ui-number-field-unit {
   flex: 0 0 1em;
   color: #888;
