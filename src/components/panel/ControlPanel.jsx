@@ -14,10 +14,10 @@ export default function ControlPanel() {
 
   return (
     <div className="control-panel">
-      <Section title="Room configuration">
+      <Section id="room" title="Room configuration">
         <RoomInputs />
       </Section>
-      <Section title="Objects">
+      <Section id="objects" title="Objects">
         <Button onClick={() => addObject('sofa')}>Add Sofa</Button>
         <ObjectList />
       </Section>

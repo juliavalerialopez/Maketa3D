@@ -1,11 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
-const MIN_PANEL_PERCENT = 15
-const MAX_PANEL_PERCENT = 50
-
-export default function SplitLayout({ panel, children }) {
-  const [panelPercent, setPanelPercent] = useState(20)
+// Two panes with a draggable divider. `percent` is the left pane's width in
+// percent of the layout, kept by the caller (a store), so it survives unmounts.
+// Dragging calls onPercentChange with a value clamped to min..max.
+export default function SplitLayout({ left, right, percent, onPercentChange, min, max }) {
+  const containerRef = useRef(null)
   const draggingRef = useRef(false)
+  // Latest props for the window listeners, which are added only once.
+  const latestRef = useRef({ onPercentChange, min, max })
+  useEffect(() => {
+    latestRef.current = { onPercentChange, min, max }
+  }, [onPercentChange, min, max])
 
   const handleMouseDown = useCallback(() => {
     draggingRef.current = true
@@ -13,10 +18,11 @@ export default function SplitLayout({ panel, children }) {
 
   useEffect(() => {
     function handleMouseMove(event) {
-      if (!draggingRef.current) return
-      const percent = (event.clientX / window.innerWidth) * 100
-      const clamped = Math.min(MAX_PANEL_PERCENT, Math.max(MIN_PANEL_PERCENT, percent))
-      setPanelPercent(clamped)
+      if (!draggingRef.current || !containerRef.current) return
+      const rect = containerRef.current.getBoundingClientRect()
+      const value = ((event.clientX - rect.left) / rect.width) * 100
+      const { onPercentChange, min, max } = latestRef.current
+      onPercentChange(Math.min(max, Math.max(min, value)))
     }
 
     function handleMouseUp() {
@@ -32,13 +38,12 @@ export default function SplitLayout({ panel, children }) {
   }, [])
 
   return (
-    <div className="split-layout">
-      <div style={{ width: `${panelPercent}%` }}>
-        {panel}
+    <div className="split-layout" ref={containerRef}>
+      <div className="split-pane-left" style={{ width: `${percent}%` }}>
+        {left}
       </div>
       <div className="divider" onMouseDown={handleMouseDown} />
-      <div className="scene-pane">{children}</div>
+      <div className="split-pane-right">{right}</div>
     </div>
   )
 }
-

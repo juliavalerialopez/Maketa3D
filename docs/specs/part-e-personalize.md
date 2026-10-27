@@ -45,9 +45,9 @@ The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan
   - ✅ E.1.1 `modeStore.js`: `mode` ('plan' on load), `setMode`
   - ✅ E.1.2 `ui/SegmentedSwitch.jsx` and `layout/TopBar.jsx` with "Plan | Personalize"; App shows the top bar above the current screen
 - ✅ E.2 Move today's screen into `modes/PlanMode.jsx`; App renders only the top bar and one mode (Personalize shows an empty placeholder for now)
-- ⬜ E.3 UI state into stores, so nothing resets when Plan unmounts
-  - ⬜ E.3.1 `SplitLayout` generic (`left`, `right`, `percent`, `onPercentChange`, `min`, `max`); `uiStore.js` with `planPercent` (20) used by PlanMode
-  - ⬜ E.3.2 `Section` optional `id`: open state in `uiStore`; ids on Room configuration and Objects
+- ✅ E.3 UI state into stores, so nothing resets when Plan unmounts
+  - ✅ E.3.1 `SplitLayout` generic (`left`, `right`, `percent`, `onPercentChange`, `min`, `max`); `uiStore.js` with `planPercent` (20) used by PlanMode
+  - ✅ E.3.2 `Section` optional `id`: open state in `uiStore`; ids on Room configuration and Objects
 - ⬜ E.4 Frame guide
   - ⬜ E.4.1 `scene/FrameGuide.jsx`: centered 16:9 frame with dimmed outside, fits width or height, does not block pointer events
   - ⬜ E.4.2 Toggle at the top right of the scene (`ui/Button` with `pressed`); `frameVisible` in `uiStore`, true by default

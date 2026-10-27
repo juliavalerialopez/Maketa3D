@@ -4,6 +4,7 @@ import Scene from '../scene/Scene'
 import SplitLayout from '../layout/SplitLayout'
 import ControlPanel from '../panel/ControlPanel'
 import { useObjectsStore } from '../../store/objectsStore'
+import { useUiStore } from '../../store/uiStore'
 import { isWidgetActive } from '../scene/widgetState'
 
 // A click that hits no object (empty floor, walls, outside the room) deselects.
@@ -16,14 +17,27 @@ function handlePointerMissed() {
 }
 
 // Plan mode: control panel on the left, 3D scene on the right.
+// Holds no state of its own, so nothing is lost when it unmounts.
 export default function PlanMode() {
+  const planPercent = useUiStore((state) => state.planPercent)
+  const setPlanPercent = useUiStore((state) => state.setPlanPercent)
+
   return (
-    <SplitLayout panel={<ControlPanel />}>
-      <Canvas camera={{ position: [4, 4, 4], fov: 50 }} shadows onPointerMissed={handlePointerMissed}>
-        <Scene />
-        {/* Default controls, so dragging objects and the widget can pause orbit. */}
-        <OrbitControls makeDefault />
-      </Canvas>
-    </SplitLayout>
+    <SplitLayout
+      left={<ControlPanel />}
+      percent={planPercent}
+      onPercentChange={setPlanPercent}
+      min={15}
+      max={50}
+      right={
+        <div className="scene-pane">
+          <Canvas camera={{ position: [4, 4, 4], fov: 50 }} shadows onPointerMissed={handlePointerMissed}>
+            <Scene />
+            {/* Default controls, so dragging objects and the widget can pause orbit. */}
+            <OrbitControls makeDefault />
+          </Canvas>
+        </div>
+      }
+    />
   )
 }
