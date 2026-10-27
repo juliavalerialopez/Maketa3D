@@ -10,12 +10,13 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 1. Room dimensions
 2. Add objects (Sofa only for now)
 3. Arrange objects: select from the list, move, rotate, recolor and delete via Object details (Part C); bigger start room, click-to-select and drag in 3D, move/rotate widget, tilt on all three axes, drag-to-change number values (Part D)
-4. Camera capture (render image from a camera view)
+4. Plan and Personalize modes: a 16:9 frame guide in Plan; switching to Personalize captures a clean render from the Plan camera, shown above an empty AI image slot (Part E)
 5. AI restyle (style prompt turns the capture into a photorealistic image)
 
 ## Layout
-- Left control panel: 20% of screen width.
-- Right: 3D scene, remaining 80%, full height, resizes with the window.
+- Top bar (about 44 px) with a centered "Plan | Personalize" switch. Plan is the mode on page load.
+- **Plan:** left control panel (20% by default, divider draggable 15–50%), right: 3D scene filling the rest, resizes with the window, with a centered 16:9 frame guide (toggle at its top right, visible by default).
+- **Personalize:** same split layout, starts 60 | 40 with a draggable divider (panel 15–50%). Left: "Room render" above the "AI image" slot, both 16:9. Right: control panel.
 
 ## Control panel: collapsible sections
 1. **Room configuration** (open by default)
@@ -32,6 +33,9 @@ objects: [{ id, type, number, position: [x, y, z], rotation: [x, y, z], size: { 
 // position: y is always 0 (on the floor); a tilted object is lifted by the renderer so its lowest point touches the floor
 // rotation: radians, Euler order 'YXZ': y turns the object on the floor, x and z tilt it
 selectedId: string | null
+mode: 'plan' | 'personalize'
+snapshot: string | null                     // PNG data URL of the last Room render, memory only
+planView: { position: [x, y, z], target: [x, y, z] }  // Plan orbit camera, restored when Plan mounts again
 ```
 
 Objects are always a list, even with one type.
@@ -42,7 +46,8 @@ Objects are always a list, even with one type.
 | A | specs/part-a-room.md | Layout, collapsible panel, room configuration | Done |
 | B | specs/part-b-objects.md | Objects section, add Sofa | Done |
 | C | specs/part-c-details.md | Select from list, Object details (position, rotation, color), delete | Done |
-| D | specs/part-d-arrange.md | Bigger room, click-to-select in 3D, drag, move/rotate widget, tilt, drag-to-change values | In progress |
+| D | specs/part-d-arrange.md | Bigger room, click-to-select in 3D, drag, move/rotate widget, tilt, drag-to-change values | Done |
+| E | specs/part-e-personalize.md | Plan/Personalize modes, frame guide, snapshot, Personalize layout | Draft |
 
 ## How we work
 - Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.

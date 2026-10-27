@@ -1,6 +1,6 @@
 # Part D: Arrange in 3D
 
-Status: **In progress**. Builds on Part C (selection, Object details, `roomBounds.js`).
+Status: **Done**. Builds on Part C (selection, Object details, `roomBounds.js`).
 
 ## Goal
 The room starts bigger. The user clicks a sofa in the 3D scene to select it, drags it around the floor, and uses a widget on the selected sofa to move it along one axis or turn it. In Object details, position and rotation are grouped in columns, rotation works on all three axes (objects can tilt), and every number can be changed by dragging on it.
@@ -85,7 +85,7 @@ The room starts bigger. The user clicks a sofa in the 3D scene to select it, dra
 - ✅ D.11 Rotation as `[x, y, z]` (Euler `YXZ`) in the store and rendering; tilted objects lifted onto the floor (added 2026-10-23)
 - ✅ D.12 Room clamp for tilted objects: `positionLimits` uses the full rotated box (added 2026-10-23)
 - ✅ D.13 Rotation group in Object details: X, Y, Z side by side, all editable (added 2026-10-23)
-- ⬜ D.7 Build passes and deploy (last task of the part)
+- ✅ D.7 Build passes and deploy (last task of the part)
 
 ## Out of scope
 Moving objects up or down (Y). Wall-mounted items. Editing size. Multi-select, undo, snapping to other objects. Tilting with the widget (tilt is set in Object details).
@@ -132,3 +132,4 @@ Moving objects up or down (Y). Wall-mounted items. Editing size. Multi-select, u
 - 2026-10-23: Review. Open questions answered: move arrows and rotate ring shown together (no mode switch, D.6.3 dropped for D.6.5), ring snaps to 15°, widget shows whenever an object is selected. Prep tasks added (D.2.1, D.2.2, D.4.4). Work order set (D.5 before D.4). Part C rotation gap fixed in Part D (D.8).
 - 2026-10-23: Object details redesign: Location group (X, Z side by side), Rotation group (X, Y, Z, all editable, objects can tilt), drag to change any number value. Rotation becomes `[x, y, z]` (SPEC.md data model updated). Tasks D.9–D.13 added.
 - 2026-10-23: Work order (not number order): D.1, D.2 (+D.2.1, D.2.2), D.5, D.9, D.10, D.11, D.12, D.13, D.8, D.3, D.4 (D.4.4 first), D.6, D.7. D.5 before D.4 so X and Z update live while dragging; panel and rotation format before dragging and the widget, which build on them.
+- 2026-10-27: Part D closed: deployed, D.7 ticked, status Done.
