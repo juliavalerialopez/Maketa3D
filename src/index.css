@@ -32,18 +32,52 @@ canvas {
   color: #eee;
 }
 
-.personalize-placeholder {
+/* Personalize: Room render above the AI image, both 16:9, fitting the
+   left pane without scrolling. A size container, so the slots can size
+   themselves with container units. */
+.render-stack {
+  container-type: size;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  background: #121212;
+  color: #eee;
+}
+
+/* Width that lets both slots fit: the pane width minus padding, or the height
+   left after padding (32px), gap (16px) and two captions (2 x 24px), split in
+   two and turned into a 16:9 width (x 16/9 / 2 = x 8/9). */
+.render-slot {
+  width: min(100cqw - 32px, (100cqh - 96px) * 8 / 9);
+  margin: 0;
+}
+
+.render-slot figcaption {
+  height: 20px;
+  margin-bottom: 4px;
+  line-height: 20px;
+  color: #aaa;
+  font-size: 0.9em;
+}
+
+.render-image {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  background: #1e1e1e;
-  color: #888;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  color: #666;
 }
 
-.personalize-placeholder img {
-  max-width: 90%;
-  max-height: 90%;
+.render-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .split-layout {
