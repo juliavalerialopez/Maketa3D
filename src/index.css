@@ -32,6 +32,15 @@ canvas {
   color: #eee;
 }
 
+.personalize-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: #1e1e1e;
+  color: #888;
+}
+
 .split-layout {
   display: flex;
   width: 100%;
