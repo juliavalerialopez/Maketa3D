@@ -19,12 +19,22 @@ first.
 
 ## Structure
 - `src/components/`, grouped by role:
-  - `layout/`: page layout (split panel / scene)
-  - `panel/`: HTML in the left control panel (sections, inputs, lists)
-  - `scene/`: R3F room and rendering (floor, walls, objects renderer)
+  - `modes/`: one component per top-level mode (`PlanMode`,
+    `PersonalizeMode`). `App.jsx` renders only the top bar and exactly one
+    mode. Modes hold no state: everything that must survive a mode switch
+    (room, objects, selection, mode, camera, snapshot, divider positions,
+    open sections, frame toggle) lives in `src/store/`.
+  - `layout/`: page layout (top bar, `SplitLayout` with a draggable divider,
+    side by side in Plan, stacked top and bottom in Personalize)
+  - `panel/`: HTML in the control panels (Plan and Personalize), built from
+    `Section` and `ui/`
+  - `scene/`: R3F room and rendering (floor, walls, objects renderer), the
+    frame guide, Plan camera restore and the snapshot. Scene helpers
+    (selection box, future grids) set `userData.helper` so the snapshot
+    hides them.
   - `objects/`: one 3D model component per placeable type, plus `catalog.js`
   - `ui/`: shared panel controls (`NumberField`, `ColorField`, `Button`,
-    `ListItem`). Every number input, color input, action button and list row
+    `ListItem`, `FieldGroup`, `SegmentedSwitch`). Every number input, color input, action button and list row
     in the panel uses these; change their look or behavior only here.
 - `src/components/objects/catalog.js`: the single definition of each object type
   (label, component, default size, color). Adding a type = a model file in

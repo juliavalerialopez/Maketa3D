@@ -68,7 +68,7 @@ The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan
   - ✅ E.11.2 `PersonalizeMode`: Room render and AI image side by side, each half the width, no outer edge; top limits 50–85
   - ✅ E.11.4 Top part fits the images exactly until the divider is dragged (`personalizePercent` null = fit), following the window size
   - ✅ E.11.3 Captions over the images, top center, as page guides only
-- ⬜ E.9 Docs: CLAUDE.md Structure (modes/, layout/, panel/ wording)
+- ✅ E.9 Docs: CLAUDE.md Structure (modes/, layout/, panel/ wording)
 - ⬜ E.10 Build passes and deploy (last task of the part)
 
 ## Out of scope
