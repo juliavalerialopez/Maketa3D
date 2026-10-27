@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useThree } from '@react-three/fiber'
 import { TransformControls } from '@react-three/drei'
 import { Quaternion } from 'three'
@@ -42,7 +42,18 @@ export default function ObjectWidget() {
   // Rotation drag start: the group's quaternion and the stored rotation.
   const rotateStartRef = useRef(null)
 
-  const group = selectedId ? scene.getObjectByName(selectedId) : undefined
+  // The selected object's group, looked up when read, not during render: on a
+  // fresh Plan mount the group joins the scene only at commit. TransformControls
+  // reads object.current in a layout effect (after commit), and the handlers
+  // read it when they run.
+  const target = useMemo(
+    () => ({
+      get current() {
+        return selectedId ? scene.getObjectByName(selectedId) : undefined
+      },
+    }),
+    [scene, selectedId],
+  )
 
   useEffect(() => {
     const translate = translateRef.current
@@ -62,19 +73,21 @@ export default function ObjectWidget() {
       widgetControls.translate = null
       widgetControls.rotate = null
     }
-  }, [group])
+  }, [selectedId])
 
-  if (!group) return null
+  if (!selectedId) return null
 
   function handleMove() {
+    const group = target.current
     const object = getObject(selectedId)
-    if (!object) return
+    if (!group || !object) return
     apply(group, object, { position: [group.position.x, 0, group.position.z] })
   }
 
   function handleRotateStart() {
+    const group = target.current
     const object = getObject(selectedId)
-    if (!object) return
+    if (!group || !object) return
     rotateStartRef.current = { quaternion: group.quaternion.clone(), rotation: object.rotation }
   }
 
@@ -83,8 +96,9 @@ export default function ObjectWidget() {
   // Only Y changes; the stored tilt (X, Z) is kept as it was.
   function handleRotate() {
     const start = rotateStartRef.current
+    const group = target.current
     const object = getObject(selectedId)
-    if (!start || !object) return
+    if (!start || !group || !object) return
     delta.copy(group.quaternion).multiply(start.quaternion.clone().invert())
     const angle = 2 * Math.atan2(delta.y, delta.w)
     const [x, y, z] = start.rotation
@@ -95,14 +109,14 @@ export default function ObjectWidget() {
     <>
       <TransformControls
         ref={translateRef}
-        object={group}
+        object={target}
         mode="translate"
         showY={false}
         onObjectChange={handleMove}
       />
       <TransformControls
         ref={rotateRef}
-        object={group}
+        object={target}
         mode="rotate"
         showX={false}
         showZ={false}

@@ -1,6 +1,6 @@
 # Part E: Personalize
 
-Status: **Done**. Builds on Part D (scene, widget, selection, OrbitControls as default controls).
+Status: **In progress**. Builds on Part D (scene, widget, selection, OrbitControls as default controls).
 
 ## Goal
 The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan is today's editor plus a 16:9 frame guide. Pressing Personalize takes a clean snapshot of the room inside the frame and shows it next to an empty black "AI image" slot, above an empty control panel. Nothing in the room, the selection or the camera is lost when switching back.
@@ -70,6 +70,8 @@ The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan
   - ✅ E.9.4 Top part fits the images exactly until the divider is dragged (`personalizePercent` null = fit), following the window size
 - ✅ E.10 Docs: CLAUDE.md Structure (modes/, layout/, panel/ wording)
 - ✅ E.11 Build passes and deploy (last task of the part)
+- ✅ E.12 Widget shows again after returning to Plan with an object selected (added 2026-10-27: bug from Part E testing, the arrows and ring were missing until reselecting)
+- ⬜ E.13 Divider never sticks to the mouse: pointer events with capture, no text selection or native drag, the drag always ends on release (added 2026-10-27: bug from Part E testing; was a Part C and Part D backlog item)
 
 ## Out of scope
 Image upload. Any AI call, API key, serverless function or prompt. Controls in the Personalize panel. Saving the snapshot to disk or between reloads. Editing the room in Personalize.
@@ -107,3 +109,5 @@ Image upload. Any AI call, API key, serverless function or prompt. Controls in t
 - 2026-10-27: Images fill the top part edge to edge with captions over them (E.9.3). The default split is no longer a fixed 60 | 40: the top part fits the images exactly for the window size until the divider is dragged (E.9.4).
 - 2026-10-27: Tasks renumbered on request (exception to the never-renumber rule): the top and bottom layout is E.9 (was E.11), CLAUDE.md docs E.10 (was E.9), build and deploy E.11 (was E.10).
 - 2026-10-27: Part E closed: deployed, acceptance criteria checked on the live site, E.11 ticked, status Done.
+- 2026-10-27: Two bugs from Part E testing added: E.12 (widget missing after Personalize → Plan) and E.13 (divider keeps following the mouse after a lost mouseup).
+- 2026-10-28: Part E reopened (In progress) for the E.12 and E.13 bug fixes.
