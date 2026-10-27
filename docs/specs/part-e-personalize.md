@@ -63,13 +63,13 @@ The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan
   - ✅ E.7.2 Two stacked 16:9 slots with captions: snapshot ("Room render", "No render" when null) and black "AI image"
   - ✅ E.7.3 `panel/PersonalizePanel.jsx`: empty panel shell in the Plan panel style
 - ✅ E.8 Shortcut guard: Delete, Backspace and Escape ignored outside Plan
-- ✅ E.11 Personalize split top and bottom (added 2026-10-27: images side by side on top, panel below, replaces the left | right layout of E.7)
-  - ✅ E.11.1 `SplitLayout` `vertical` option (panes stacked, divider drags up and down); panes renamed `first` and `second`
-  - ✅ E.11.2 `PersonalizeMode`: Room render and AI image side by side, each half the width, no outer edge; top limits 50–85
-  - ✅ E.11.4 Top part fits the images exactly until the divider is dragged (`personalizePercent` null = fit), following the window size
-  - ✅ E.11.3 Captions over the images, top center, as page guides only
-- ✅ E.9 Docs: CLAUDE.md Structure (modes/, layout/, panel/ wording)
-- ⬜ E.10 Build passes and deploy (last task of the part)
+- ✅ E.9 Personalize split top and bottom (added 2026-10-27: images side by side on top, panel below, replaces the left | right layout of E.7)
+  - ✅ E.9.1 `SplitLayout` `vertical` option (panes stacked, divider drags up and down); panes renamed `first` and `second`
+  - ✅ E.9.2 `PersonalizeMode`: Room render and AI image side by side, each half the width, no outer edge; top limits 50–85
+  - ✅ E.9.3 Captions over the images, top center, as page guides only
+  - ✅ E.9.4 Top part fits the images exactly until the divider is dragged (`personalizePercent` null = fit), following the window size
+- ✅ E.10 Docs: CLAUDE.md Structure (modes/, layout/, panel/ wording)
+- ⬜ E.11 Build passes and deploy (last task of the part)
 
 ## Out of scope
 Image upload. Any AI call, API key, serverless function or prompt. Controls in the Personalize panel. Saving the snapshot to disk or between reloads. Editing the room in Personalize.
@@ -103,5 +103,6 @@ Image upload. Any AI call, API key, serverless function or prompt. Controls in t
 ## Changelog
 - 2026-10-27: Draft created. Scope: Plan and Personalize modes, top bar switch, 16:9 frame guide, snapshot on switch, Personalize layout with empty panel shell, shortcut guard. Image upload and AI out of scope.
 - 2026-10-27: Personalize reuses `SplitLayout` (starts 60 | 40, draggable) instead of a fixed layout; `SplitLayout` made generic with one stored position per mode.
-- 2026-10-27: Personalize layout changed to top and bottom: images side by side on top (60%), panel below (40%). `SplitLayout` gets a vertical option. Task E.11 added.
-- 2026-10-27: Images fill the top part edge to edge with captions over them (E.11.3). The default split is no longer a fixed 60 | 40: the top part fits the images exactly for the window size until the divider is dragged (E.11.4).
+- 2026-10-27: Personalize layout changed to top and bottom: images side by side on top (60%), panel below (40%). `SplitLayout` gets a vertical option. Task E.9 added.
+- 2026-10-27: Images fill the top part edge to edge with captions over them (E.9.3). The default split is no longer a fixed 60 | 40: the top part fits the images exactly for the window size until the divider is dragged (E.9.4).
+- 2026-10-27: Tasks renumbered on request (exception to the never-renumber rule): the top and bottom layout is E.9 (was E.11), CLAUDE.md docs E.10 (was E.9), build and deploy E.11 (was E.10).
