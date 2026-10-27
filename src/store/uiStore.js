@@ -6,8 +6,10 @@ export const useUiStore = create((set) => ({
   planPercent: 20,
   // Open or closed per Section id; a missing id means open (the default).
   openSections: {},
+  frameVisible: true,
 
   setPlanPercent: (planPercent) => set({ planPercent }),
   setSectionOpen: (id, open) =>
     set((state) => ({ openSections: { ...state.openSections, [id]: open } })),
+  toggleFrame: () => set((state) => ({ frameVisible: !state.frameVisible })),
 }))

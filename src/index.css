@@ -223,6 +223,11 @@ canvas {
   background: #3a3a3a;
 }
 
+.ui-button.pressed {
+  border-color: #4da3ff;
+  background: #23364a;
+}
+
 /* ui/ListItem */
 .ui-list {
   margin: 0;
@@ -268,12 +273,44 @@ canvas {
   background: #555;
 }
 
-/* Plan: the 3D scene. Positioned, so overlays can sit on top of it. */
+/* Plan: 3D scene with the frame guide on top. A size container, so the frame
+   can fit itself with container units. */
 .scene-pane {
   position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
+  container-type: size;
+}
+
+.frame-guide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* 16:9, fits the height, or the width when the scene is narrower than 16:9.
+   The huge shadow dims everything outside the frame. */
+.frame-guide-box {
+  width: min(100cqw, 100cqh * 16 / 9);
+  aspect-ratio: 16 / 9;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.3);
+}
+
+.frame-toggle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.frame-toggle .ui-button {
+  margin-bottom: 0;
+  color: #eee;
 }
 
 /* ui/SegmentedSwitch */
