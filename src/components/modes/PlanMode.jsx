@@ -1,10 +1,12 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import Scene from '../scene/Scene'
-import SplitLayout from '../layout/SplitLayout'
+import PlanCamera from '../scene/PlanCamera'
 import FrameGuide from '../scene/FrameGuide'
+import SplitLayout from '../layout/SplitLayout'
 import ControlPanel from '../panel/ControlPanel'
 import { useObjectsStore } from '../../store/objectsStore'
+import { useModeStore } from '../../store/modeStore'
 import { useUiStore } from '../../store/uiStore'
 import { isWidgetActive } from '../scene/widgetState'
 
@@ -22,6 +24,8 @@ function handlePointerMissed() {
 export default function PlanMode() {
   const planPercent = useUiStore((state) => state.planPercent)
   const setPlanPercent = useUiStore((state) => state.setPlanPercent)
+  // Read once: the Canvas takes its camera settings only when it is created.
+  const startPosition = useModeStore.getState().planView.position
 
   return (
     <SplitLayout
@@ -32,10 +36,11 @@ export default function PlanMode() {
       max={50}
       right={
         <div className="scene-pane">
-          <Canvas camera={{ position: [4, 4, 4], fov: 50 }} shadows onPointerMissed={handlePointerMissed}>
+          <Canvas camera={{ position: startPosition, fov: 50 }} shadows onPointerMissed={handlePointerMissed}>
             <Scene />
             {/* Default controls, so dragging objects and the widget can pause orbit. */}
             <OrbitControls makeDefault />
+            <PlanCamera />
           </Canvas>
           <FrameGuide />
         </div>

@@ -51,7 +51,7 @@ The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan
 - ✅ E.4 Frame guide
   - ✅ E.4.1 `scene/FrameGuide.jsx`: centered 16:9 frame with dimmed outside, fits width or height, does not block pointer events
   - ✅ E.4.2 Toggle at the top right of the scene (`ui/Button` with `pressed`); `frameVisible` in `uiStore`, true by default
-- ⬜ E.5 Plan camera saved and restored (`scene/PlanCamera.jsx`, `planView` in `modeStore`)
+- ✅ E.5 Plan camera saved and restored (`scene/PlanCamera.jsx`, `planView` in `modeStore`)
 - ⬜ E.6 Snapshot
   - ⬜ E.6.1 `SnapshotBridge` + `snapshot.js`: `capture(frameRect)` renders, crops to the frame, caps at 1920 × 1080, returns a data URL or null
   - ⬜ E.6.2 Helpers hidden during capture: selection box (`userData.helper`) and both widget controls
