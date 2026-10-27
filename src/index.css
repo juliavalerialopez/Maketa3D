@@ -9,6 +9,29 @@ canvas {
   display: block;
 }
 
+/* App: top bar above the current mode */
+.app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.mode-area {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.top-bar {
+  flex: 0 0 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #333;
+  background: #161616;
+  color: #eee;
+}
+
 .split-layout {
   display: flex;
   width: 100%;
@@ -230,4 +253,35 @@ canvas {
   flex: 1 1 auto;
   min-width: 0;
   height: 100%;
+}
+
+/* ui/SegmentedSwitch */
+.ui-segmented {
+  display: flex;
+  border: 1px solid #555;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ui-segmented-option {
+  min-width: 120px;
+  padding: 5px 16px;
+  border: none;
+  background: #2a2a2a;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ui-segmented-option + .ui-segmented-option {
+  border-left: 1px solid #555;
+}
+
+.ui-segmented-option:hover {
+  background: #333;
+}
+
+.ui-segmented-option.selected {
+  background: #23364a;
+  color: #fff;
 }
