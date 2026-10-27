@@ -52,10 +52,11 @@ The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan
   - ✅ E.4.1 `scene/FrameGuide.jsx`: centered 16:9 frame with dimmed outside, fits width or height, does not block pointer events
   - ✅ E.4.2 Toggle at the top right of the scene (`ui/Button` with `pressed`); `frameVisible` in `uiStore`, true by default
 - ✅ E.5 Plan camera saved and restored (`scene/PlanCamera.jsx`, `planView` in `modeStore`)
-- ⬜ E.6 Snapshot
-  - ⬜ E.6.1 `SnapshotBridge` + `snapshot.js`: `capture(frameRect)` renders, crops to the frame, caps at 1920 × 1080, returns a data URL or null
-  - ⬜ E.6.2 Helpers hidden during capture: selection box (`userData.helper`) and both widget controls
-  - ⬜ E.6.3 Personalize button captures first, stores `snapshot`, then switches mode
+- ✅ E.6 Snapshot
+  - ✅ E.6.1 `SnapshotBridge` + `snapshot.js`: `capture(frameRect)` renders, crops to the frame, caps at 1920 × 1080, returns a data URL or null
+  - ✅ E.6.2 Helpers hidden during capture: selection box (`userData.helper`) and both widget controls
+  - ✅ E.6.3 Personalize button captures first, stores `snapshot`, then switches mode
+  - ✅ E.6.4 Scene pane gets an explicit white background, also used as the snapshot background (added 2026-10-27: the canvas is transparent, so the render would otherwise have no background)
 - ⬜ E.7 Personalize layout
   - ⬜ E.7.1 `PersonalizeMode` uses `SplitLayout`: starts 60 | 40, left limits 50–85, `personalizePercent` in `uiStore`
   - ⬜ E.7.2 Two stacked 16:9 slots with captions: snapshot ("Room render", "No render" when null) and black "AI image"

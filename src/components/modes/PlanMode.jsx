@@ -2,6 +2,7 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import Scene from '../scene/Scene'
 import PlanCamera from '../scene/PlanCamera'
+import SnapshotBridge from '../scene/SnapshotBridge'
 import FrameGuide from '../scene/FrameGuide'
 import SplitLayout from '../layout/SplitLayout'
 import ControlPanel from '../panel/ControlPanel'
@@ -41,6 +42,7 @@ export default function PlanMode() {
             {/* Default controls, so dragging objects and the widget can pause orbit. */}
             <OrbitControls makeDefault />
             <PlanCamera />
+            <SnapshotBridge />
           </Canvas>
           <FrameGuide />
         </div>

@@ -41,6 +41,11 @@ canvas {
   color: #888;
 }
 
+.personalize-placeholder img {
+  max-width: 90%;
+  max-height: 90%;
+}
+
 .split-layout {
   display: flex;
   width: 100%;
@@ -281,6 +286,9 @@ canvas {
   height: 100%;
   overflow: hidden;
   container-type: size;
+  /* Shows through the transparent canvas; the snapshot uses the same colour
+     (SCENE_BACKGROUND in scene/snapshot.js). */
+  background: #ffffff;
 }
 
 .frame-guide {

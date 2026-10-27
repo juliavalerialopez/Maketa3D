@@ -28,7 +28,8 @@ export default function SelectionBox() {
 
   const { position, rotation } = objectTransform(selected)
   return (
-    <group position={position} rotation={rotation}>
+    // A helper: hidden in the snapshot.
+    <group position={position} rotation={rotation} userData={{ helper: true }}>
       <lineSegments geometry={geometry} position={[0, height / 2, 0]}>
         <lineBasicMaterial color={COLOR} />
       </lineSegments>
