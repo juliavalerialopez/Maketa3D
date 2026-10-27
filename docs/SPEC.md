@@ -47,7 +47,7 @@ Objects are always a list, even with one type.
 | B | specs/part-b-objects.md | Objects section, add Sofa | Done |
 | C | specs/part-c-details.md | Select from list, Object details (position, rotation, color), delete | Done |
 | D | specs/part-d-arrange.md | Bigger room, click-to-select in 3D, drag, move/rotate widget, tilt, drag-to-change values | Done |
-| E | specs/part-e-personalize.md | Plan/Personalize modes, frame guide, snapshot, Personalize layout | Draft |
+| E | specs/part-e-personalize.md | Plan/Personalize modes, frame guide, snapshot, Personalize layout | Done |
 
 ## How we work
 - Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.

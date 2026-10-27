@@ -1,6 +1,6 @@
 # Part E: Personalize
 
-Status: **Draft**. Builds on Part D (scene, widget, selection, OrbitControls as default controls).
+Status: **Done**. Builds on Part D (scene, widget, selection, OrbitControls as default controls).
 
 ## Goal
 The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan is today's editor plus a 16:9 frame guide. Pressing Personalize takes a clean snapshot of the room inside the frame and shows it next to an empty black "AI image" slot, above an empty control panel. Nothing in the room, the selection or the camera is lost when switching back.
@@ -69,27 +69,27 @@ The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan
   - ✅ E.9.3 Captions over the images, top center, as page guides only
   - ✅ E.9.4 Top part fits the images exactly until the divider is dragged (`personalizePercent` null = fit), following the window size
 - ✅ E.10 Docs: CLAUDE.md Structure (modes/, layout/, panel/ wording)
-- ⬜ E.11 Build passes and deploy (last task of the part)
+- ✅ E.11 Build passes and deploy (last task of the part)
 
 ## Out of scope
 Image upload. Any AI call, API key, serverless function or prompt. Controls in the Personalize panel. Saving the snapshot to disk or between reloads. Editing the room in Personalize.
 
 ## Acceptance criteria
-- [ ] A fresh page opens in Plan with a top bar and a centered "Plan | Personalize" switch.
-- [ ] Plan looks and works as at the end of Part D (panel, divider, orbit, select, drag, widget).
-- [ ] A 16:9 frame with a dimmed outside shows over the scene by default; the toggle hides and shows it.
-- [ ] With a narrow scene pane the frame fits the width; with a wide one it fits the height.
-- [ ] Orbit, click-to-select and drag still work over the frame and the dimmed area.
-- [ ] Pressing Personalize shows a top and bottom layout: "Room render" and black "AI image" side by side on top, filling it with no space around them, empty panel below.
-- [ ] The Personalize divider can be dragged up and down; the panel stays between 15% and 50% of the height; its position is kept after switching to Plan and back.
-- [ ] The Room render matches what was inside the frame, and has no selection box, widget or frame.
-- [ ] The snapshot is at most 1920 × 1080 and 16:9.
-- [ ] Moving the camera or a sofa in Plan and pressing Personalize again gives a new snapshot.
-- [ ] Back in Plan, the camera view, objects, selection, panel width and open sections are the same as before.
-- [ ] In Personalize, Delete, Backspace and Escape do not delete or deselect the selected sofa.
-- [ ] No console errors when switching modes repeatedly.
-- [ ] `npm run build` succeeds with no errors.
-- [ ] Deployed and working on the live Vercel URL.
+- [x] A fresh page opens in Plan with a top bar and a centered "Plan | Personalize" switch.
+- [x] Plan looks and works as at the end of Part D (panel, divider, orbit, select, drag, widget).
+- [x] A 16:9 frame with a dimmed outside shows over the scene by default; the toggle hides and shows it.
+- [x] With a narrow scene pane the frame fits the width; with a wide one it fits the height.
+- [x] Orbit, click-to-select and drag still work over the frame and the dimmed area.
+- [x] Pressing Personalize shows a top and bottom layout: "Room render" and black "AI image" side by side on top, filling it with no space around them, empty panel below.
+- [x] The Personalize divider can be dragged up and down; the panel stays between 15% and 50% of the height; its position is kept after switching to Plan and back.
+- [x] The Room render matches what was inside the frame, and has no selection box, widget or frame.
+- [x] The snapshot is at most 1920 × 1080 and 16:9.
+- [x] Moving the camera or a sofa in Plan and pressing Personalize again gives a new snapshot.
+- [x] Back in Plan, the camera view, objects, selection, panel width and open sections are the same as before.
+- [x] In Personalize, Delete, Backspace and Escape do not delete or deselect the selected sofa.
+- [x] No console errors when switching modes repeatedly.
+- [x] `npm run build` succeeds with no errors.
+- [x] Deployed and working on the live Vercel URL.
 
 ## Backlog
 - Manual "Refresh render" button in Personalize.
@@ -106,3 +106,4 @@ Image upload. Any AI call, API key, serverless function or prompt. Controls in t
 - 2026-10-27: Personalize layout changed to top and bottom: images side by side on top (60%), panel below (40%). `SplitLayout` gets a vertical option. Task E.9 added.
 - 2026-10-27: Images fill the top part edge to edge with captions over them (E.9.3). The default split is no longer a fixed 60 | 40: the top part fits the images exactly for the window size until the divider is dragged (E.9.4).
 - 2026-10-27: Tasks renumbered on request (exception to the never-renumber rule): the top and bottom layout is E.9 (was E.11), CLAUDE.md docs E.10 (was E.9), build and deploy E.11 (was E.10).
+- 2026-10-27: Part E closed: deployed, acceptance criteria checked on the live site, E.11 ticked, status Done.
