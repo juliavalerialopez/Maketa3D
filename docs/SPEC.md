@@ -10,13 +10,13 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 1. Room dimensions
 2. Add objects (Sofa only for now)
 3. Arrange objects: select from the list, move, rotate, recolor and delete via Object details (Part C); bigger start room, click-to-select and drag in 3D, move/rotate widget, tilt on all three axes, drag-to-change number values (Part D)
-4. Plan and Personalize modes: a 16:9 frame guide in Plan; switching to Personalize captures a clean render from the Plan camera, shown above an empty AI image slot (Part E)
+4. Plan and Personalize modes: a 16:9 frame guide in Plan; switching to Personalize captures a clean render from the Plan camera, shown next to an empty AI image slot (Part E)
 5. AI restyle (style prompt turns the capture into a photorealistic image)
 
 ## Layout
 - Top bar (about 44 px) with a centered "Plan | Personalize" switch. Plan is the mode on page load.
 - **Plan:** left control panel (20% by default, divider draggable 15–50%), right: 3D scene filling the rest, resizes with the window, with a centered 16:9 frame guide (toggle at its top right, visible by default).
-- **Personalize:** same split layout, starts 60 | 40 with a draggable divider (panel 15–50%). Left: "Room render" above the "AI image" slot, both 16:9. Right: control panel.
+- **Personalize:** same split layout, split top and bottom with a draggable divider (panel 15–50% of the height). Until dragged, the top part is exactly as tall as the images. Top: "Room render" and the "AI image" slot side by side, both 16:9, edge to edge, captions over the images. Bottom: control panel.
 
 ## Control panel: collapsible sections
 1. **Room configuration** (open by default)

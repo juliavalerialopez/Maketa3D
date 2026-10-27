@@ -30,12 +30,12 @@ export default function PlanMode() {
 
   return (
     <SplitLayout
-      left={<ControlPanel />}
+      first={<ControlPanel />}
       percent={planPercent}
       onPercentChange={setPlanPercent}
       min={15}
       max={50}
-      right={
+      second={
         <div className="scene-pane">
           <Canvas camera={{ position: startPosition, fov: 50 }} shadows onPointerMissed={handlePointerMissed}>
             <Scene />

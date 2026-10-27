@@ -3,7 +3,7 @@
 Status: **Draft**. Builds on Part D (scene, widget, selection, OrbitControls as default controls).
 
 ## Goal
-The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan is today's editor plus a 16:9 frame guide. Pressing Personalize takes a clean snapshot of the room inside the frame and shows it above an empty black "AI image" slot, next to an empty control panel. Nothing in the room, the selection or the camera is lost when switching back.
+The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan is today's editor plus a 16:9 frame guide. Pressing Personalize takes a clean snapshot of the room inside the frame and shows it next to an empty black "AI image" slot, above an empty control panel. Nothing in the room, the selection or the camera is lost when switching back.
 
 ## Requirements
 
@@ -33,9 +33,10 @@ The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan
 - The panel width and the open or closed state of Room configuration and Objects are kept.
 
 ### Personalize mode
-- Uses the same `SplitLayout` as Plan, below the top bar: images on the left, panel on the right. It starts at 60 | 40, and the divider can be dragged (left side 50–85%, so the panel stays 15–50%). The position is kept when switching modes.
-- Left 60%: two equal 16:9 images stacked, each with a caption. Top: the snapshot, "Room render". Bottom: "AI image", plain black and empty. Both fit the available height without scrolling.
-- Right 40%: an empty control panel in the same style as Plan's (background, padding, scrolling). No groups or controls yet. Groups are added later as `Section`s using the shared `ui/` components.
+- Uses the same `SplitLayout` as Plan, split top and bottom, below the top bar: images on top, panel below. Until the divider is dragged, the top part is exactly as tall as the images (about 60 | 40 on a 1080p screen) and follows the window size. The divider can be dragged (top 50–85%, so the panel stays 15–50%); a dragged position is kept when switching modes.
+- Top: two equal 16:9 images side by side, edge to edge with an 8 px gap between them, each taking half the width (smaller only when the top part is too short). Left: the snapshot, "Room render". Right: "AI image", plain black and empty. No scrolling.
+- Each caption sits over its image, top center. Captions are page guides only, never part of the image.
+- Bottom: an empty control panel in the same style as Plan's (background, padding, scrolling). No groups or controls yet. Groups are added later as `Section`s using the shared `ui/` components.
 
 ### Safety
 - Delete, Backspace and Escape do nothing in Personalize: no object is deleted or deselected.
@@ -62,6 +63,11 @@ The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan
   - ✅ E.7.2 Two stacked 16:9 slots with captions: snapshot ("Room render", "No render" when null) and black "AI image"
   - ✅ E.7.3 `panel/PersonalizePanel.jsx`: empty panel shell in the Plan panel style
 - ✅ E.8 Shortcut guard: Delete, Backspace and Escape ignored outside Plan
+- ✅ E.11 Personalize split top and bottom (added 2026-10-27: images side by side on top, panel below, replaces the left | right layout of E.7)
+  - ✅ E.11.1 `SplitLayout` `vertical` option (panes stacked, divider drags up and down); panes renamed `first` and `second`
+  - ✅ E.11.2 `PersonalizeMode`: Room render and AI image side by side, each half the width, no outer edge; top limits 50–85
+  - ✅ E.11.4 Top part fits the images exactly until the divider is dragged (`personalizePercent` null = fit), following the window size
+  - ✅ E.11.3 Captions over the images, top center, as page guides only
 - ⬜ E.9 Docs: CLAUDE.md Structure (modes/, layout/, panel/ wording)
 - ⬜ E.10 Build passes and deploy (last task of the part)
 
@@ -74,8 +80,8 @@ Image upload. Any AI call, API key, serverless function or prompt. Controls in t
 - [ ] A 16:9 frame with a dimmed outside shows over the scene by default; the toggle hides and shows it.
 - [ ] With a narrow scene pane the frame fits the width; with a wide one it fits the height.
 - [ ] Orbit, click-to-select and drag still work over the frame and the dimmed area.
-- [ ] Pressing Personalize shows a 60 | 40 layout: "Room render" on top, black "AI image" below, empty panel on the right.
-- [ ] The Personalize divider can be dragged; the panel stays between 15% and 50%; its position is kept after switching to Plan and back.
+- [ ] Pressing Personalize shows a top and bottom layout: "Room render" and black "AI image" side by side on top, filling it with no space around them, empty panel below.
+- [ ] The Personalize divider can be dragged up and down; the panel stays between 15% and 50% of the height; its position is kept after switching to Plan and back.
 - [ ] The Room render matches what was inside the frame, and has no selection box, widget or frame.
 - [ ] The snapshot is at most 1920 × 1080 and 16:9.
 - [ ] Moving the camera or a sofa in Plan and pressing Personalize again gives a new snapshot.
@@ -97,3 +103,5 @@ Image upload. Any AI call, API key, serverless function or prompt. Controls in t
 ## Changelog
 - 2026-10-27: Draft created. Scope: Plan and Personalize modes, top bar switch, 16:9 frame guide, snapshot on switch, Personalize layout with empty panel shell, shortcut guard. Image upload and AI out of scope.
 - 2026-10-27: Personalize reuses `SplitLayout` (starts 60 | 40, draggable) instead of a fixed layout; `SplitLayout` made generic with one stored position per mode.
+- 2026-10-27: Personalize layout changed to top and bottom: images side by side on top (60%), panel below (40%). `SplitLayout` gets a vertical option. Task E.11 added.
+- 2026-10-27: Images fill the top part edge to edge with captions over them (E.11.3). The default split is no longer a fixed 60 | 40: the top part fits the images exactly for the window size until the divider is dragged (E.11.4).

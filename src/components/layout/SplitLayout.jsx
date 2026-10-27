@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-// Two panes with a draggable divider. `percent` is the left pane's width in
-// percent of the layout, kept by the caller (a store), so it survives unmounts.
-// Dragging calls onPercentChange with a value clamped to min..max.
-export default function SplitLayout({ left, right, percent, onPercentChange, min, max }) {
+// Two panes with a draggable divider: side by side, or stacked when
+// `vertical` (first on top). `percent` is the first pane's size (width, or
+// height when vertical) in percent of the layout, kept by the caller (a store),
+// so it survives unmounts. Dragging calls onPercentChange clamped to min..max.
+export default function SplitLayout({ first, second, vertical = false, percent, onPercentChange, min, max }) {
   const containerRef = useRef(null)
   const draggingRef = useRef(false)
   // Latest props for the window listeners, which are added only once.
-  const latestRef = useRef({ onPercentChange, min, max })
+  const latestRef = useRef({ vertical, onPercentChange, min, max })
   useEffect(() => {
-    latestRef.current = { onPercentChange, min, max }
-  }, [onPercentChange, min, max])
+    latestRef.current = { vertical, onPercentChange, min, max }
+  }, [vertical, onPercentChange, min, max])
 
   const handleMouseDown = useCallback(() => {
     draggingRef.current = true
@@ -20,8 +21,10 @@ export default function SplitLayout({ left, right, percent, onPercentChange, min
     function handleMouseMove(event) {
       if (!draggingRef.current || !containerRef.current) return
       const rect = containerRef.current.getBoundingClientRect()
-      const value = ((event.clientX - rect.left) / rect.width) * 100
-      const { onPercentChange, min, max } = latestRef.current
+      const { vertical, onPercentChange, min, max } = latestRef.current
+      const value = vertical
+        ? ((event.clientY - rect.top) / rect.height) * 100
+        : ((event.clientX - rect.left) / rect.width) * 100
       onPercentChange(Math.min(max, Math.max(min, value)))
     }
 
@@ -37,13 +40,14 @@ export default function SplitLayout({ left, right, percent, onPercentChange, min
     }
   }, [])
 
+  const size = vertical ? { height: `${percent}%` } : { width: `${percent}%` }
   return (
-    <div className="split-layout" ref={containerRef}>
-      <div className="split-pane-left" style={{ width: `${percent}%` }}>
-        {left}
+    <div className={vertical ? 'split-layout vertical' : 'split-layout'} ref={containerRef}>
+      <div className="split-pane-first" style={size}>
+        {first}
       </div>
       <div className="divider" onMouseDown={handleMouseDown} />
-      <div className="split-pane-right">{right}</div>
+      <div className="split-pane-second">{second}</div>
     </div>
   )
 }
