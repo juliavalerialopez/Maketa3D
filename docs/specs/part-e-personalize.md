@@ -61,7 +61,7 @@ The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan
   - ✅ E.7.1 `PersonalizeMode` uses `SplitLayout`: starts 60 | 40, left limits 50–85, `personalizePercent` in `uiStore`
   - ✅ E.7.2 Two stacked 16:9 slots with captions: snapshot ("Room render", "No render" when null) and black "AI image"
   - ✅ E.7.3 `panel/PersonalizePanel.jsx`: empty panel shell in the Plan panel style
-- ⬜ E.8 Shortcut guard: Delete, Backspace and Escape ignored outside Plan
+- ✅ E.8 Shortcut guard: Delete, Backspace and Escape ignored outside Plan
 - ⬜ E.9 Docs: CLAUDE.md Structure (modes/, layout/, panel/ wording)
 - ⬜ E.10 Build passes and deploy (last task of the part)
 
