@@ -1,44 +1,38 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useRef } from 'react'
 
 // Two panes with a draggable divider: side by side, or stacked when
 // `vertical` (first on top). `percent` is the first pane's size (width, or
 // height when vertical) in percent of the layout, kept by the caller (a store),
 // so it survives unmounts. Dragging calls onPercentChange clamped to min..max.
+// The divider captures the pointer, so it gets every move and the release even
+// over the canvas or outside the window; losing the capture always ends the drag.
 export default function SplitLayout({ first, second, vertical = false, percent, onPercentChange, min, max }) {
   const containerRef = useRef(null)
   const draggingRef = useRef(false)
-  // Latest props for the window listeners, which are added only once.
-  const latestRef = useRef({ vertical, onPercentChange, min, max })
-  useEffect(() => {
-    latestRef.current = { vertical, onPercentChange, min, max }
-  }, [vertical, onPercentChange, min, max])
 
-  const handleMouseDown = useCallback(() => {
+  function handlePointerDown(event) {
+    if (event.button !== 0) return
+    // No text selection or native drag while dragging.
+    event.preventDefault()
+    event.currentTarget.setPointerCapture(event.pointerId)
     draggingRef.current = true
-  }, [])
+  }
 
-  useEffect(() => {
-    function handleMouseMove(event) {
-      if (!draggingRef.current || !containerRef.current) return
-      const rect = containerRef.current.getBoundingClientRect()
-      const { vertical, onPercentChange, min, max } = latestRef.current
-      const value = vertical
-        ? ((event.clientY - rect.top) / rect.height) * 100
-        : ((event.clientX - rect.left) / rect.width) * 100
-      onPercentChange(Math.min(max, Math.max(min, value)))
-    }
+  function handlePointerMove(event) {
+    if (!draggingRef.current || !containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    const value = vertical
+      ? ((event.clientY - rect.top) / rect.height) * 100
+      : ((event.clientX - rect.left) / rect.width) * 100
+    onPercentChange(Math.min(max, Math.max(min, value)))
+  }
 
-    function handleMouseUp() {
-      draggingRef.current = false
+  function endDrag(event) {
+    draggingRef.current = false
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
     }
-
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mouseup', handleMouseUp)
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [])
+  }
 
   const size = vertical ? { height: `${percent}%` } : { width: `${percent}%` }
   return (
@@ -46,7 +40,15 @@ export default function SplitLayout({ first, second, vertical = false, percent, 
       <div className="split-pane-first" style={size}>
         {first}
       </div>
-      <div className="divider" onMouseDown={handleMouseDown} />
+      <div
+        className="divider"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onLostPointerCapture={endDrag}
+        onDragStart={(event) => event.preventDefault()}
+      />
       <div className="split-pane-second">{second}</div>
     </div>
   )

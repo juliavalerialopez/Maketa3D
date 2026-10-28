@@ -327,6 +327,10 @@ canvas {
   height: 100%;
   cursor: col-resize;
   background: #333;
+  /* Pointer drags only: no touch scrolling, text selection or native drag. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .split-layout.vertical > .divider {

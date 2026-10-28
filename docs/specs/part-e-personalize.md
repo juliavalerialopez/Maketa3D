@@ -71,7 +71,7 @@ The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan
 - ✅ E.10 Docs: CLAUDE.md Structure (modes/, layout/, panel/ wording)
 - ✅ E.11 Build passes and deploy (last task of the part)
 - ✅ E.12 Widget shows again after returning to Plan with an object selected (added 2026-10-27: bug from Part E testing, the arrows and ring were missing until reselecting)
-- ⬜ E.13 Divider never sticks to the mouse: pointer events with capture, no text selection or native drag, the drag always ends on release (added 2026-10-27: bug from Part E testing; was a Part C and Part D backlog item)
+- ✅ E.13 Divider never sticks to the mouse: pointer events with capture, no text selection or native drag, the drag always ends on release (added 2026-10-27: bug from Part E testing; was a Part C and Part D backlog item)
 
 ## Out of scope
 Image upload. Any AI call, API key, serverless function or prompt. Controls in the Personalize panel. Saving the snapshot to disk or between reloads. Editing the room in Personalize.
