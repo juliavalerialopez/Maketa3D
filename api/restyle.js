@@ -1,9 +1,11 @@
 // Restyle function (Part F): POST { render, photo } (base64 JPEG) returns
 // { image, remaining } with the AI image as a data URL. GET returns
 // { remaining } without counting. Errors are { error: code }:
-// 400 bad_input, 413 too_large, 502 failed, 504 timeout.
+// 400 bad_input, 413 too_large, 429 limit (with limit: 'total' | 'visitor'),
+// 502 failed, 504 timeout.
 // The Gemini key stays here; photos and results are never stored or logged.
 import { restyleImage } from './_gemini.js'
+import { release, remaining, reserve } from './_limits.js'
 import { PROMPT } from './_restyle-prompt.js'
 
 // Vercel allows 4.5 MB per request body; the browser sends about 1.5 MB.
@@ -13,7 +15,8 @@ const TIMEOUT_MS = 60_000
 const MOCK_DELAY_MS = 2_000
 const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/
 
-const fail = (status, error) => Response.json({ error }, { status })
+const fail = (status, error, extra) => Response.json({ error, ...extra }, { status })
+const isMock = () => process.env.RESTYLE_MOCK === '1'
 
 function isJpegBase64(value) {
   if (typeof value !== 'string' || value.length < 16 || !BASE64.test(value)) return false
@@ -36,8 +39,14 @@ async function readInput(request) {
   return { render: body.render, photo: body.photo }
 }
 
-export async function GET() {
-  return Response.json({ remaining: null })
+export async function GET(request) {
+  if (isMock()) return Response.json({ remaining: null })
+  try {
+    return Response.json({ remaining: await remaining(request) })
+  } catch (error) {
+    console.error('Restyle: could not read the limits:', error.message)
+    return Response.json({ remaining: null })
+  }
 }
 
 export async function POST(request) {
@@ -45,7 +54,7 @@ export async function POST(request) {
   if (input.error) return input.error
 
   // Local only: echo the render back, no AI call and no counting.
-  if (process.env.RESTYLE_MOCK === '1') {
+  if (isMock()) {
     await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS))
     return Response.json({ image: `data:image/jpeg;base64,${input.render}`, remaining: null })
   }
@@ -55,6 +64,16 @@ export async function POST(request) {
     console.error('Restyle: GEMINI_API_KEY is not set')
     return fail(502, 'failed')
   }
+
+  // Count first, so the limits hold even with requests running in parallel.
+  let reservation
+  try {
+    reservation = await reserve(request)
+  } catch (error) {
+    console.error('Restyle: could not count the generation:', error.message)
+    return fail(502, 'failed')
+  }
+  if (!reservation.ok) return fail(429, 'limit', { limit: reservation.limit, remaining: 0 })
 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
@@ -66,8 +85,15 @@ export async function POST(request) {
       photo: { data: input.photo, mimeType: 'image/jpeg' },
       signal: controller.signal,
     })
-    return Response.json({ image: `data:${result.mimeType};base64,${result.data}`, remaining: null })
+    return Response.json({
+      image: `data:${result.mimeType};base64,${result.data}`,
+      remaining: reservation.remaining,
+    })
   } catch (error) {
+    // Failed tries are not counted.
+    await release(reservation.keys).catch((releaseError) =>
+      console.error('Restyle: could not undo the count:', releaseError.message),
+    )
     if (error.name === 'AbortError') return fail(504, 'timeout')
     console.error('Restyle: Gemini call failed:', error.message, error.detail ?? '')
     return fail(502, 'failed')
