@@ -92,7 +92,7 @@ In Personalize I upload one photo of a styled living room and press Generate. Th
 - ✅ F.5 `ui/Button` gets a `disabled` prop
 - ✅ F.6 `restyleStore.js` and `services/restyle.js` (resizing, requests, error messages)
 - ✅ F.7 A new Room render clears the AI image; responses for an older render are ignored
-- ⬜ F.8 Reference image group: upload, checks, preview, Replace, Remove, notice
+- ✅ F.8 Reference image group: upload, checks, preview, Replace, Remove, notice
 - ⬜ F.9 Generate / Regenerate button: label, disabled states, "N of 3 left today", loading (empty slot or dimmed old image), old result kept on failure, error messages
 - ⬜ F.10 Docs: CLAUDE.md (dated stack exception for `/api` and Upstash, `api/`, `services/`, `docs/prompts/`, `docs/decisions/`, `npx vercel dev`) and the SPEC.md data model
 - ⬜ F.11 Build passes and deploy (last task of the part)

@@ -163,6 +163,32 @@ canvas {
   font-size: 0.9em;
 }
 
+/* Personalize: Reference image group */
+.reference-photo img {
+  display: block;
+  max-width: 160px;
+  max-height: 110px;
+  margin-bottom: 8px;
+  border-radius: 3px;
+}
+
+.reference-photo-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.panel-error {
+  margin: 0 0 8px;
+  color: #ff8a80;
+  font-size: 0.9em;
+}
+
+.panel-notice {
+  margin: 4px 0 0;
+  color: #888;
+  font-size: 0.8em;
+}
+
 .field-stack {
   display: flex;
   flex-direction: column;
