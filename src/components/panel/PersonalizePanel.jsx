@@ -1,3 +1,4 @@
+import GenerateButton from './GenerateButton'
 import ReferenceImage from './ReferenceImage'
 
 // Personalize control panel, same style as Plan's. Groups are <Section id="...">
@@ -6,6 +7,7 @@ export default function PersonalizePanel() {
   return (
     <div className="control-panel">
       <ReferenceImage />
+      <GenerateButton />
     </div>
   )
 }

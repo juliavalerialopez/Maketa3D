@@ -1,6 +1,7 @@
 // Restyle function (Part F): POST { render, photo } (base64 JPEG) returns
 // { image, remaining } with the AI image as a data URL. GET returns
-// { remaining } without counting. Errors are { error: code }:
+// { remaining } without counting. When remaining is 0, `limit` says which
+// limit was reached ('total' | 'visitor'). Errors are { error: code }:
 // 400 bad_input, 413 too_large, 429 limit (with limit: 'total' | 'visitor'),
 // 502 failed, 504 timeout.
 // The Gemini key stays here; photos and results are never stored or logged.
@@ -42,7 +43,7 @@ async function readInput(request) {
 export async function GET(request) {
   if (isMock()) return Response.json({ remaining: null })
   try {
-    return Response.json({ remaining: await remaining(request) })
+    return Response.json(await remaining(request))
   } catch (error) {
     console.error('Restyle: could not read the limits:', error.message)
     return Response.json({ remaining: null })
@@ -88,6 +89,7 @@ export async function POST(request) {
     return Response.json({
       image: `data:${result.mimeType};base64,${result.data}`,
       remaining: reservation.remaining,
+      limit: reservation.limit,
     })
   } catch (error) {
     // Failed tries are not counted.

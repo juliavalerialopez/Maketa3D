@@ -9,6 +9,8 @@ const RENDER_WIDTH = 1280
 const RENDER_HEIGHT = 720
 const RENDER_QUALITY = 0.9
 const ENDPOINT = '/api/restyle'
+// Generations per visitor per day; the server (api/_limits.js) enforces it.
+export const VISITOR_LIMIT = 3
 
 export const MESSAGES = {
   photoType: 'Use a JPG, PNG or WebP image.',
@@ -20,12 +22,12 @@ export const MESSAGES = {
   timeout: 'The request took too long. Try again.',
 }
 
-// An error with a message for the panel, and the remaining count when the
-// server sent one.
+// An error with a message for the panel, and the count ({ remaining, limit })
+// when the server sent one.
 export class RestyleError extends Error {
-  constructor(message, remaining) {
+  constructor(message, count = null) {
     super(message)
-    this.remaining = remaining
+    this.count = count
   }
 }
 
@@ -73,29 +75,39 @@ function renderToJpeg(snapshot) {
 
 const base64Of = (dataUrl) => dataUrl.slice(dataUrl.indexOf(',') + 1)
 
-// What this visitor can still make today, or null when unknown.
+// The panel message for a reached limit ('total' or 'visitor').
+export const limitMessage = (limit) => (limit === 'total' ? MESSAGES.totalLimit : MESSAGES.visitorLimit)
+
+// { remaining, limit } from a server answer; remaining is null when unknown,
+// limit is set only when remaining is 0.
+function countOf(body) {
+  const remaining = Number.isInteger(body?.remaining) ? body.remaining : null
+  return { remaining, limit: remaining === 0 ? (body.limit ?? 'visitor') : null }
+}
+
+// What this visitor can still make today: { remaining, limit }.
 export async function fetchRemaining() {
   try {
     const response = await fetch(ENDPOINT)
-    if (!response.ok) return null
-    const { remaining } = await response.json()
-    return Number.isInteger(remaining) ? remaining : null
+    if (!response.ok) return countOf(null)
+    return countOf(await response.json())
   } catch {
-    return null
+    return countOf(null)
   }
 }
 
 function errorFor(status, body) {
-  const remaining = Number.isInteger(body?.remaining) ? body.remaining : undefined
   if (status === 429) {
-    return new RestyleError(body?.limit === 'total' ? MESSAGES.totalLimit : MESSAGES.visitorLimit, remaining ?? 0)
+    const limit = body?.limit === 'total' ? 'total' : 'visitor'
+    return new RestyleError(limitMessage(limit), { remaining: 0, limit })
   }
-  if (status === 504) return new RestyleError(MESSAGES.timeout, remaining)
-  return new RestyleError(MESSAGES.failed, remaining)
+  // A 504 can also come from Vercel itself, without a JSON body.
+  if (status === 504) return new RestyleError(MESSAGES.timeout)
+  return new RestyleError(MESSAGES.failed)
 }
 
-// Sends the Room render and the photo. Resolves { image, remaining }
-// (remaining may be null); rejects with a RestyleError for the panel.
+// Sends the Room render and the photo. Resolves { image, count } (see
+// countOf); rejects with a RestyleError for the panel.
 export async function requestRestyle(snapshot, photoDataUrl) {
   const render = await renderToJpeg(snapshot)
   let response
@@ -110,5 +122,5 @@ export async function requestRestyle(snapshot, photoDataUrl) {
   }
   const body = await response.json().catch(() => null)
   if (!response.ok || typeof body?.image !== 'string') throw errorFor(response.status, body)
-  return { image: body.image, remaining: Number.isInteger(body.remaining) ? body.remaining : null }
+  return { image: body.image, count: countOf(body) }
 }

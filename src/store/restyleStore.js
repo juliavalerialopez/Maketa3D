@@ -6,6 +6,9 @@ import { useModeStore } from './modeStore'
 // for an older render is ignored.
 let latestRequest = 0
 
+// Keeps the stored count when the server did not send one.
+const countUpdate = (count) => (count && count.remaining !== null ? count : {})
+
 // AI restyle state (Part F), memory only: kept across mode switches, lost on
 // reload. generate() runs here, not in a component, so a request keeps going
 // when Personalize unmounts.
@@ -18,8 +21,10 @@ export const useRestyleStore = create((set, get) => ({
   // AI image (data URL) and the Room render it was made from.
   result: null,
   resultSnapshot: null,
-  // Generations this visitor can still make today; null until the server says.
+  // Generations this visitor can still make today; null until the server
+  // says. At 0, `limit` is the limit reached ('total' | 'visitor').
   remaining: null,
+  limit: null,
 
   setPhotoFile: async (file) => {
     try {
@@ -30,10 +35,7 @@ export const useRestyleStore = create((set, get) => ({
   },
   removePhoto: () => set({ photo: null, photoError: null }),
 
-  loadRemaining: async () => {
-    const remaining = await fetchRemaining()
-    if (remaining !== null) set({ remaining })
-  },
+  loadRemaining: async () => set(countUpdate(await fetchRemaining())),
 
   // A new Room render was taken: the AI image goes back to black so both
   // images always match, and any running request is ignored when it answers.
@@ -50,29 +52,14 @@ export const useRestyleStore = create((set, get) => ({
     const request = ++latestRequest
     set({ status: 'loading', error: null })
     try {
-      const response = await requestRestyle(snapshot, photo.dataUrl)
-      if (request !== latestRequest) {
-        // Made for an older Room render: drop the image, keep the count.
-        if (response.remaining !== null) set({ remaining: response.remaining })
-        return
-      }
-      set((state) => ({
-        status: 'idle',
-        result: response.image,
-        resultSnapshot: snapshot,
-        remaining: response.remaining ?? state.remaining,
-      }))
+      const { image, count } = await requestRestyle(snapshot, photo.dataUrl)
+      // Made for an older Room render: drop the image, keep the count.
+      if (request !== latestRequest) return set(countUpdate(count))
+      set({ status: 'idle', result: image, resultSnapshot: snapshot, ...countUpdate(count) })
     } catch (error) {
-      if (request !== latestRequest) {
-        if (error.remaining !== undefined) set({ remaining: error.remaining })
-        return
-      }
+      if (request !== latestRequest) return set(countUpdate(error.count))
       // The previous result, if any, stays.
-      set((state) => ({
-        status: 'idle',
-        error: error.message,
-        remaining: error.remaining ?? state.remaining,
-      }))
+      set({ status: 'idle', error: error.message, ...countUpdate(error.count) })
     }
   },
 }))

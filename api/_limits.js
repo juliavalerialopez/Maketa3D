@@ -37,18 +37,27 @@ function todayKeys(request) {
   return { total: `restyle:${day}`, visitor: `restyle:${day}:v:${visitor}` }
 }
 
-// What this visitor can still make today: the smaller of both limits.
-const left = (total, visitor) => Math.max(0, Math.min(TOTAL_LIMIT - total, VISITOR_LIMIT - visitor))
+// What this visitor can still make today (the smaller of both limits), and
+// when that is 0, which limit was reached.
+function status(total, visitor) {
+  const totalLeft = TOTAL_LIMIT - total
+  const visitorLeft = VISITOR_LIMIT - visitor
+  const remaining = Math.max(0, Math.min(totalLeft, visitorLeft))
+  if (remaining > 0) return { remaining }
+  return { remaining, limit: totalLeft <= 0 ? 'total' : 'visitor' }
+}
 
+// { remaining, limit? } for this visitor, without counting.
 export async function remaining(request) {
   const keys = todayKeys(request)
   const { result } = await redis('', ['MGET', keys.total, keys.visitor])
-  return left(Number(result[0] ?? 0), Number(result[1] ?? 0))
+  return status(Number(result[0] ?? 0), Number(result[1] ?? 0))
 }
 
 // Counts one generation before the AI call. Over a limit, the count is undone:
 // { ok: false, limit: 'total' | 'visitor', remaining: 0 }. Otherwise
-// { ok: true, keys, remaining }; call release(keys) if the generation fails.
+// { ok: true, keys, remaining, limit? }; call release(keys) if the
+// generation fails.
 export async function reserve(request) {
   const keys = todayKeys(request)
   const results = await redis('/multi-exec', [
@@ -63,7 +72,7 @@ export async function reserve(request) {
     await release(keys)
     return { ok: false, limit: total > TOTAL_LIMIT ? 'total' : 'visitor', remaining: 0 }
   }
-  return { ok: true, keys, remaining: left(total, visitor) }
+  return { ok: true, keys, ...status(total, visitor) }
 }
 
 // Undoes one reserved generation (over a limit, or the AI call failed).

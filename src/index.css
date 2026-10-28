@@ -66,6 +66,24 @@ canvas {
   height: 100%;
 }
 
+/* AI image while a Regenerate runs: the old result dimmed, a label on top. */
+.render-slot img.dimmed {
+  opacity: 0.4;
+}
+
+.render-slot-status {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 2px 10px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #eee;
+  font-size: 0.85em;
+  pointer-events: none;
+}
+
 /* Caption over the image, top center. A page guide only: never part of
    the image itself. */
 .render-slot figcaption {
@@ -181,6 +199,30 @@ canvas {
   margin: 0 0 8px;
   color: #ff8a80;
   font-size: 0.9em;
+}
+
+/* Personalize: Generate / Regenerate below the groups */
+.generate {
+  padding: 12px;
+}
+
+.generate-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.generate-row .ui-button {
+  margin-bottom: 0;
+}
+
+.generate-count {
+  color: #aaa;
+  font-size: 0.9em;
+}
+
+.generate .panel-error {
+  margin: 8px 0 0;
 }
 
 .panel-notice {

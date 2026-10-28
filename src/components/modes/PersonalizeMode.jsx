@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import SplitLayout from '../layout/SplitLayout'
 import PersonalizePanel from '../panel/PersonalizePanel'
 import { useModeStore } from '../../store/modeStore'
+import { useRestyleStore } from '../../store/restyleStore'
 import { useUiStore } from '../../store/uiStore'
 
 // Space between the two images, in pixels (also used by .render-row).
@@ -29,7 +30,22 @@ function RenderSlot({ caption, children }) {
   )
 }
 
-// Personalize mode: Room render and the (empty) AI image side by side on top,
+// The AI image: black until the first result. While generating, the old
+// result (if any) stays, dimmed, with a small label.
+function AiImage() {
+  const result = useRestyleStore((state) => state.result)
+  const loading = useRestyleStore((state) => state.status === 'loading')
+
+  if (!result) return loading ? 'Generating…' : null
+  return (
+    <>
+      <img src={result} alt="AI image" className={loading ? 'dimmed' : undefined} />
+      {loading && <span className="render-slot-status">Generating…</span>}
+    </>
+  )
+}
+
+// Personalize mode: Room render and the AI image side by side on top,
 // control panel below. Until the divider is dragged, the top part follows the
 // window so the images fill it exactly; a dragged position is kept in uiStore.
 export default function PersonalizeMode() {
@@ -59,7 +75,9 @@ export default function PersonalizeMode() {
             <RenderSlot caption="Room render">
               {snapshot ? <img src={snapshot} alt="Room render" /> : 'No render'}
             </RenderSlot>
-            <RenderSlot caption="AI image" />
+            <RenderSlot caption="AI image">
+              <AiImage />
+            </RenderSlot>
           </div>
         }
         second={<PersonalizePanel />}
