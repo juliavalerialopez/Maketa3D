@@ -83,7 +83,7 @@ In Personalize I upload one photo of a styled living room and press Generate. Th
 
 ## Tasks
 - ⬜ F.1 Prompt spike: `scripts/try-restyle.mjs` (Node, `fetch`) sends a fixture, a photo and the current prompt to Gemini; paths are arguments, outputs go to a gitignored `scratch/restyle-runs/`
-  - ⬜ F.1.1 Confirm the exact model ID (`gemini-nano-banana-2.1`) and the 1K price ($0.0336) in Google's official docs; note the result in the ADR. The manual tests used the Gemini app and the API may behave differently, so F.1 is the real test.
+  - ✅ F.1.1 Confirm the exact model ID (`gemini-nano-banana-2.1`) and the 1K price ($0.0336) in Google's official docs; note the result in the ADR. The manual tests used the Gemini app and the API may behave differently, so F.1 is the real test.
   - ⬜ F.1.2 Save the three fixtures (Julia, see Fixtures below)
   - ⬜ F.1.3 Run prompt v1 on every fixture with `reference-couch.jpg`, with and without the white-area line (T6); record which works better in `restyle.md` and close the open question
 - ⬜ F.2 Prompt tuning until T1, T2 and T3 pass (see Test cases)

@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Prompt spike results (Part F)
+scratch
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

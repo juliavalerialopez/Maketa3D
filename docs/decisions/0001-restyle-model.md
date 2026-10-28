@@ -34,4 +34,5 @@ Nano Banana 2.1 (`gemini-nano-banana-2.1`) through the Gemini API, output 1K 16:
 
 ## Verification
 - Model ID and 1K price to be confirmed in F.1.1 from Google's official docs. The figures above come from the planning research.
+- 2026-10-28 (F.1.1): confirmed on Google's official pages. The pricing page (ai.google.dev/gemini-api/docs/pricing) lists `gemini-nano-banana-2.1` at $0.0336 per 1K image ($0.0504 at 2K, $0.0168 per 1K in batch), paid tier only. The image generation page lists it as the recommended model, with `aspect_ratio: "16:9"` and `image_size: "1K"`. Request shape used: `POST /v1beta/interactions` with a text item and two image items.
 - The manual tests used the Gemini app; the API may behave differently, so F.1 is the real test.
