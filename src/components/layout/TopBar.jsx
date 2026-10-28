@@ -1,5 +1,6 @@
 import SegmentedSwitch from '../ui/SegmentedSwitch'
 import { useModeStore } from '../../store/modeStore'
+import { useRestyleStore } from '../../store/restyleStore'
 import { takeSnapshot } from '../scene/snapshot'
 
 const MODES = [
@@ -8,11 +9,15 @@ const MODES = [
 ]
 
 // Switching to Personalize unmounts the Plan canvas, so the Room render is
-// taken first, while the canvas is still there. Null if it fails.
+// taken first, while the canvas is still there. Null if it fails. A new
+// render clears the AI image, so the two images always match.
 function switchMode(next) {
   const { mode, setMode, setSnapshot } = useModeStore.getState()
   if (next === mode) return
-  if (next === 'personalize') setSnapshot(takeSnapshot())
+  if (next === 'personalize') {
+    setSnapshot(takeSnapshot())
+    useRestyleStore.getState().clearResult()
+  }
   setMode(next)
 }
 
