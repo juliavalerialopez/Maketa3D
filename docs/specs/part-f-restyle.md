@@ -89,7 +89,7 @@ In Personalize I upload one photo of a styled living room and press Generate. Th
 - ⬜ F.2 Prompt tuning until T1, T2 and T3 pass (see Test cases)
 - ✅ F.3 `api/restyle.js`: POST and GET, input checks, Gemini call with a 60 s `AbortController`, errors (400/429/502/504), `RESTYLE_MOCK`; local only
 - ✅ F.4 Limits in Upstash: visitor hash with daily salt, total and visitor counts in one transaction, undo on 429 or failure, `remaining` in every response. Deploy only after this task.
-- ⬜ F.5 `ui/Button` gets a `disabled` prop
+- ✅ F.5 `ui/Button` gets a `disabled` prop
 - ⬜ F.6 `restyleStore.js` and `services/restyle.js` (resizing, requests, error messages)
 - ⬜ F.7 A new Room render clears the AI image; responses for an older render are ignored
 - ⬜ F.8 Reference image group: upload, checks, preview, Replace, Remove, notice

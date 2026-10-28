@@ -289,6 +289,13 @@ canvas {
   background: #23364a;
 }
 
+.ui-button:disabled {
+  border-color: #3a3a3a;
+  background: #262626;
+  color: #777;
+  cursor: default;
+}
+
 /* ui/ListItem */
 .ui-list {
   margin: 0;
