@@ -1,6 +1,6 @@
 # Part F: AI restyle
 
-Status: **In progress**. Builds on Part E (Plan and Personalize modes, Room render, empty AI image slot and panel).
+Status: **Done**. Builds on Part E (Plan and Personalize modes, Room render, empty AI image slot and panel).
 
 ## Goal
 In Personalize I upload one photo of a styled living room and press Generate. The AI image slot then shows my room restyled to match the photo, with the grey box sofa replaced by the sofa in the photo. The room shape, the camera angle and the sofa's position and angle stay exactly as in the Room render.
@@ -96,7 +96,7 @@ In Personalize I upload one photo of a styled living room and press Generate. Th
 - ✅ F.8 Reference image group: upload, checks, preview, Replace, Remove, notice
 - ✅ F.9 Generate / Regenerate button: label, disabled states, "N of 3 left today", loading (empty slot or dimmed old image), old result kept on failure, error messages
 - ✅ F.10 Docs: CLAUDE.md (dated stack exception for `/api` and Upstash, `api/`, `services/`, `docs/prompts/`, `docs/decisions/`, `npx vercel dev`) and the SPEC.md data model
-- ⬜ F.11 Build passes and deploy (last task of the part)
+- ✅ F.11 Build passes and deploy (last task of the part)
   - Gemini key from a billing-enabled (paid tier) Google project
   - On Vercel: `GEMINI_API_KEY`, `VISITOR_SECRET` and the Upstash variables set; `RESTYLE_MOCK` not set in production
   - A spend alert set on the Google project
@@ -127,25 +127,25 @@ Saved by Julia: in Personalize, right-click the Room render, Save image as, into
 Download. Clear button. Drag and drop. Text instructions. Saving results. More panel groups. A new snapshot in Personalize.
 
 ## Acceptance criteria
-- [ ] The Personalize panel has a collapsible "Reference image" group with an Upload photo button and the privacy notice.
-- [ ] JPG, PNG and WebP up to 10 MB upload; a wrong type, a file over 10 MB and an unreadable file each show their message.
-- [ ] An uploaded photo shows a small preview; Replace and Remove work.
-- [ ] The photo is still there after switching to Plan and back, and gone after a reload.
-- [ ] Generate is disabled until a photo and a Room render exist.
-- [ ] Generate shows "Generating…" in the empty slot, then the result in the AI image slot.
-- [ ] After a result the button reads "Regenerate"; during Regenerate the old result stays, dimmed, with "Generating…".
-- [ ] If a request fails, the old result stays and the failure message shows.
-- [ ] "N of 3 left today" counts down after each success; at 0 the button is disabled with the limit message.
-- [ ] The 4th generation for one visitor and the 21st of the day are refused with their messages; failed tries are not counted.
-- [ ] A Gemini call over 60 s ends with the "took too long" message.
-- [ ] A new Room render clears the AI image back to black; a response for an older render is not shown.
-- [ ] T1, T2 and T3 pass on the live site.
-- [ ] No Gemini key in the client bundle (grep `dist/`).
-- [ ] `RESTYLE_MOCK` is not set in production.
-- [ ] The Gemini key is on a billing-enabled project with a spend alert.
-- [ ] No console errors when switching modes during a request.
-- [ ] `npm run build` succeeds with no errors.
-- [ ] Deployed and working on the live Vercel URL.
+- [x] The Personalize panel has a collapsible "Reference image" group with an Upload photo button and the privacy notice.
+- [x] JPG, PNG and WebP up to 10 MB upload; a wrong type, a file over 10 MB and an unreadable file each show their message.
+- [x] An uploaded photo shows a small preview; Replace and Remove work.
+- [x] The photo is still there after switching to Plan and back, and gone after a reload.
+- [x] Generate is disabled until a photo and a Room render exist.
+- [x] Generate shows "Generating…" in the empty slot, then the result in the AI image slot.
+- [x] After a result the button reads "Regenerate"; during Regenerate the old result stays, dimmed, with "Generating…".
+- [x] If a request fails, the old result stays and the failure message shows.
+- [x] "N of 3 left today" counts down after each success; at 0 the button is disabled with the limit message.
+- [x] The 4th generation for one visitor and the 21st of the day are refused with their messages; failed tries are not counted. (4th checked live; 21st and failed tries checked in code, `api/_limits.js`.)
+- [x] A Gemini call over 60 s ends with the "took too long" message. (Checked in code, `api/restyle.js`.)
+- [x] A new Room render clears the AI image back to black; a response for an older render is not shown.
+- [x] T1, T2 and T3 pass on the live site.
+- [x] No Gemini key in the client bundle (grep `dist/`).
+- [x] `RESTYLE_MOCK` is not set in production.
+- [x] The Gemini key is on a billing-enabled project with a spend alert.
+- [x] No console errors when switching modes during a request.
+- [x] `npm run build` succeeds with no errors.
+- [x] Deployed and working on the live Vercel URL.
 
 ## Backlog
 - Download the AI image.
@@ -164,3 +164,4 @@ Download. Clear button. Drag and drop. Text instructions. Saving results. More p
 - 2026-10-28: Draft created. Scope: reference photo upload, Generate / Regenerate through a serverless function with Nano Banana 2.1, daily limits (20 in total, 3 per visitor), result in the AI image slot.
 - 2026-10-28: Goals confirmed, Part F started (In progress).
 - 2026-10-30: F.1.2, F.1.3 and F.2 skipped (the F.1 script exists but was not run on fixtures): prompt v1 checked by hand in the app on the three views and works (F.1.4). Saving results as alternatives moved to Part G (backlog).
+- 2026-10-30: Deployed; acceptance criteria checked on the live site (the total limit and the timeout checked in code). Part F done.

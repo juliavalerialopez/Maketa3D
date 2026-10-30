@@ -60,7 +60,7 @@ Objects are always a list, even with one type.
 | C | specs/part-c-details.md | Select from list, Object details (position, rotation, color), delete | Done |
 | D | specs/part-d-arrange.md | Bigger room, click-to-select in 3D, drag, move/rotate widget, tilt, drag-to-change values | Done |
 | E | specs/part-e-personalize.md | Plan/Personalize modes, frame guide, snapshot, Personalize layout | In progress |
-| F | specs/part-f-restyle.md | Reference photo, Generate/Regenerate via serverless AI, daily limits | In progress |
+| F | specs/part-f-restyle.md | Reference photo, Generate/Regenerate via serverless AI, daily limits | Done |
 
 ## How we work
 - Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.
