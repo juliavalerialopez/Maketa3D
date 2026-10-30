@@ -21,12 +21,13 @@ function switchMode(next) {
   setMode(next)
 }
 
-// Slim bar above both modes, with the mode switch centered.
+// Slim bar above both modes: the title on the left, the mode switch centered.
 export default function TopBar() {
   const mode = useModeStore((state) => state.mode)
 
   return (
     <header className="top-bar">
+      <h1 className="top-bar-title">Maketa</h1>
       <SegmentedSwitch options={MODES} value={mode} onChange={switchMode} />
     </header>
   )

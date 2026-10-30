@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 
 const round = (number) => Math.round(number * 1000) / 1000
 
@@ -17,8 +17,14 @@ const PIXELS_PER_STEP = 4
 // step per few pixels (within min/max); releasing limits it like a blur.
 // A press without dragging focuses the field for typing.
 //
-// `compact` puts the label above the value, for use inside a FieldGroup.
+// Round minus and plus buttons on either side change the value by one step,
+// limited like a blur.
+//
+// `compact` puts the label above the value, for use inside a FieldGroup. It
+// has no minus and plus buttons (there is no room for them two or three to a
+// row); dragging and the arrow keys still work.
 export default function NumberField({ label, value, onChange, min, max, step = 0.1, unit, normalize, compact }) {
+  const id = useId()
   const [draft, setDraft] = useState(String(round(value)))
   const [focused, setFocused] = useState(false)
   const [lastValue, setLastValue] = useState(value)
@@ -108,10 +114,25 @@ export default function NumberField({ label, value, onChange, min, max, step = 0
     }
   }
 
+  const stepButton = (direction, symbol, name) => (
+    <button
+      type="button"
+      className="ui-number-field-step"
+      aria-label={`${name} ${label}`}
+      onClick={() => commit(value + direction * step)}
+    >
+      {symbol}
+    </button>
+  )
+
   return (
-    <label className={compact ? 'ui-number-field compact' : 'ui-number-field'}>
-      <span className="ui-number-field-label">{label}</span>
+    <div className={compact ? 'ui-number-field compact' : 'ui-number-field'}>
+      <label className="ui-number-field-label" htmlFor={id}>
+        {label}
+      </label>
+      {!compact && stepButton(-1, '−', 'Decrease')}
       <input
+        id={id}
         ref={inputRef}
         type="number"
         step={step}
@@ -127,7 +148,8 @@ export default function NumberField({ label, value, onChange, min, max, step = 0
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
       />
+      {!compact && stepButton(1, '+', 'Increase')}
       {unit && <span className="ui-number-field-unit">{unit}</span>}
-    </label>
+    </div>
   )
 }

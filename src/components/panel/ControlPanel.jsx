@@ -18,7 +18,7 @@ export default function ControlPanel() {
         <RoomInputs />
       </Section>
       <Section id="objects" title="Objects">
-        <Button onClick={() => addObject('sofa')}>Add Sofa</Button>
+        <Button variant="primary" onClick={() => addObject('sofa')}>Add Sofa</Button>
         <ObjectList />
       </Section>
       {selectedId && (

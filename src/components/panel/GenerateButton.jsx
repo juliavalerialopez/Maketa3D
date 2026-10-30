@@ -30,7 +30,7 @@ export default function GenerateButton() {
   return (
     <div className="generate">
       <div className="generate-row">
-        <Button onClick={generate} disabled={disabled}>
+        <Button variant="primary" onClick={generate} disabled={disabled}>
           {hasResult ? 'Regenerate' : 'Generate'}
         </Button>
         {remaining !== null && (
