@@ -86,7 +86,7 @@ Status: **Draft**. Builds on Part F (Plan and Personalize, Room render, AI resty
 ## Tasks
 Tasks are in build order. Each one follows the checkpoint workflow.
 
-- ⬜ G.1 Theme colors and font: named CSS variables per theme replace the ~50 hard-coded colors in `src/index.css`. Outfit font; CSS variables for both themes (background, surface, text, muted, accent, on-accent, soft, shadows; accent forest in light, sage in dark) on `:root[data-theme="light"]` and `:root[data-theme="dark"]`.
+- ✅ G.1 Theme colors and font: named CSS variables per theme replace the ~50 hard-coded colors in `src/index.css`. Outfit font; CSS variables for both themes (background, surface, text, muted, accent, on-accent, soft, shadows; accent forest in light, sage in dark) on `:root[data-theme="light"]` and `:root[data-theme="dark"]`.
 - ⬜ G.2 Soft surfaces and shared UI: raised and pressed styles; restyle `Button` (primary and secondary pills), `NumberField` (round minus and plus around a pressed pill value), `ListItem` (selected item pressed with an accent dot); top bar (bold wide title, Plan | Personalize as a pressed pill with a raised active tab); panel sections as raised cards with small uppercase labels.
 - ⬜ G.3 Dark theme and switch: system default, pill toggle with sun and moon in the top bar, choice saved.
 - ⬜ G.4 Scene colors: page background around the scene and selection box follow the theme; new fixed floor and wall colors; snapshot unchanged.

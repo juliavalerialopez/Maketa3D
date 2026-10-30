@@ -1,8 +1,56 @@
+/* Theme colors (Part G). Rules use these role names, never a palette color
+   directly, so switching data-theme on <html> recolors the whole page.
+   Light: forest is the accent. Dark: sage is the accent. Values follow
+   docs/design/maketa-style-v3.html. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f5f2ea;            /* ivory: page, top bar, panel */
+  --surface: #f5f2ea;       /* cards (raised in G.2) */
+  --field: #ebe6d8;         /* inputs, list and button backgrounds */
+  --hover: rgba(36, 83, 58, 0.07);
+  --text: #1d2a22;
+  --muted: #6f786f;
+  --accent: #24533a;        /* forest */
+  --on-accent: #f5f2ea;
+  --soft: #b9cdb0;          /* sage: selected item, pressed button */
+  --border: #d9d3c2;
+  --border-strong: #c4bca6;
+  --error: #b3261e;
+  --shadow-out: 7px 7px 16px rgba(125, 112, 86, 0.22), -7px -7px 16px rgba(255, 255, 255, 0.95);
+  --shadow-out-small: 4px 4px 9px rgba(125, 112, 86, 0.22), -4px -4px 9px rgba(255, 255, 255, 0.95);
+  --shadow-in: inset 3px 3px 7px rgba(125, 112, 86, 0.25), inset -3px -3px 7px rgba(255, 255, 255, 0.95);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #18211c;            /* night moss */
+  --surface: #18211c;
+  --field: #202b24;
+  --hover: rgba(185, 205, 176, 0.08);
+  --text: #ece8dc;          /* ivory */
+  --muted: #8f9b91;
+  --accent: #b9cdb0;        /* sage */
+  --on-accent: #15211a;
+  --soft: #3e5a47;          /* deep green */
+  --border: #2c3a31;
+  --border-strong: #3e5a47;
+  --error: #ff8a80;
+  --shadow-out: 7px 7px 16px rgba(0, 0, 0, 0.5), -6px -6px 14px rgba(255, 255, 255, 0.035);
+  --shadow-out-small: 4px 4px 9px rgba(0, 0, 0, 0.5), -3px -3px 8px rgba(255, 255, 255, 0.035);
+  --shadow-in: inset 3px 3px 7px rgba(0, 0, 0, 0.55), inset -3px -3px 7px rgba(255, 255, 255, 0.04);
+}
+
 html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Outfit, system-ui, sans-serif;
 }
 
 canvas {
@@ -27,9 +75,9 @@ canvas {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid #333;
-  background: #161616;
-  color: #eee;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
 }
 
 /* Personalize: Room render and AI image side by side, both 16:9, edge to
@@ -42,8 +90,8 @@ canvas {
   justify-content: center;
   gap: var(--render-gap);
   height: 100%;
-  background: #121212;
-  color: #eee;
+  background: var(--bg);
+  color: var(--text);
 }
 
 /* Half the width minus the gap; only when the top part is too short for
@@ -139,12 +187,12 @@ canvas {
 .control-panel {
   height: 100%;
   overflow: auto;
-  background: #1e1e1e;
-  color: #eee;
+  background: var(--bg);
+  color: var(--text);
 }
 
 .panel-section {
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border);
 }
 
 .panel-section-header {
@@ -163,7 +211,7 @@ canvas {
 }
 
 .panel-section-header:hover {
-  background: #2a2a2a;
+  background: var(--hover);
 }
 
 .panel-section-arrow {
@@ -177,7 +225,7 @@ canvas {
 
 .panel-placeholder {
   margin: 0;
-  color: #888;
+  color: var(--muted);
   font-size: 0.9em;
 }
 
@@ -197,7 +245,7 @@ canvas {
 
 .panel-error {
   margin: 0 0 8px;
-  color: #ff8a80;
+  color: var(--error);
   font-size: 0.9em;
 }
 
@@ -217,7 +265,7 @@ canvas {
 }
 
 .generate-count {
-  color: #aaa;
+  color: var(--muted);
   font-size: 0.9em;
 }
 
@@ -227,7 +275,7 @@ canvas {
 
 .panel-notice {
   margin: 4px 0 0;
-  color: #888;
+  color: var(--muted);
   font-size: 0.8em;
 }
 
@@ -240,7 +288,7 @@ canvas {
 .object-details-name {
   margin: 0;
   font-weight: 600;
-  color: #4da3ff;
+  color: var(--accent);
 }
 
 /* ui/NumberField */
@@ -258,9 +306,9 @@ canvas {
   flex: 1 1 auto;
   min-width: 0;
   padding: 4px 6px;
-  border: 1px solid #444;
+  border: 1px solid var(--border);
   border-radius: 3px;
-  background: #2a2a2a;
+  background: var(--field);
   color: inherit;
   font: inherit;
 }
@@ -274,7 +322,7 @@ canvas {
 
 .ui-number-field-unit {
   flex: 0 0 1em;
-  color: #888;
+  color: var(--muted);
 }
 
 .ui-number-field.compact {
@@ -287,7 +335,7 @@ canvas {
 
 .ui-number-field.compact .ui-number-field-label {
   flex: none;
-  color: #aaa;
+  color: var(--muted);
   font-size: 0.8em;
   text-align: center;
 }
@@ -305,7 +353,7 @@ canvas {
 }
 
 .ui-field-group-unit {
-  color: #888;
+  color: var(--muted);
 }
 
 .ui-field-group-row {
@@ -328,7 +376,7 @@ canvas {
   width: 48px;
   height: 28px;
   padding: 0;
-  border: 1px solid #444;
+  border: 1px solid var(--border);
   border-radius: 3px;
   background: none;
   cursor: pointer;
@@ -340,27 +388,27 @@ canvas {
   align-self: flex-start;
   margin-bottom: 8px;
   padding: 6px 12px;
-  border: 1px solid #555;
+  border: 1px solid var(--border-strong);
   border-radius: 3px;
-  background: #2f2f2f;
+  background: var(--field);
   color: inherit;
   font: inherit;
   cursor: pointer;
 }
 
 .ui-button:hover {
-  background: #3a3a3a;
+  background: var(--hover);
 }
 
 .ui-button.pressed {
-  border-color: #4da3ff;
-  background: #23364a;
+  border-color: var(--accent);
+  background: var(--soft);
 }
 
 .ui-button:disabled {
-  border-color: #3a3a3a;
-  background: #262626;
-  color: #777;
+  border-color: var(--border);
+  background: var(--field);
+  color: var(--muted);
   cursor: default;
 }
 
@@ -372,7 +420,7 @@ canvas {
 }
 
 .ui-list li {
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid var(--border);
 }
 
 .ui-list-item {
@@ -389,19 +437,19 @@ canvas {
 }
 
 .ui-list-item:hover {
-  background: #2a2a2a;
+  background: var(--hover);
 }
 
 .ui-list-item.selected {
-  border-left-color: #4da3ff;
-  background: #23364a;
+  border-left-color: var(--accent);
+  background: var(--soft);
 }
 
 .divider {
   flex: 0 0 6px;
   height: 100%;
   cursor: col-resize;
-  background: #333;
+  background: var(--border);
   /* Pointer drags only: no touch scrolling, text selection or native drag. */
   touch-action: none;
   user-select: none;
@@ -416,7 +464,7 @@ canvas {
 
 .divider:hover,
 .divider:active {
-  background: #555;
+  background: var(--border-strong);
 }
 
 /* Plan: 3D scene with the frame guide on top. A size container, so the frame
@@ -459,13 +507,12 @@ canvas {
 
 .frame-toggle .ui-button {
   margin-bottom: 0;
-  color: #eee;
 }
 
 /* ui/SegmentedSwitch */
 .ui-segmented {
   display: flex;
-  border: 1px solid #555;
+  border: 1px solid var(--border-strong);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -474,21 +521,21 @@ canvas {
   min-width: 120px;
   padding: 5px 16px;
   border: none;
-  background: #2a2a2a;
+  background: var(--field);
   color: inherit;
   font: inherit;
   cursor: pointer;
 }
 
 .ui-segmented-option + .ui-segmented-option {
-  border-left: 1px solid #555;
+  border-left: 1px solid var(--border-strong);
 }
 
 .ui-segmented-option:hover {
-  background: #333;
+  background: var(--hover);
 }
 
 .ui-segmented-option.selected {
-  background: #23364a;
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-accent);
 }
