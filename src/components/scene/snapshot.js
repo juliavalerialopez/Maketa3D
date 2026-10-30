@@ -4,7 +4,9 @@
 export const snapshotBridge = { capture: null }
 
 const MAX_WIDTH = 1920
-// The canvas is transparent; this is the page colour behind it (.scene-pane).
+// The canvas is transparent; the Room render fills this colour behind it.
+// Always white, whatever the theme (.scene-pane follows the theme on screen),
+// so the image sent to the AI does not depend on the theme.
 export const SCENE_BACKGROUND = '#ffffff'
 
 // The 16:9 frame inside a width x height area: fits the height, or the width

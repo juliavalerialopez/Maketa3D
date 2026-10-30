@@ -26,8 +26,9 @@ Status: **Draft**. Builds on Part F (Plan and Personalize, Room render, AI resty
 - On first load the theme follows the system setting (`prefers-color-scheme`). With no system preference: light.
 - A small switch in the top bar changes it by hand. It uses the mock's pill toggle style (the "Toggles" card: a pressed track with a raised knob), with a sun and a moon icon on either side, and has an accessible label ("Dark theme"). The manual choice is kept in `uiStore` and saved in `localStorage` (reads and writes wrapped in try/catch), so it survives a reload.
 - Scene:
-  - The page background around the scene and the selection box color (today `#4da3ff`) follow the theme accent.
-  - Floor and walls get new soft-UI colors that are **the same in both themes**.
+  - The page background around the scene follows the theme (`--bg`).
+  - The selection box (was `#4da3ff`) uses its own theme color `--selection`: forest `#24533a` in light, a brighter forest `#3f8f5c` in dark. Not sage: the floor and walls stay light in both themes, and pale sage hardly shows on them.
+  - Floor and walls get new soft-UI colors that are **the same in both themes**: floor sand `#d9d1bb`, walls ivory `#ece7da`. This changes the Room render once (it was gray), for both themes alike.
   - The snapshot keeps its white background (`SCENE_BACKGROUND` in `src/components/scene/snapshot.js`).
   - So the Room render sent to the AI is the same in both themes and Part F is unchanged.
 
@@ -89,7 +90,7 @@ Tasks are in build order. Each one follows the checkpoint workflow.
 - ✅ G.1 Theme colors and font: named CSS variables per theme replace the ~50 hard-coded colors in `src/index.css`. Outfit font; CSS variables for both themes (background, surface, text, muted, accent, on-accent, soft, shadows; accent forest in light, sage in dark) on `:root[data-theme="light"]` and `:root[data-theme="dark"]`.
 - ✅ G.2 Soft surfaces and shared UI: raised and pressed styles; restyle `Button` (primary and secondary pills), `NumberField` (round minus and plus around a pressed pill value), `ListItem` (selected item pressed with an accent dot); top bar (bold wide title, Plan | Personalize as a pressed pill with a raised active tab); panel sections as raised cards with small uppercase labels.
 - ✅ G.3 Dark theme and switch: system default, pill toggle with sun and moon in the top bar, choice saved.
-- ⬜ G.4 Scene colors: page background around the scene and selection box follow the theme; new fixed floor and wall colors; snapshot unchanged.
+- ✅ G.4 Scene colors: page background around the scene and selection box follow the theme; new fixed floor and wall colors; snapshot unchanged.
 - ⬜ G.5 Coffee table, and one Add button per catalog type in the Objects section.
 - ⬜ G.6 Armchair.
 - ⬜ G.7 Bookshelf.
@@ -133,3 +134,4 @@ The style mock shows a few things that do not exist in the app. They are not par
 ## Changelog
 - 2026-10-30: Draft created from Julia's outline. Changes to the outline: export keeps Y rotation only (tilt is lost, stated); floor and walls stay the same in both themes so the AI input is unchanged; Export and Import in Plan only; one Add button per catalog type; extra import checks (room limits, color, screen size); saving AI images as alternatives moved to Part H.
 - 2026-10-30: Accent swap from the mock written down (forest in light, sage in dark); theme switch uses the mock's pill toggle with sun and moon.
+- 2026-10-30: G.4: the selection box gets its own `--selection` color instead of the accent (sage would hardly show on the light floor in dark).

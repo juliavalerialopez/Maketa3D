@@ -3,6 +3,9 @@ import { useFrame } from '@react-three/fiber'
 import { useRoomStore } from '../../store/roomStore'
 
 const THICKNESS = 0.05
+// Light ivory from the soft UI palette. The same in both themes, so the Room
+// render sent to the AI does not depend on the theme.
+const WALL_COLOR = '#ece7da'
 
 export default function Walls() {
   const { width, depth, height } = useRoomStore((state) => state.room)
@@ -41,7 +44,7 @@ export default function Walls() {
       receiveShadow
     >
       <boxGeometry args={wall.size} />
-      <meshStandardMaterial color="#d8d4cc" />
+      <meshStandardMaterial color={WALL_COLOR} />
     </mesh>
   ))
 }

@@ -17,6 +17,7 @@
   --border-strong: #c4bca6;
   --error: #b3261e;
   --track: #d9d3c2;         /* toggle track when off */
+  --selection: #24533a;     /* selection box in the 3D scene */
   --shadow-out: 7px 7px 16px rgba(125, 112, 86, 0.22), -7px -7px 16px rgba(255, 255, 255, 0.95);
   --shadow-out-small: 4px 4px 9px rgba(125, 112, 86, 0.22), -4px -4px 9px rgba(255, 255, 255, 0.95);
   --shadow-in: inset 3px 3px 7px rgba(125, 112, 86, 0.25), inset -3px -3px 7px rgba(255, 255, 255, 0.95);
@@ -37,6 +38,10 @@
   --border-strong: #3e5a47;
   --error: #ff8a80;
   --track: #101712;
+  /* Not sage: the floor and walls stay light in both themes, and pale sage
+     would hardly show on them. A brighter forest reads on the floor and on
+     the dark page around the room. */
+  --selection: #3f8f5c;
   --shadow-out: 7px 7px 16px rgba(0, 0, 0, 0.5), -6px -6px 14px rgba(255, 255, 255, 0.035);
   --shadow-out-small: 4px 4px 9px rgba(0, 0, 0, 0.5), -3px -3px 8px rgba(255, 255, 255, 0.035);
   --shadow-in: inset 3px 3px 7px rgba(0, 0, 0, 0.55), inset -3px -3px 7px rgba(255, 255, 255, 0.04);
@@ -689,9 +694,10 @@ canvas {
   height: 100%;
   overflow: hidden;
   container-type: size;
-  /* Shows through the transparent canvas; the snapshot uses the same colour
-     (SCENE_BACKGROUND in scene/snapshot.js). */
-  background: #ffffff;
+  /* Shows through the transparent canvas and follows the theme. The snapshot
+     does not use it: it always fills white (SCENE_BACKGROUND in
+     scene/snapshot.js), so the Room render is the same in both themes. */
+  background: var(--bg);
 }
 
 .frame-guide {
