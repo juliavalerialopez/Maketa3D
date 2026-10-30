@@ -11,6 +11,16 @@
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
     />
     <title>maketa</title>
+    <script>
+      // Theme before the first paint (no light flash in dark mode): the saved
+      // choice, else the system setting, else light. uiStore reads it from here.
+      try {
+        var saved = localStorage.getItem('maketa-theme')
+        var dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        document.documentElement.dataset.theme =
+          saved === 'light' || saved === 'dark' ? saved : dark ? 'dark' : 'light'
+      } catch (error) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
