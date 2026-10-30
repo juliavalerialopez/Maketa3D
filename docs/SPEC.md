@@ -12,6 +12,7 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 3. Arrange objects: select from the list, move, rotate, recolor and delete via Object details (Part C); bigger start room, click-to-select and drag in 3D, move/rotate widget, tilt on all three axes, drag-to-change number values (Part D)
 4. Plan and Personalize modes: a 16:9 frame guide in Plan; switching to Personalize captures a clean render from the Plan camera, shown next to an empty AI image slot (Part E)
 5. AI restyle: upload one reference photo in Personalize, and Generate restyles the Room render to match it while keeping the room shape, camera and sofa placement (Part F)
+6. Soft UI restyle (light and dark theme), five new objects (coffee table, armchair, TV stand with TV, bookshelf, floor lamp), export and import of the layout as JSON (Part G)
 
 ## Layout
 - Top bar (about 44 px) with a centered "Plan | Personalize" switch. Plan is the mode on page load.
@@ -61,6 +62,7 @@ Objects are always a list, even with one type.
 | D | specs/part-d-arrange.md | Bigger room, click-to-select in 3D, drag, move/rotate widget, tilt, drag-to-change values | Done |
 | E | specs/part-e-personalize.md | Plan/Personalize modes, frame guide, snapshot, Personalize layout | Done |
 | F | specs/part-f-restyle.md | Reference photo, Generate/Regenerate via serverless AI, daily limits | Done |
+| G | specs/part-g-style-objects-layout.md | Soft UI and dark theme, five new objects, export and import | Draft |
 
 ## How we work
 - Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.

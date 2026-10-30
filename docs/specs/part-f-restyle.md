@@ -152,7 +152,7 @@ Download. Clear button. Drag and drop. Text instructions. Saving results. More p
 - Clear result button.
 - Drag and drop upload.
 - Text instructions next to the photo.
-- Saving results, for Part G: each generated image is saved as an alternative (an option in its own section), so the user can keep several and go back to any of them.
+- Saving results, for Part H: each generated image is saved as an alternative (an option in its own section), so the user can keep several and go back to any of them.
 - More panel groups.
 - 2K output (needs a way around Vercel's 4.5 MB response limit).
 - Part E backlog, to review: Refresh render button, placeable camera object, fixed 1920 × 1080 render, Personalize group state in `uiStore`.
@@ -165,3 +165,4 @@ Download. Clear button. Drag and drop. Text instructions. Saving results. More p
 - 2026-10-28: Goals confirmed, Part F started (In progress).
 - 2026-10-30: F.1.2, F.1.3 and F.2 skipped (the F.1 script exists but was not run on fixtures): prompt v1 checked by hand in the app on the three views and works (F.1.4). Saving results as alternatives moved to Part G (backlog).
 - 2026-10-30: Deployed; acceptance criteria checked on the live site (the total limit and the timeout checked in code). Part F done.
+- 2026-10-30: Saving results as alternatives moved from Part G to Part H (Part G scope is the soft UI, new objects and export/import).

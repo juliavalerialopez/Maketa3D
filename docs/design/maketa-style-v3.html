@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maketa soft UI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:Outfit,system-ui,sans-serif;background:#ebe7dc;color:#1d2a22;padding:36px 16px 80px;line-height:1.5}
+.wrap{max-width:1320px;margin:0 auto}
+h1{font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:clamp(26px,3.6vw,40px);color:#1f4a35}
+h1 span{color:#8fb59a;font-weight:400}
+.sub{letter-spacing:.2em;text-transform:uppercase;font-size:12px;color:#4d5a50;margin:4px 0 14px}
+.lead{max-width:760px;color:#4d5a50;margin-bottom:26px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,620px),1fr));gap:30px}
+.cap{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#4d5a50;margin-bottom:10px}
+.tok{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-size:12px;color:#4d5a50}
+.tok span{display:inline-flex;align-items:center;gap:6px}
+.tok i{width:14px;height:14px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.15)}
+
+/* ---------- theme tokens ---------- */
+.light{--bg:#f5f2ea;--card:#f5f2ea;--text:#1d2a22;--mut:#6f786f;--forest:#24533a;--onforest:#f5f2ea;--sage:#b9cdb0;--ink:#1c1d1b;
+ --out:7px 7px 16px rgba(125,112,86,.22),-7px -7px 16px rgba(255,255,255,.95);
+ --out-s:4px 4px 9px rgba(125,112,86,.22),-4px -4px 9px rgba(255,255,255,.95);
+ --in:inset 3px 3px 7px rgba(125,112,86,.25),inset -3px -3px 7px rgba(255,255,255,.95);
+ --wallL:#f1ede2;--wallR:#e6e1d2;--floor:#d9d1bb;--sofa:#3d6e52;--sofaL:#2f5a42;--sofaR:#264c37;--tbl:#f3efe4;--tblL:#ddd7c5;--tblR:#cbc5b0;--shadow:.28;--track:#d9d3c2}
+.dark{--bg:#18211c;--card:#18211c;--text:#ece8dc;--mut:#8f9b91;--forest:#b9cdb0;--onforest:#15211a;--sage:#3e5a47;--ink:#0f1511;
+ --out:7px 7px 16px rgba(0,0,0,.5),-6px -6px 14px rgba(255,255,255,.035);
+ --out-s:4px 4px 9px rgba(0,0,0,.5),-3px -3px 8px rgba(255,255,255,.035);
+ --in:inset 3px 3px 7px rgba(0,0,0,.55),inset -3px -3px 7px rgba(255,255,255,.04);
+ --wallL:#26342b;--wallR:#202c25;--floor:#34382c;--sofa:#b9cdb0;--sofaL:#9db591;--sofaR:#86a07b;--tbl:#4f6b57;--tblL:#41594a;--tblR:#354a3d;--shadow:.55;--track:#101712}
+
+/* ---------- the mock ---------- */
+.mock{background:var(--bg);color:var(--text);border-radius:30px;padding:20px;font-size:13px;display:flex;flex-direction:column;gap:16px}
+.head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-weight:700;letter-spacing:.06em;font-size:20px;text-transform:uppercase;color:var(--forest)}
+.brand span{color:var(--mut);font-weight:400}
+.brandsub{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+.sp{flex:1}
+.seg{display:flex;padding:4px;border-radius:99px;box-shadow:var(--in)}
+.seg span{padding:7px 18px;border-radius:99px;color:var(--mut);font-weight:500}
+.seg span.on{background:var(--card);box-shadow:var(--out-s);color:var(--forest);font-weight:600}
+.btn{font-family:inherit;font-size:13px;font-weight:600;border:0;border-radius:99px;padding:9px 20px;background:var(--forest);color:var(--onforest);box-shadow:var(--out-s)}
+.btn.sec{background:var(--card);color:var(--text);font-weight:500}
+.body{display:grid;grid-template-columns:230px 1fr;gap:16px}
+.col{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border-radius:22px;box-shadow:var(--out);padding:14px 15px}
+.lab{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--text);font-weight:500;margin-bottom:10px}
+.step{display:flex;align-items:center;gap:8px;margin:7px 0}
+.step label{flex:1;color:var(--mut)}
+.step .v{min-width:62px;text-align:center;padding:5px 8px;border-radius:99px;box-shadow:var(--in);font-weight:500}
+.rb{width:24px;height:24px;border-radius:50%;box-shadow:var(--out-s);display:grid;place-items:center;font-weight:600;color:var(--forest);font-size:14px;line-height:1}
+.orow{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:99px;margin:5px 0;color:var(--mut)}
+.orow .dot{width:20px;height:20px;border-radius:50%;box-shadow:var(--out-s);flex:none}
+.orow.sel{box-shadow:var(--in);color:var(--text);font-weight:600}
+.orow.sel .dot{background:var(--forest);box-shadow:none}
+.tgl{display:flex;justify-content:space-between;align-items:center;margin:10px 0 6px;color:var(--mut)}
+.sw{width:46px;height:24px;border-radius:99px;box-shadow:var(--in);position:relative;background:var(--track)}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--card);box-shadow:var(--out-s)}
+.sw.on{background:var(--forest);box-shadow:none}
+.sw.on::after{left:25px}
+.color{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:var(--mut)}
+.cdot{width:24px;height:24px;border-radius:50%;background:var(--sofa);box-shadow:var(--out-s)}
+.view{position:relative;background:var(--card);border-radius:26px;box-shadow:var(--out);padding:12px}
+.view{display:flex}
+.canvas{flex:1;display:grid;place-items:center;border-radius:18px;box-shadow:var(--in);overflow:hidden;background:var(--bg);padding-bottom:40px}
+.canvas svg{display:block;width:100%;height:auto}
+.tools{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;display:flex;gap:4px;padding:5px;border-radius:99px;background:var(--card);box-shadow:var(--out)}
+.tool{width:40px;height:36px;border-radius:99px;display:grid;place-items:center;color:var(--mut)}
+.tool.on{box-shadow:var(--in);color:var(--forest)}
+.tool svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tag{position:absolute;left:26px;top:26px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+
+/* component sheet */
+.sheet{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sheet .card{min-height:100px}
+.rowx{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.field{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:99px;box-shadow:var(--in);color:var(--mut)}
+.ring{display:flex;align-items:center;gap:14px}
+.ring svg{width:64px;height:64px;transform:rotate(-90deg)}
+.aa{font-weight:700;font-size:44px;line-height:1;color:var(--forest)}
+@media(max-width:560px){.body{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Maketa <span>/</span> Soft UI</h1>
+  <div class="sub">Editor restyle based on your Moss System reference</div>
+  <p class="lead">Same ivory, forest, sage and ink palette, the raised and pressed surfaces, wide-tracked uppercase labels, pill controls and the floating pill toolbar. Light is the reference as is; dark is the same system turned around, with sage as the main colour.</p>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const B=[300,170],R=[220,110],L=[-220,110];
+const pt=(u,v,h)=>[B[0]+u*R[0]+v*L[0],B[1]+u*R[1]+v*L[1]-h];
+const P=(u,v,h)=>pt(u,v,h).map(n=>n.toFixed(1)).join(',');
+function box(u0,u1,v0,v1,h0,h,t,l,r){const z0=h0,z1=h0+h,s=' stroke-linejoin="round" stroke-width="1.5"';
+ return `<polygon points="${[P(u0,v1,z0),P(u1,v1,z0),P(u1,v1,z1),P(u0,v1,z1)].join(' ')}" fill="${l}" stroke="${l}"${s}/>`+
+        `<polygon points="${[P(u1,v0,z0),P(u1,v1,z0),P(u1,v1,z1),P(u1,v0,z1)].join(' ')}" fill="${r}" stroke="${r}"${s}/>`+
+        `<polygon points="${[P(u0,v0,z1),P(u1,v0,z1),P(u1,v1,z1),P(u0,v1,z1)].join(' ')}" fill="${t}" stroke="${t}"${s}/>`}
+function room(id){
+ const f=[P(0,0,0),P(1,0,0),P(1,1,0),P(0,1,0)].join(' '),
+ wl=[P(0,0,0),P(0,1,0),P(0,1,150),P(0,0,150)].join(' '),wr=[P(0,0,0),P(1,0,0),P(1,0,150),P(0,0,150)].join(' ');
+ const sofa=box(.14,.54,.12,.62,0,24,'var(--sofa)','var(--sofaL)','var(--sofaR)')+box(.14,.25,.12,.62,24,34,'var(--sofa)','var(--sofaL)','var(--sofaR)')+
+  box(.14,.54,.12,.2,24,20,'var(--sofa)','var(--sofaL)','var(--sofaR)')+box(.14,.54,.54,.62,24,20,'var(--sofa)','var(--sofaL)','var(--sofaR)');
+ const table=box(.68,.86,.3,.6,0,20,'var(--tbl)','var(--tblL)','var(--tblR)');
+ const ring=[[.09,.07],[.59,.07],[.59,.67],[.09,.67]].map(([u,v])=>P(u,v,0)).join(' ');
+ const d=(a,b,o,t,ang)=>{const m=[(a[0]+b[0])/2+o[0],(a[1]+b[1])/2+o[1]];return `<g transform="translate(${m[0]} ${m[1]}) rotate(${ang})"><text text-anchor="middle" y="4" font-family="Outfit,sans-serif" font-size="12" letter-spacing="1.5" fill="var(--mut)">${t}</text></g>`};
+ return `<svg viewBox="30 0 540 400"><defs><filter id="${id}" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="7" stdDeviation="6" flood-color="#000" flood-opacity="var(--shadow)"/></filter></defs>
+ <polygon points="${f}" fill="var(--floor)"/><polygon points="${wl}" fill="var(--wallL)"/><polygon points="${wr}" fill="var(--wallR)"/>
+ <polygon points="${ring}" fill="none" stroke="var(--forest)" stroke-width="2" stroke-dasharray="6 5" stroke-linejoin="round"/>
+ <g filter="url(#${id})">${sofa}</g><g filter="url(#${id})">${table}</g>
+ ${d(pt(1,0,0),pt(1,1,0),[26,24],'3.5 M',-26.6)}${d(pt(0,1,0),pt(1,1,0),[-26,24],'4.0 M',26.6)}</svg>`}
+const ic={
+ orbit:'<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3-6.2"/><path d="M20 4v4h-4"/></svg>',
+ move:'<svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg>',
+ rot:'<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3"/><path d="M18 3v4h-4"/><path d="M20 12a8 8 0 0 1-14 5.3"/><path d="M6 21v-4h4"/></svg>',
+ cam:'<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>'};
+function mock(c,id){
+ return `<div class="mock ${c}">
+  <div class="head"><div><div class="brand">Maketa<span> / </span>Room</div><div class="brandsub">3D room planner</div></div><span class="sp"></span>
+   <div class="seg"><span class="on">Plan</span><span>Personalize</span></div><button class="btn">Save layout</button></div>
+  <div class="body"><div class="col">
+   <div class="card"><div class="lab">Room</div>
+    <div class="step"><label>Width</label><span class="rb">&minus;</span><span class="v">4.00 m</span><span class="rb">+</span></div>
+    <div class="step"><label>Depth</label><span class="rb">&minus;</span><span class="v">3.50 m</span><span class="rb">+</span></div>
+    <div class="step"><label>Height</label><span class="rb">&minus;</span><span class="v">2.60 m</span><span class="rb">+</span></div></div>
+   <div class="card"><div class="lab">Objects</div>
+    <div class="orow sel"><span class="dot"></span>Sofa 1</div><div class="orow"><span class="dot"></span>Table 1</div></div>
+   <div class="card"><div class="lab">Sofa 1</div>
+    <div class="step"><label>Rotation</label><span class="rb">&minus;</span><span class="v">90&deg;</span><span class="rb">+</span></div>
+    <div class="color">Color<span class="cdot"></span></div>
+    <div class="tgl">Snap to wall<span class="sw"></span></div>
+    <div class="rowx" style="margin-top:10px"><button class="btn sec" style="padding:7px 16px">Delete</button></div></div>
+  </div>
+  <div class="view"><div class="canvas">${room(id)}</div><div class="tag">Plan view</div>
+   <div class="tools"><span class="tool on">${ic.orbit}</span><span class="tool">${ic.move}</span><span class="tool">${ic.rot}</span><span class="tool">${ic.cam}</span></div></div>
+  </div></div>
+  <div class="sheet mock ${c}" style="padding:0;gap:14px;background:transparent">
+   <div class="card"><div class="lab">Buttons</div><div class="rowx"><button class="btn">Primary</button><button class="btn sec">Secondary</button></div></div>
+   <div class="card"><div class="lab">Type</div><div class="rowx"><span class="aa">Aa</span><span style="color:var(--mut)">Outfit. Bold for names,<br>wide labels for sections.</span></div></div>
+   <div class="card"><div class="lab">Toggles</div><div class="rowx"><span class="sw on"></span><span class="sw"></span></div></div>
+   <div class="card"><div class="lab">Generations today</div><div class="ring"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="25" fill="none" stroke="var(--track)" stroke-width="9"/><circle cx="32" cy="32" r="25" fill="none" stroke="var(--forest)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(2*Math.PI*25*.15).toFixed(1)} 999"/></svg><span><b style="font-size:20px">3</b> / 20</span></div></div>
+   <div class="card" style="grid-column:1/-1"><div class="lab">Reference photo</div><div class="field">&#9906;&nbsp; Upload a styled room photo</div></div>
+  </div>`;
+}
+const g=document.getElementById('grid');
+[['light','Light (reference)','rm1',[['ivory','#f5f2ea'],['forest','#24533a'],['sage','#b9cdb0'],['ink','#1c1d1b']]],
+ ['dark','Dark','rm2',[['night moss','#18211c'],['sage','#b9cdb0'],['ivory','#ece8dc'],['deep green','#3e5a47']]]].forEach(([c,n,id,t])=>{
+ const e=document.createElement('div');e.innerHTML=`<div class="cap">${n}</div><div class="light-wrap">${mock(c,id)}</div><div class="tok">${t.map(x=>`<span><i style="background:${x[1]}"></i>${x[0]} ${x[1]}</span>`).join('')}</div>`;g.appendChild(e)});
+</script>
+</body>
+</html>

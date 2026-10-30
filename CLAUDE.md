@@ -61,6 +61,7 @@ first.
 - `docs/prompts/`: AI prompts, one file each, with numbered versions and test
   results. The live copy in `api/` must match the latest version.
 - `docs/decisions/`: decision records (`NNNN-title.md`), e.g. the model choice
+- `docs/design/`: style mocks (HTML), e.g. `maketa-style-v3.html` for Part G
 
 ## Running locally
 - `npm run dev`: the app only; `/api` does not run.
