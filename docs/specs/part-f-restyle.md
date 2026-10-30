@@ -73,20 +73,20 @@ In Personalize I upload one photo of a styled living room and press Generate. Th
 - `RESTYLE_MOCK=1` (local only) returns the render after 2 s, with no AI call and no counting.
 
 ### State
-- `src/store/restyleStore.js`, memory only: `photo` (`{ dataUrl, name }` or null), `photoError`, `status` ('idle' | 'loading'), `error`, `result`, `resultSnapshot`, `remaining`, and `generate()`.
+- `src/store/restyleStore.js`, memory only: `photo` (`{ dataUrl, name }` or null), `photoError`, `status` ('idle' | 'loading'), `error`, `result`, `resultSnapshot`, `remaining`, `limit` ('total' | 'visitor' | null, the limit reached at 0), and `generate()`.
 - `generate()` lives in the store, so a running request is not lost when Personalize unmounts.
 - Resizing and requests live in `src/services/restyle.js`.
 
 ### Local testing
 - `npm run dev` does not run `/api`. Use `npx vercel dev` (Vite and `/api` together) after `npx vercel link` and `npx vercel env pull .env.local` (gitignored by `*.local`). The Vercel CLI is not added to `package.json`.
-- Prompt tests are done by hand in the app (the F.1 script was skipped).
+- Prompt tests outside the app: `node --env-file=.env.local scripts/try-restyle.mjs <fixture> <photo>`. Written in F.1 but not used for F.1.3; v1 was checked by hand in the app (F.1.4).
 
 ## Tasks
-- ⏭️ F.1 Prompt spike: `scripts/try-restyle.mjs` (Node, `fetch`) sends a fixture, a photo and the current prompt to Gemini; paths are arguments, outputs go to a gitignored `scratch/restyle-runs/`. Skipped 2026-10-30, see F.1.4.
+- ✅ F.1 Prompt spike: `scripts/try-restyle.mjs` (Node, `fetch`) sends a fixture, a photo and the current prompt to Gemini; paths are arguments, outputs go to a gitignored `scratch/restyle-runs/`. Script written; its runs (F.1.3) were replaced by F.1.4.
   - ✅ F.1.1 Confirm the exact model ID (`gemini-nano-banana-2.1`) and the 1K price ($0.0336) in Google's official docs; note the result in the ADR. The manual tests used the Gemini app and the API may behave differently, so F.1 is the real test.
   - ⏭️ F.1.2 Save the three fixtures (Julia, see Fixtures below). Skipped 2026-10-30: saved outside the repo.
   - ⏭️ F.1.3 Run prompt v1 on every fixture with `reference-couch.jpg`, with and without the white-area line (T6); record which works better in `restyle.md` and close the open question. Skipped 2026-10-30, see F.1.4.
-  - ✅ F.1.4 (added 2026-10-30) Prompt v1 checked by hand in the app (Julia) on the three fixture views with `reference-couch.jpg`: works. Fixtures kept outside the repo; no script.
+  - ✅ F.1.4 (added 2026-10-30) Prompt v1 checked by hand in the app (Julia) on the three fixture views with `reference-couch.jpg`: works. Fixtures kept outside the repo; the script was not used.
 - ⏭️ F.2 Prompt tuning until T1, T2 and T3 pass (see Test cases). Skipped 2026-10-30: v1 works (F.1.4), no tuning needed.
 - ✅ F.3 `api/restyle.js`: POST and GET, input checks, Gemini call with a 60 s `AbortController`, errors (400/429/502/504), `RESTYLE_MOCK`; local only
 - ✅ F.4 Limits in Upstash: visitor hash with daily salt, total and visitor counts in one transaction, undo on 429 or failure, `remaining` in every response. Deploy only after this task.
@@ -95,7 +95,7 @@ In Personalize I upload one photo of a styled living room and press Generate. Th
 - ✅ F.7 A new Room render clears the AI image; responses for an older render are ignored
 - ✅ F.8 Reference image group: upload, checks, preview, Replace, Remove, notice
 - ✅ F.9 Generate / Regenerate button: label, disabled states, "N of 3 left today", loading (empty slot or dimmed old image), old result kept on failure, error messages
-- ⬜ F.10 Docs: CLAUDE.md (dated stack exception for `/api` and Upstash, `api/`, `services/`, `docs/prompts/`, `docs/decisions/`, `npx vercel dev`) and the SPEC.md data model
+- ✅ F.10 Docs: CLAUDE.md (dated stack exception for `/api` and Upstash, `api/`, `services/`, `docs/prompts/`, `docs/decisions/`, `npx vercel dev`) and the SPEC.md data model
 - ⬜ F.11 Build passes and deploy (last task of the part)
   - Gemini key from a billing-enabled (paid tier) Google project
   - On Vercel: `GEMINI_API_KEY`, `VISITOR_SECRET` and the Upstash variables set; `RESTYLE_MOCK` not set in production
@@ -163,4 +163,4 @@ Download. Clear button. Drag and drop. Text instructions. Saving results. More p
 ## Changelog
 - 2026-10-28: Draft created. Scope: reference photo upload, Generate / Regenerate through a serverless function with Nano Banana 2.1, daily limits (20 in total, 3 per visitor), result in the AI image slot.
 - 2026-10-28: Goals confirmed, Part F started (In progress).
-- 2026-10-30: F.1 script, F.1.2, F.1.3 and F.2 skipped: prompt v1 checked by hand in the app on the three views and works (F.1.4). Saving results as alternatives moved to Part G (backlog).
+- 2026-10-30: F.1.2, F.1.3 and F.2 skipped (the F.1 script exists but was not run on fixtures): prompt v1 checked by hand in the app on the three views and works (F.1.4). Saving results as alternatives moved to Part G (backlog).

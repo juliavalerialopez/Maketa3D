@@ -13,6 +13,11 @@
 - Zustand for state
 - npm, run with `npm run dev`
 
+Exception (added 2026-10-28, Part F): the AI restyle needs a server, so the
+app also has Vercel serverless functions in `api/` (Node, no npm packages:
+`fetch` and `node:crypto` only) and Upstash Redis for the daily limits, called
+over its REST API with `fetch`. No other server code or services.
+
 React is pinned to `19.2.8` (not a caret range) because `@react-three/fiber@9.7.0`
 peer-depends on `react >=19 <19.3`. When bumping React, re-check that peer range
 first.
@@ -40,10 +45,30 @@ first.
   (label, component, default size, color). Adding a type = a model file in
   `objects/` + one catalog entry; do not define types anywhere else.
 - `src/store/`: Zustand stores
+- `src/services/`: browser code that talks to the server or prepares data for
+  it (e.g. `restyle.js`: image resizing, `/api/restyle` requests, error
+  messages). Requests go through stores; components may import constants
+  and message helpers only.
+- `api/`: Vercel functions. Files starting with `_` are helpers, not routes
+  (`_gemini.js`, `_limits.js`, `_restyle-prompt.js`). API keys and secrets
+  exist only here, as env vars, never in `src/`.
+- `scripts/`: Node scripts run by hand (e.g. `try-restyle.mjs`, the prompt
+  test), not part of the app build
 - `public/models/`: static assets (`.glb`, etc.), referenced as URL strings
   (e.g. `"/models/x.glb"`), **never** as ES imports
 - `docs/SPEC.md`: product spec (source of truth)
 - `docs/specs/part-*.md`: part specs with numbered tasks, backlog, changelog
+- `docs/prompts/`: AI prompts, one file each, with numbered versions and test
+  results. The live copy in `api/` must match the latest version.
+- `docs/decisions/`: decision records (`NNNN-title.md`), e.g. the model choice
+
+## Running locally
+- `npm run dev`: the app only; `/api` does not run.
+- `npx vercel dev`: the app and `/api` together. Once: `npx vercel link` and
+  `npx vercel env pull .env.local` (gitignored). The Vercel CLI is not added to
+  `package.json`.
+- `RESTYLE_MOCK=1` in `.env.local` makes `/api/restyle` return the render
+  after 2 s, with no AI call and no counting. Never set it in production.
 
 ## Specs
 - Read `docs/SPEC.md` and the current part spec before planning.

@@ -36,7 +36,19 @@ selectedId: string | null
 mode: 'plan' | 'personalize'
 snapshot: string | null                     // PNG data URL of the last Room render, memory only
 planView: { position: [x, y, z], target: [x, y, z] }  // Plan orbit camera, restored when Plan mounts again
+
+// AI restyle (restyleStore), memory only: kept across mode switches, lost on reload
+photo: { dataUrl, name } | null             // reference photo, resized on upload
+photoError: string | null
+status: 'idle' | 'loading'
+error: string | null
+result: string | null                       // AI image data URL
+resultSnapshot: string | null               // the Room render the result was made from
+remaining: number | null                    // generations this visitor can still make today, from the server
+limit: 'total' | 'visitor' | null           // which limit was reached when remaining is 0
 ```
+
+Daily limit counts live on the server (Upstash Redis), not in the stores.
 
 Objects are always a list, even with one type.
 
