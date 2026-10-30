@@ -32,7 +32,7 @@ Output one photorealistic 16:9 image.
 ```
 
 ### Results
-Not run yet (F.1.3).
+2026-10-30: checked by hand in the app on the three fixture views with `reference-couch.jpg`: works (sofa angle, no added decor, room shape kept). No scripted runs (F.1.3 skipped).
 
 ## T6 experiment: white area outside the room
 The Room render hides the camera-facing walls, so the area outside the room is plain white. F.1.3 runs every fixture with v1 as is, and with this line added before the last line:
@@ -47,7 +47,7 @@ The white area outside the room is empty background; keep it plain.
 | fixture-2-side.png | | |
 | fixture-3-rotated.png | | |
 
-Decision: not made yet.
+Decision: not tested (F.1.3 skipped). v1 stays without the line unless a problem shows up.
 
 ## Test cases
 See `docs/specs/part-f-restyle.md` (T1 to T6, pass rule: at least 2 of 3 runs on all three fixtures).

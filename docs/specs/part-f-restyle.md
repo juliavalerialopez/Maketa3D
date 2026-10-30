@@ -79,14 +79,15 @@ In Personalize I upload one photo of a styled living room and press Generate. Th
 
 ### Local testing
 - `npm run dev` does not run `/api`. Use `npx vercel dev` (Vite and `/api` together) after `npx vercel link` and `npx vercel env pull .env.local` (gitignored by `*.local`). The Vercel CLI is not added to `package.json`.
-- Prompt tests run outside the app: `node --env-file=.env.local scripts/try-restyle.mjs <fixture> <photo>`.
+- Prompt tests are done by hand in the app (the F.1 script was skipped).
 
 ## Tasks
-- ⬜ F.1 Prompt spike: `scripts/try-restyle.mjs` (Node, `fetch`) sends a fixture, a photo and the current prompt to Gemini; paths are arguments, outputs go to a gitignored `scratch/restyle-runs/`
+- ⏭️ F.1 Prompt spike: `scripts/try-restyle.mjs` (Node, `fetch`) sends a fixture, a photo and the current prompt to Gemini; paths are arguments, outputs go to a gitignored `scratch/restyle-runs/`. Skipped 2026-10-30, see F.1.4.
   - ✅ F.1.1 Confirm the exact model ID (`gemini-nano-banana-2.1`) and the 1K price ($0.0336) in Google's official docs; note the result in the ADR. The manual tests used the Gemini app and the API may behave differently, so F.1 is the real test.
-  - ⬜ F.1.2 Save the three fixtures (Julia, see Fixtures below)
-  - ⬜ F.1.3 Run prompt v1 on every fixture with `reference-couch.jpg`, with and without the white-area line (T6); record which works better in `restyle.md` and close the open question
-- ⬜ F.2 Prompt tuning until T1, T2 and T3 pass (see Test cases)
+  - ⏭️ F.1.2 Save the three fixtures (Julia, see Fixtures below). Skipped 2026-10-30: saved outside the repo.
+  - ⏭️ F.1.3 Run prompt v1 on every fixture with `reference-couch.jpg`, with and without the white-area line (T6); record which works better in `restyle.md` and close the open question. Skipped 2026-10-30, see F.1.4.
+  - ✅ F.1.4 (added 2026-10-30) Prompt v1 checked by hand in the app (Julia) on the three fixture views with `reference-couch.jpg`: works. Fixtures kept outside the repo; no script.
+- ⏭️ F.2 Prompt tuning until T1, T2 and T3 pass (see Test cases). Skipped 2026-10-30: v1 works (F.1.4), no tuning needed.
 - ✅ F.3 `api/restyle.js`: POST and GET, input checks, Gemini call with a 60 s `AbortController`, errors (400/429/502/504), `RESTYLE_MOCK`; local only
 - ✅ F.4 Limits in Upstash: visitor hash with daily salt, total and visitor counts in one transaction, undo on 429 or failure, `remaining` in every response. Deploy only after this task.
 - ✅ F.5 `ui/Button` gets a `disabled` prop
@@ -151,14 +152,15 @@ Download. Clear button. Drag and drop. Text instructions. Saving results. More p
 - Clear result button.
 - Drag and drop upload.
 - Text instructions next to the photo.
-- Saving results.
+- Saving results, for Part G: each generated image is saved as an alternative (an option in its own section), so the user can keep several and go back to any of them.
 - More panel groups.
 - 2K output (needs a way around Vercel's 4.5 MB response limit).
 - Part E backlog, to review: Refresh render button, placeable camera object, fixed 1920 × 1080 render, Personalize group state in `uiStore`.
 
 ## Open questions
-- How to treat the white areas outside the room (T6): decided in F.1.3.
+- How to treat the white areas outside the room (T6): not tested (F.1.3 skipped); v1 stays without the white-area line unless a problem shows up.
 
 ## Changelog
 - 2026-10-28: Draft created. Scope: reference photo upload, Generate / Regenerate through a serverless function with Nano Banana 2.1, daily limits (20 in total, 3 per visitor), result in the AI image slot.
 - 2026-10-28: Goals confirmed, Part F started (In progress).
+- 2026-10-30: F.1 script, F.1.2, F.1.3 and F.2 skipped: prompt v1 checked by hand in the app on the three views and works (F.1.4). Saving results as alternatives moved to Part G (backlog).
