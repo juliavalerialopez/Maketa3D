@@ -59,7 +59,7 @@ Objects are always a list, even with one type.
 | B | specs/part-b-objects.md | Objects section, add Sofa | Done |
 | C | specs/part-c-details.md | Select from list, Object details (position, rotation, color), delete | Done |
 | D | specs/part-d-arrange.md | Bigger room, click-to-select in 3D, drag, move/rotate widget, tilt, drag-to-change values | Done |
-| E | specs/part-e-personalize.md | Plan/Personalize modes, frame guide, snapshot, Personalize layout | In progress |
+| E | specs/part-e-personalize.md | Plan/Personalize modes, frame guide, snapshot, Personalize layout | Done |
 | F | specs/part-f-restyle.md | Reference photo, Generate/Regenerate via serverless AI, daily limits | Done |
 
 ## How we work

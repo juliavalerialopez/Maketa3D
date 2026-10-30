@@ -1,6 +1,6 @@
 # Part E: Personalize
 
-Status: **In progress**. Builds on Part D (scene, widget, selection, OrbitControls as default controls).
+Status: **Done**. Builds on Part D (scene, widget, selection, OrbitControls as default controls).
 
 ## Goal
 The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan is today's editor plus a 16:9 frame guide. Pressing Personalize takes a clean snapshot of the room inside the frame and shows it next to an empty black "AI image" slot, above an empty control panel. Nothing in the room, the selection or the camera is lost when switching back.
@@ -111,3 +111,4 @@ Image upload. Any AI call, API key, serverless function or prompt. Controls in t
 - 2026-10-27: Part E closed: deployed, acceptance criteria checked on the live site, E.11 ticked, status Done.
 - 2026-10-27: Two bugs from Part E testing added: E.12 (widget missing after Personalize → Plan) and E.13 (divider keeps following the mouse after a lost mouseup).
 - 2026-10-28: Part E reopened (In progress) for the E.12 and E.13 bug fixes.
+- 2026-10-30: Part E done.
