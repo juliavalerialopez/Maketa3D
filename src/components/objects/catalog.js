@@ -2,6 +2,7 @@ import Sofa from './Sofa'
 import CoffeeTable from './CoffeeTable'
 import Armchair from './Armchair'
 import Bookshelf from './Bookshelf'
+import FloorLamp from './FloorLamp'
 
 // One entry per placeable object type. Adding a type = a model file here + one entry.
 // The Objects section shows one Add button per entry, in this order.
@@ -29,6 +30,12 @@ export const OBJECT_TYPES = {
     component: Bookshelf,
     size: { width: 0.8, depth: 0.3, height: 1.8 },
     color: '#a0785a',
+  },
+  floorLamp: {
+    label: 'Floor lamp',
+    component: FloorLamp,
+    size: { width: 0.36, depth: 0.36, height: 1.7 },
+    color: '#c9a66b',
   },
 }
 
