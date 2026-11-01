@@ -27,8 +27,11 @@ export const useObjectsStore = create((set) => ({
 
   addObject: (type) =>
     set((state) => {
-      const size = { ...OBJECT_TYPES[type].size }
+      const entry = OBJECT_TYPES[type]
+      const size = { ...entry.size }
       const number = (state.lastNumbers[type] ?? 0) + 1
+      // Types with a screen (TV stand) start at the default screen size.
+      const extra = entry.screenInches ? { screenInches: entry.screenInches.default } : {}
       return {
         lastNumbers: { ...state.lastNumbers, [type]: number },
         objects: [
@@ -40,7 +43,8 @@ export const useObjectsStore = create((set) => ({
             position: placementFor(state.objects.length, size),
             rotation: [0, 0, 0],
             size,
-            color: OBJECT_TYPES[type].color,
+            color: entry.color,
+            ...extra,
           },
         ],
       }

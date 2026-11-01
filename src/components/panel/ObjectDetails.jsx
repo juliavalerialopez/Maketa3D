@@ -1,4 +1,4 @@
-import { objectLabel } from '../objects/catalog'
+import { OBJECT_TYPES, objectLabel } from '../objects/catalog'
 import { selectSelectedObject, useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
 import { clampPosition, positionLimits } from '../../store/roomBounds'
@@ -22,6 +22,19 @@ export default function ObjectDetails() {
 
   const [x, y, z] = object.position
   const limits = positionLimits(object, room)
+  const type = OBJECT_TYPES[object.type]
+  const screen = type.screenInches
+
+  // Whole inches within the type's range.
+  const limitInches = (inches) => Math.round(Math.min(screen.max, Math.max(screen.min, inches)))
+
+  // A new screen size changes the footprint, so the position is clamped with it.
+  function setScreenInches(value) {
+    const screenInches = limitInches(value)
+    const size = type.sizeFor(screenInches)
+    const position = clampPosition({ ...object, size }, room, x, z)
+    updateObject(object.id, { screenInches, size, position })
+  }
 
   // A new rotation changes the footprint, so the position is clamped with it.
   function setRotation(axisIndex, degrees) {
@@ -66,6 +79,18 @@ export default function ObjectDetails() {
           />
         ))}
       </FieldGroup>
+      {screen && (
+        <NumberField
+          label="Screen size"
+          unit="in"
+          value={object.screenInches}
+          onChange={setScreenInches}
+          min={screen.min}
+          max={screen.max}
+          step={1}
+          normalize={limitInches}
+        />
+      )}
       <ColorField
         label="Color"
         value={object.color}

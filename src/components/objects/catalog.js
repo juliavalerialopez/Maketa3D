@@ -3,9 +3,13 @@ import CoffeeTable from './CoffeeTable'
 import Armchair from './Armchair'
 import Bookshelf from './Bookshelf'
 import FloorLamp from './FloorLamp'
+import TvStand from './TvStand'
+import { tvStandSize } from './tvStandSize'
 
 // One entry per placeable object type. Adding a type = a model file here + one entry.
 // The Objects section shows one Add button per entry, in this order.
+// A type with `screenInches` has a Screen size field: the object stores
+// `screenInches` (whole inches, min to max) and its size is sizeFor(inches).
 export const OBJECT_TYPES = {
   sofa: {
     label: 'Sofa',
@@ -36,6 +40,14 @@ export const OBJECT_TYPES = {
     component: FloorLamp,
     size: { width: 0.36, depth: 0.36, height: 1.7 },
     color: '#c9a66b',
+  },
+  tvStand: {
+    label: 'TV stand',
+    component: TvStand,
+    size: tvStandSize(55),
+    color: '#d9d2bf',
+    screenInches: { min: 32, max: 85, default: 55 },
+    sizeFor: tvStandSize,
   },
 }
 
