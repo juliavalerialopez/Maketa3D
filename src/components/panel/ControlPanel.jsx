@@ -5,6 +5,7 @@ import ObjectDetails from './ObjectDetails'
 import Button from '../ui/Button'
 import useObjectShortcuts from './useObjectShortcuts'
 import { useObjectsStore } from '../../store/objectsStore'
+import { OBJECT_TYPES } from '../objects/catalog'
 
 export default function ControlPanel() {
   const addObject = useObjectsStore((state) => state.addObject)
@@ -18,7 +19,13 @@ export default function ControlPanel() {
         <RoomInputs />
       </Section>
       <Section id="objects" title="Objects">
-        <Button variant="primary" onClick={() => addObject('sofa')}>Add Sofa</Button>
+        <div className="add-buttons">
+          {Object.entries(OBJECT_TYPES).map(([type, { label }]) => (
+            <Button key={type} onClick={() => addObject(type)}>
+              Add {label}
+            </Button>
+          ))}
+        </div>
         <ObjectList />
       </Section>
       {selectedId && (

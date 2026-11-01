@@ -386,6 +386,18 @@ canvas {
   gap: 8px;
 }
 
+/* Objects: one Add button per type, wrapping, above the list. */
+.add-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.add-buttons .ui-button {
+  margin-bottom: 0;
+}
+
 .object-details-name {
   margin: 0;
   font-weight: 700;
