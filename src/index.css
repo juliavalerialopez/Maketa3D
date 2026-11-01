@@ -99,6 +99,13 @@ canvas {
 
 .top-bar-end {
   justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.top-bar-end .ui-button {
+  margin-bottom: 0;
 }
 
 .top-bar-icon {

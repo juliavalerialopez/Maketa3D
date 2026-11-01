@@ -96,7 +96,7 @@ Tasks are in build order. Each one follows the checkpoint workflow.
 - ✅ G.7 Bookshelf.
 - ✅ G.8 Floor lamp.
 - ✅ G.9 TV stand with TV and the Screen size field.
-- ⬜ G.10 Export layout.
+- ✅ G.10 Export layout.
 - ⬜ G.11 Import layout.
 - ⬜ G.12 Build, deploy, cleanup: `npm run build` on Windows, deploy, check the live site in both themes; update `CLAUDE.md` and the `docs/SPEC.md` roadmap, layout and data model (new objects, `screenInches`, theme, export format).
 
