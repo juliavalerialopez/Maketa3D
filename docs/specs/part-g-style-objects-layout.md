@@ -93,7 +93,7 @@ Tasks are in build order. Each one follows the checkpoint workflow.
 - ✅ G.4 Scene colors: page background around the scene and selection box follow the theme; new fixed floor and wall colors; snapshot unchanged.
 - ✅ G.5 Coffee table, and one Add button per catalog type in the Objects section.
 - ✅ G.6 Armchair.
-- ⬜ G.7 Bookshelf.
+- ✅ G.7 Bookshelf.
 - ⬜ G.8 Floor lamp.
 - ⬜ G.9 TV stand with TV and the Screen size field.
 - ⬜ G.10 Export layout.
