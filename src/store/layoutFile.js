@@ -1,5 +1,6 @@
 import { DEFAULT_ROOM, ROOM_LIMITS, useRoomStore } from './roomStore'
 import { useObjectsStore } from './objectsStore'
+import { useModeStore } from './modeStore'
 import { clampPosition } from './roomBounds'
 import { OBJECT_TYPES } from '../components/objects/catalog'
 
@@ -46,10 +47,12 @@ export function exportLayout(fileName = LAYOUT_FILE_NAME) {
   URL.revokeObjectURL(url)
 }
 
-// A new project: the default room, no objects, numbering from 1 again.
+// A new project: the default room, no objects, numbering from 1 again, and
+// the Plan camera back at its starting view.
 export function newLayout() {
   useRoomStore.getState().setRoomSize({ ...DEFAULT_ROOM })
   useObjectsStore.getState().replaceObjects([], {})
+  useModeStore.getState().resetPlanView()
 }
 
 const isNumber = (value) => typeof value === 'number' && Number.isFinite(value)
