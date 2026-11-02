@@ -100,7 +100,7 @@ Each Generate sends the Room render, the room photo (if Reference) and one photo
 ## Tasks
 Order: unblock testing, then what I can see, then references, then the AI side. Each one follows the checkpoint workflow.
 
-- ⬜ H.1 Limits from environment variables: server reads both variables, answers include the numbers, the page and messages use them, defaults stay 3 and 20.
+- ✅ H.1 Limits from environment variables: server reads both variables, answers include the numbers, the page and messages use them, defaults stay 3 and 20.
 - ⬜ H.2 Version history in `restyleStore` (`versions: [{ id, number, image, roomRender, createdAt }]`, `selectedVersionId`): Generate adds a version and selects it; the top left image follows the selected version; blocked at 6. The leave-Personalize dialog clears versions.
 - ⬜ H.3 Thumbnail row with the hover X: shared `Thumbnail` and `IconButton` components.
 - ⬜ H.4 Download button at the top right of the AI image.

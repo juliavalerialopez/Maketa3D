@@ -6,8 +6,16 @@ import { useModeStore } from './modeStore'
 // for an older render is ignored.
 let latestRequest = 0
 
-// Keeps the stored count when the server did not send one.
-const countUpdate = (count) => (count && count.remaining !== null ? count : {})
+// The parts of a server count to store: the remaining count only when the
+// server sent one, and each limit only when known.
+function countUpdate(count) {
+  if (!count) return {}
+  const update = {}
+  if (count.remaining !== null) Object.assign(update, { remaining: count.remaining, limit: count.limit })
+  if (count.visitorLimit !== null) update.visitorLimit = count.visitorLimit
+  if (count.totalLimit !== null) update.totalLimit = count.totalLimit
+  return update
+}
 
 // AI restyle state (Part F), memory only: kept across mode switches, lost on
 // reload. generate() runs here, not in a component, so a request keeps going
@@ -25,6 +33,9 @@ export const useRestyleStore = create((set, get) => ({
   // says. At 0, `limit` is the limit reached ('total' | 'visitor').
   remaining: null,
   limit: null,
+  // The current daily limits from the server (H.1); null until it says.
+  visitorLimit: null,
+  totalLimit: null,
 
   setPhotoFile: async (file) => {
     try {

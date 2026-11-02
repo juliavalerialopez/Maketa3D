@@ -1,12 +1,13 @@
 // Restyle function (Part F): POST { render, photo } (base64 JPEG) returns
 // { image, remaining } with the AI image as a data URL. GET returns
 // { remaining } without counting. When remaining is 0, `limit` says which
-// limit was reached ('total' | 'visitor'). Errors are { error: code }:
+// limit was reached ('total' | 'visitor'). Every answer also carries the
+// current limits, visitorLimit and totalLimit (H.1). Errors are { error: code }:
 // 400 bad_input, 413 too_large, 429 limit (with limit: 'total' | 'visitor'),
 // 502 failed, 504 timeout.
 // The Gemini key stays here; photos and results are never stored or logged.
 import { restyleImage } from './_gemini.js'
-import { release, remaining, reserve } from './_limits.js'
+import { limits, release, remaining, reserve } from './_limits.js'
 import { PROMPT } from './_restyle-prompt.js'
 
 // Vercel allows 4.5 MB per request body; the browser sends about 1.5 MB.
@@ -16,7 +17,9 @@ const TIMEOUT_MS = 60_000
 const MOCK_DELAY_MS = 2_000
 const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/
 
-const fail = (status, error, extra) => Response.json({ error, ...extra }, { status })
+// Every answer carries the current limits, so the page can show them.
+const reply = (body, init) => Response.json({ ...body, ...limits() }, init)
+const fail = (status, error, extra) => reply({ error, ...extra }, { status })
 const isMock = () => process.env.RESTYLE_MOCK === '1'
 
 function isJpegBase64(value) {
@@ -41,12 +44,12 @@ async function readInput(request) {
 }
 
 export async function GET(request) {
-  if (isMock()) return Response.json({ remaining: null })
+  if (isMock()) return reply({ remaining: null })
   try {
-    return Response.json(await remaining(request))
+    return reply(await remaining(request))
   } catch (error) {
     console.error('Restyle: could not read the limits:', error.message)
-    return Response.json({ remaining: null })
+    return reply({ remaining: null })
   }
 }
 
@@ -57,7 +60,7 @@ export async function POST(request) {
   // Local only: echo the render back, no AI call and no counting.
   if (isMock()) {
     await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS))
-    return Response.json({ image: `data:image/jpeg;base64,${input.render}`, remaining: null })
+    return reply({ image: `data:image/jpeg;base64,${input.render}`, remaining: null })
   }
 
   const apiKey = process.env.GEMINI_API_KEY
@@ -86,7 +89,7 @@ export async function POST(request) {
       photo: { data: input.photo, mimeType: 'image/jpeg' },
       signal: controller.signal,
     })
-    return Response.json({
+    return reply({
       image: `data:${result.mimeType};base64,${result.data}`,
       remaining: reservation.remaining,
       limit: reservation.limit,

@@ -9,21 +9,17 @@ const RENDER_WIDTH = 1280
 const RENDER_HEIGHT = 720
 const RENDER_QUALITY = 0.9
 const ENDPOINT = '/api/restyle'
-// Generations per visitor per day; the server (api/_limits.js) enforces it.
-export const VISITOR_LIMIT = 3
 
 export const MESSAGES = {
   photoType: 'Use a JPG, PNG or WebP image.',
   photoSize: 'The photo is larger than 10 MB.',
   photoRead: 'This file could not be read.',
-  visitorLimit: "You've used your 3 images for today. Try again tomorrow.",
-  totalLimit: 'Daily limit reached (20 images a day). Try again tomorrow.',
   failed: 'The image could not be made. Try again.',
   timeout: 'The request took too long. Try again.',
 }
 
-// An error with a message for the panel, and the count ({ remaining, limit })
-// when the server sent one.
+// An error with a message for the panel, and the count (see countOf) when
+// the server sent one.
 export class RestyleError extends Error {
   constructor(message, count = null) {
     super(message)
@@ -75,17 +71,34 @@ function renderToJpeg(snapshot) {
 
 const base64Of = (dataUrl) => dataUrl.slice(dataUrl.indexOf(',') + 1)
 
-// The panel message for a reached limit ('total' or 'visitor').
-export const limitMessage = (limit) => (limit === 'total' ? MESSAGES.totalLimit : MESSAGES.visitorLimit)
-
-// { remaining, limit } from a server answer; remaining is null when unknown,
-// limit is set only when remaining is 0.
-function countOf(body) {
-  const remaining = Number.isInteger(body?.remaining) ? body.remaining : null
-  return { remaining, limit: remaining === 0 ? (body.limit ?? 'visitor') : null }
+// The panel message for a reached limit ('total' or 'visitor'), with the
+// numbers from the server ({ visitorLimit, totalLimit }) when known.
+export function limitMessage(limit, { visitorLimit, totalLimit } = {}) {
+  if (limit === 'total') {
+    const count = totalLimit ? ` (${totalLimit} images a day)` : ''
+    return `Daily limit reached${count}. Try again tomorrow.`
+  }
+  const count = visitorLimit ? `${visitorLimit} ` : ''
+  const noun = visitorLimit === 1 ? 'image' : 'images'
+  return `You've used your ${count}${noun} for today. Try again tomorrow.`
 }
 
-// What this visitor can still make today: { remaining, limit }.
+const wholeOrNull = (value) => (Number.isInteger(value) && value >= 0 ? value : null)
+
+// { remaining, limit, visitorLimit, totalLimit } from a server answer.
+// remaining is null when unknown; limit is set only when remaining is 0;
+// the two limits are null when the server did not send them.
+function countOf(body) {
+  const remaining = wholeOrNull(body?.remaining)
+  return {
+    remaining,
+    limit: remaining === 0 ? (body.limit ?? 'visitor') : null,
+    visitorLimit: wholeOrNull(body?.visitorLimit),
+    totalLimit: wholeOrNull(body?.totalLimit),
+  }
+}
+
+// What this visitor can still make today (see countOf).
 export async function fetchRemaining() {
   try {
     const response = await fetch(ENDPOINT)
@@ -98,8 +111,8 @@ export async function fetchRemaining() {
 
 function errorFor(status, body) {
   if (status === 429) {
-    const limit = body?.limit === 'total' ? 'total' : 'visitor'
-    return new RestyleError(limitMessage(limit), { remaining: 0, limit })
+    const count = { ...countOf(body), remaining: 0, limit: body?.limit === 'total' ? 'total' : 'visitor' }
+    return new RestyleError(limitMessage(count.limit, count), count)
   }
   // A 504 can also come from Vercel itself, without a JSON body.
   if (status === 504) return new RestyleError(MESSAGES.timeout)

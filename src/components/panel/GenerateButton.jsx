@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import Button from '../ui/Button'
-import { limitMessage, VISITOR_LIMIT } from '../../services/restyle'
+import { limitMessage } from '../../services/restyle'
 import { useModeStore } from '../../store/modeStore'
 import { useRestyleStore } from '../../store/restyleStore'
 
@@ -15,6 +15,8 @@ export default function GenerateButton() {
   const resultSnapshot = useRestyleStore((state) => state.resultSnapshot)
   const remaining = useRestyleStore((state) => state.remaining)
   const limit = useRestyleStore((state) => state.limit)
+  const visitorLimit = useRestyleStore((state) => state.visitorLimit)
+  const totalLimit = useRestyleStore((state) => state.totalLimit)
   const generate = useRestyleStore((state) => state.generate)
   const loadRemaining = useRestyleStore((state) => state.loadRemaining)
 
@@ -25,7 +27,7 @@ export default function GenerateButton() {
   const hasResult = result !== null && resultSnapshot === snapshot
   const limitReached = remaining === 0
   const disabled = !photo || !snapshot || status === 'loading' || limitReached
-  const message = error ?? (limitReached ? limitMessage(limit) : null)
+  const message = error ?? (limitReached ? limitMessage(limit, { visitorLimit, totalLimit }) : null)
 
   return (
     <div className="generate">
@@ -35,7 +37,8 @@ export default function GenerateButton() {
         </Button>
         {remaining !== null && (
           <span className="generate-count">
-            {remaining} of {VISITOR_LIMIT} left today
+            {remaining}
+            {visitorLimit !== null && ` of ${visitorLimit}`} left today
           </span>
         )}
       </div>

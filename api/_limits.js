@@ -1,13 +1,30 @@
-// Daily generation limits (Part F): 20 successful generations per UTC day in
-// total and 3 per visitor, counted in Upstash Redis over its REST API.
+// Daily generation limits (Part F, H.1): successful generations per UTC day
+// in total and per visitor, counted in Upstash Redis over its REST API.
+// The numbers come from RESTYLE_TOTAL_LIMIT and RESTYLE_VISITOR_LIMIT
+// (defaults 20 and 3, the public limits; raise them only for local testing).
 // A visitor is an HMAC of their IP keyed with a daily salt (an HMAC of
 // VISITOR_SECRET and the date): the raw IP is never stored or logged, and
 // hashes cannot be linked across days.
 import { createHmac } from 'node:crypto'
 
-export const TOTAL_LIMIT = 20
-export const VISITOR_LIMIT = 3
+const DEFAULT_TOTAL_LIMIT = 20
+const DEFAULT_VISITOR_LIMIT = 3
 const EXPIRY_SECONDS = String(2 * 24 * 60 * 60)
+
+// A whole number of at least 1 from the environment, else the default.
+function limitFromEnv(name, fallback) {
+  const raw = process.env[name]
+  const value = Number(raw)
+  return raw && /^\d+$/.test(raw.trim()) && value >= 1 ? value : fallback
+}
+
+// The current limits: { visitorLimit, totalLimit }.
+export function limits() {
+  return {
+    visitorLimit: limitFromEnv('RESTYLE_VISITOR_LIMIT', DEFAULT_VISITOR_LIMIT),
+    totalLimit: limitFromEnv('RESTYLE_TOTAL_LIMIT', DEFAULT_TOTAL_LIMIT),
+  }
+}
 
 async function redis(path, commands) {
   const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL
@@ -40,8 +57,9 @@ function todayKeys(request) {
 // What this visitor can still make today (the smaller of both limits), and
 // when that is 0, which limit was reached.
 function status(total, visitor) {
-  const totalLeft = TOTAL_LIMIT - total
-  const visitorLeft = VISITOR_LIMIT - visitor
+  const { visitorLimit, totalLimit } = limits()
+  const totalLeft = totalLimit - total
+  const visitorLeft = visitorLimit - visitor
   const remaining = Math.max(0, Math.min(totalLeft, visitorLeft))
   if (remaining > 0) return { remaining }
   return { remaining, limit: totalLeft <= 0 ? 'total' : 'visitor' }
@@ -68,9 +86,10 @@ export async function reserve(request) {
   ])
   const total = Number(results[0].result)
   const visitor = Number(results[2].result)
-  if (total > TOTAL_LIMIT || visitor > VISITOR_LIMIT) {
+  const { visitorLimit, totalLimit } = limits()
+  if (total > totalLimit || visitor > visitorLimit) {
     await release(keys)
-    return { ok: false, limit: total > TOTAL_LIMIT ? 'total' : 'visitor', remaining: 0 }
+    return { ok: false, limit: total > totalLimit ? 'total' : 'visitor', remaining: 0 }
   }
   return { ok: true, keys, ...status(total, visitor) }
 }
