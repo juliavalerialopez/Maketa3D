@@ -597,6 +597,84 @@ canvas {
   cursor: pointer;
 }
 
+/* ui/Dialog: a raised card over a dimmed page. */
+.ui-dialog {
+  width: min(380px, calc(100vw - 32px));
+  max-width: none;
+  padding: 0;
+  border: none;
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: var(--shadow-out);
+  color: var(--text);
+}
+
+.ui-dialog::backdrop {
+  background: rgba(20, 24, 21, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+.ui-dialog-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 22px 18px;
+}
+
+.ui-dialog-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.ui-dialog-message {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ui-dialog-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.ui-dialog-field label {
+  color: var(--muted);
+}
+
+/* The text field: a pressed pill, like the number fields. */
+.ui-dialog-field input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 99px;
+  background: var(--surface);
+  box-shadow: var(--shadow-in);
+  color: inherit;
+  font: inherit;
+  font-weight: 500;
+}
+
+.ui-dialog-field input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ui-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.ui-dialog-actions .ui-button {
+  margin-bottom: 0;
+}
+
 /* ui/MenuButton: a pill button with a raised menu card below it. */
 .ui-menu-button {
   position: relative;

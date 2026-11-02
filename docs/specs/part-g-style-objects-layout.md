@@ -57,10 +57,11 @@ Status: **Draft**. Builds on Part F (Plan and Personalize, Room render, AI resty
 
 ### Export and import
 - Clicking the **Maketa logo** in the top bar opens the **Project** menu (changed by G.11.1; was Export and Import buttons):
-  - **New Project**: asks "Start a new project? Unsaved changes will be lost."; on OK, the room goes back to the default size (6 × 5 × 2.6 m), all objects are removed and numbering starts again at 1.
+  - **New Project**: asks "Start a new project?" in a dialog (New Project / Cancel); on confirm, the room goes back to the default size (6 × 5 × 2.6 m), all objects are removed and numbering starts again at 1.
   - **Open Project**: import (below).
   - **Save**: export (below), downloaded as `maketa-layout.json`.
-  - **Save As**: asks for a file name (default `maketa-layout`), then exports under that name with `.json` added. Cancel or an empty name does nothing.
+  - **Save As**: asks for a file name in a dialog (default `maketa-layout`), then exports under that name with `.json` added. Cancel does nothing; an empty name keeps the dialog open.
+- Both questions use a styled modal dialog (`ui/Dialog`, a raised card over a dimmed page), not the browser's pop-ups (G.11.2). Escape, Cancel or a click outside closes it; the object shortcuts (Delete, Escape) are ignored while it is open.
 - The menu works in both modes, but New Project and Open Project are disabled in Personalize: they would leave the Room render out of date. Save and Save As work in both.
 - File name: `maketa-layout.json` (Save As: the chosen name). Content:
 
@@ -105,6 +106,7 @@ Tasks are in build order. Each one follows the checkpoint workflow.
 - ✅ G.10 Export layout.
 - ✅ G.11 Import layout.
   - ✅ G.11.1 The Maketa logo opens a Project menu (New Project, Open Project, Save, Save As) that replaces the Export and Import buttons; New and Open disabled in Personalize (added 2026-11-02)
+  - ✅ G.11.2 Styled dialog (`ui/Dialog`) for New Project and Save As instead of the browser's confirm and prompt (added 2026-11-02)
 - ⬜ G.12 Build, deploy, cleanup: `npm run build` on Windows, deploy, check the live site in both themes; update `CLAUDE.md` and the `docs/SPEC.md` roadmap, layout and data model (new objects, `screenInches`, theme, export format).
 
 ## Out of scope
@@ -144,3 +146,4 @@ The style mock shows a few things that do not exist in the app. They are not par
 - 2026-10-30: G.4: the selection box gets its own `--selection` color instead of the accent (sage would hardly show on the light floor in dark).
 - 2026-11-02: G.5.1: the per-type buttons in Objects drop the word "Add" and show the label only.
 - 2026-11-02: G.11.1: Export and Import move into a Project menu opened by clicking the Maketa logo: New Project (asks first), Open Project (import), Save (export), Save As (export with a chosen name). The menu shows in both modes, with New and Open disabled in Personalize. Built as a shared `ui/MenuButton`.
+- 2026-11-02: G.11.2: New Project and Save As ask in a styled `ui/Dialog` instead of the browser's pop-ups.

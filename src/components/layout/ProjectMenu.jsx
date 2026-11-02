@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import MenuButton from '../ui/MenuButton'
+import Dialog from '../ui/Dialog'
 import { useModeStore } from '../../store/modeStore'
 import { LAYOUT_FILE_NAME, exportLayout, importLayout, newLayout } from '../../store/layoutFile'
 
 const ERROR_MESSAGE = 'Not a valid layout file.'
 const ERROR_SECONDS = 5
-const NEW_PROJECT_QUESTION = 'Start a new project? Unsaved changes will be lost.'
+const DEFAULT_NAME = LAYOUT_FILE_NAME.replace(/\.json$/, '')
 
 // "my room" -> "my room.json". Null when nothing usable is left.
 function toFileName(text) {
@@ -18,13 +19,16 @@ function toFileName(text) {
 
 // The Maketa logo in the top bar, which opens the Project menu: New Project,
 // Open Project (reads a layout file), Save (downloads maketa-layout.json)
-// and Save As (asks for a file name first). New and Open only work in Plan:
+// and Save As (asks for a file name first). New Project and Save As use a
+// Dialog. New and Open only work in Plan:
 // in Personalize they would leave the Room render out of date.
 // An invalid file shows a short message for a few seconds and changes nothing.
 export default function ProjectMenu() {
   const mode = useModeStore((state) => state.mode)
   const inputRef = useRef(null)
   const [error, setError] = useState(null)
+  // The open dialog: null, 'newProject' or 'saveAs'.
+  const [dialog, setDialog] = useState(null)
 
   useEffect(() => {
     if (!error) return
@@ -47,22 +51,25 @@ export default function ProjectMenu() {
     setError(ok ? null : ERROR_MESSAGE)
   }
 
-  function newProject() {
-    if (window.confirm(NEW_PROJECT_QUESTION)) newLayout()
+  function confirmNewProject() {
+    setDialog(null)
+    newLayout()
   }
 
-  function saveAs() {
-    const text = window.prompt('File name', LAYOUT_FILE_NAME.replace(/\.json$/, ''))
-    const fileName = text === null ? null : toFileName(text)
-    if (fileName) exportLayout(fileName)
+  // An empty (or unusable) name keeps the dialog open.
+  function confirmSaveAs(text) {
+    const fileName = toFileName(text)
+    if (!fileName) return
+    setDialog(null)
+    exportLayout(fileName)
   }
 
   const inPlan = mode === 'plan'
   const items = [
-    { label: 'New Project', onSelect: newProject, disabled: !inPlan },
+    { label: 'New Project', onSelect: () => setDialog('newProject'), disabled: !inPlan },
     { label: 'Open Project', onSelect: () => inputRef.current.click(), disabled: !inPlan },
     { label: 'Save', onSelect: () => exportLayout() },
-    { label: 'Save As', onSelect: saveAs },
+    { label: 'Save As', onSelect: () => setDialog('saveAs') },
   ]
 
   return (
@@ -82,6 +89,24 @@ export default function ProjectMenu() {
         hidden
         onChange={handleFile}
       />
+      {dialog === 'newProject' && (
+        <Dialog
+          title="Start a new project?"
+          message="The room goes back to its default size and all objects are removed. Unsaved changes will be lost."
+          confirmLabel="New Project"
+          onConfirm={confirmNewProject}
+          onCancel={() => setDialog(null)}
+        />
+      )}
+      {dialog === 'saveAs' && (
+        <Dialog
+          title="Save As"
+          input={{ label: 'File name', defaultValue: DEFAULT_NAME }}
+          confirmLabel="Save"
+          onConfirm={confirmSaveAs}
+          onCancel={() => setDialog(null)}
+        />
+      )}
     </div>
   )
 }

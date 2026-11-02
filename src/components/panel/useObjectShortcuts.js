@@ -15,6 +15,8 @@ export default function useObjectShortcuts() {
     function handleKeyDown(event) {
       if (useModeStore.getState().mode !== 'plan') return
       if (isTyping(document.activeElement)) return
+      // Keys for an open menu (it prevents the default) or a modal dialog.
+      if (event.defaultPrevented || document.querySelector('dialog[open]')) return
       const { selectedId, selectObject, removeObject } = useObjectsStore.getState()
       if (!selectedId) return
 
