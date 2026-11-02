@@ -39,7 +39,7 @@ first.
     hides them.
   - `objects/`: one 3D model component per placeable type, plus `catalog.js`
   - `ui/`: shared panel controls (`NumberField`, `ColorField`, `Button`,
-    `ListItem`, `FieldGroup`, `SegmentedSwitch`, `Toggle`). Every number input, color input, action button and list row
+    `ListItem`, `FieldGroup`, `SegmentedSwitch`, `Toggle`, `MenuButton`). Every number input, color input, action button and list row
     in the panel uses these; change their look or behavior only here.
 - `src/components/objects/catalog.js`: the single definition of each object type
   (label, component, default size, color). Adding a type = a model file in

@@ -54,6 +54,9 @@ export const useObjectsStore = create((set) => ({
     set((state) => ({
       objects: state.objects.map((object) => (object.id === id ? { ...object, ...partial } : object)),
     })),
+  // Replaces all objects (layout import). lastNumbers must be at least each
+  // type's highest number, so later objects continue after it.
+  replaceObjects: (objects, lastNumbers) => set({ objects, lastNumbers, selectedId: null }),
   removeObject: (id) =>
     set((state) => ({
       objects: state.objects.filter((object) => object.id !== id),

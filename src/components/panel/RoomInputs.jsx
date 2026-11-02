@@ -1,10 +1,10 @@
-import { useRoomStore } from '../../store/roomStore'
+import { ROOM_LIMITS, useRoomStore } from '../../store/roomStore'
 import NumberField from '../ui/NumberField'
 
 const FIELDS = [
-  { key: 'width', label: 'Width', min: 2, max: 10 },
-  { key: 'depth', label: 'Depth', min: 2, max: 10 },
-  { key: 'height', label: 'Height', min: 2, max: 4 },
+  { key: 'width', label: 'Width' },
+  { key: 'depth', label: 'Depth' },
+  { key: 'height', label: 'Height' },
 ]
 
 export default function RoomInputs() {
@@ -19,8 +19,8 @@ export default function RoomInputs() {
           label={field.label}
           value={room[field.key]}
           onChange={(value) => setRoomSize({ [field.key]: value })}
-          min={field.min}
-          max={field.max}
+          min={ROOM_LIMITS[field.key][0]}
+          max={ROOM_LIMITS[field.key][1]}
           unit="m"
         />
       ))}

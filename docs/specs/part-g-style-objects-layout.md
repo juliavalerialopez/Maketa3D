@@ -56,8 +56,13 @@ Status: **Draft**. Builds on Part F (Plan and Personalize, Room render, AI resty
 - Changing the screen size changes the footprint. The position is then re-clamped with `clampPosition` (`src/store/roomBounds.js`) so the rotated footprint stays inside the walls, the same way a rotation change does, and the selection box follows the new size.
 
 ### Export and import
-- Export and Import are secondary pill buttons in the top bar, **in Plan only**: an import in Personalize would leave the Room render out of date.
-- File name: `maketa-layout.json`. Content:
+- Clicking the **Maketa logo** in the top bar opens the **Project** menu (changed by G.11.1; was Export and Import buttons):
+  - **New Project**: asks "Start a new project? Unsaved changes will be lost."; on OK, the room goes back to the default size (6 × 5 × 2.6 m), all objects are removed and numbering starts again at 1.
+  - **Open Project**: import (below).
+  - **Save**: export (below), downloaded as `maketa-layout.json`.
+  - **Save As**: asks for a file name (default `maketa-layout`), then exports under that name with `.json` added. Cancel or an empty name does nothing.
+- The menu works in both modes, but New Project and Open Project are disabled in Personalize: they would leave the Room render out of date. Save and Save As work in both.
+- File name: `maketa-layout.json` (Save As: the chosen name). Content:
 
 ```json
 {
@@ -98,7 +103,8 @@ Tasks are in build order. Each one follows the checkpoint workflow.
 - ✅ G.8 Floor lamp.
 - ✅ G.9 TV stand with TV and the Screen size field.
 - ✅ G.10 Export layout.
-- ⬜ G.11 Import layout.
+- ✅ G.11 Import layout.
+  - ✅ G.11.1 The Maketa logo opens a Project menu (New Project, Open Project, Save, Save As) that replaces the Export and Import buttons; New and Open disabled in Personalize (added 2026-11-02)
 - ⬜ G.12 Build, deploy, cleanup: `npm run build` on Windows, deploy, check the live site in both themes; update `CLAUDE.md` and the `docs/SPEC.md` roadmap, layout and data model (new objects, `screenInches`, theme, export format).
 
 ## Out of scope
@@ -117,7 +123,7 @@ The style mock shows a few things that do not exist in the app. They are not par
 - [ ] G.9: default 55 inch; 32 and 85 visibly change both the TV and the stand width; the stand is always the TV width + 0.20 m; the position re-clamps; delete and numbering work.
 - [ ] G.10: Export downloads `maketa-layout.json` in the format above, with `screenInches` for TV stands.
 - [ ] G.11: export, reload, import restores the same room and objects (tilt aside); an invalid file shows a message and leaves the scene untouched; an object added after import gets the next number.
-- [ ] Export and Import are shown in Plan only.
+- [ ] G.11.1: clicking the logo opens the Project menu in both modes; New Project asks first and resets; Save As uses the chosen file name; New and Open are disabled in Personalize.
 - [ ] No console errors.
 - [ ] `npm run build` succeeds with no errors.
 - [ ] Deployed and working on the live Vercel URL, in both themes.
@@ -137,3 +143,4 @@ The style mock shows a few things that do not exist in the app. They are not par
 - 2026-10-30: Accent swap from the mock written down (forest in light, sage in dark); theme switch uses the mock's pill toggle with sun and moon.
 - 2026-10-30: G.4: the selection box gets its own `--selection` color instead of the accent (sage would hardly show on the light floor in dark).
 - 2026-11-02: G.5.1: the per-type buttons in Objects drop the word "Add" and show the label only.
+- 2026-11-02: G.11.1: Export and Import move into a Project menu opened by clicking the Maketa logo: New Project (asks first), Open Project (import), Save (export), Save As (export with a chosen name). The menu shows in both modes, with New and Open disabled in Personalize. Built as a shared `ui/MenuButton`.

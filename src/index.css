@@ -99,13 +99,19 @@ canvas {
 
 .top-bar-end {
   justify-self: end;
-  display: flex;
-  align-items: center;
-  gap: 16px;
 }
 
-.top-bar-end .ui-button {
-  margin-bottom: 0;
+/* The logo (Project menu) and, after a bad file, the error message. */
+.project-menu {
+  justify-self: start;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.top-bar-error {
+  color: var(--error);
+  font-size: 12px;
 }
 
 .top-bar-icon {
@@ -589,6 +595,91 @@ canvas {
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
+}
+
+/* ui/MenuButton: a pill button with a raised menu card below it. */
+.ui-menu-button {
+  position: relative;
+}
+
+.ui-menu-button-caret {
+  margin-left: 6px;
+  font-size: 0.8em;
+}
+
+/* Plain trigger: no button look, keeps the surrounding text style. */
+.ui-menu-button-trigger.plain {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.ui-menu-button-trigger.plain:hover {
+  filter: brightness(1.2);
+}
+
+.ui-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow-out);
+}
+
+.ui-menu.start {
+  left: 0;
+}
+
+.ui-menu.end {
+  right: 0;
+}
+
+/* Small uppercase heading, like the panel section labels. */
+.ui-menu-title {
+  padding: 6px 12px 4px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.ui-menu-item {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 99px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ui-menu-item:disabled {
+  color: var(--muted);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.ui-menu-item:not(:disabled):hover,
+.ui-menu-item:focus-visible {
+  box-shadow: var(--shadow-in);
+  color: var(--accent);
+  outline: none;
 }
 
 .ui-button.primary {

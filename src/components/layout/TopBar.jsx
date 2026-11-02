@@ -1,7 +1,6 @@
 import SegmentedSwitch from '../ui/SegmentedSwitch'
 import Toggle from '../ui/Toggle'
-import Button from '../ui/Button'
-import { exportLayout } from '../../store/layoutFile'
+import ProjectMenu from './ProjectMenu'
 import { useModeStore } from '../../store/modeStore'
 import { useUiStore } from '../../store/uiStore'
 import { useRestyleStore } from '../../store/restyleStore'
@@ -38,8 +37,8 @@ const MoonIcon = (
   </svg>
 )
 
-// Slim bar above both modes: the title on the left, the mode switch
-// centered, Export (Plan only) and the theme switch on the right.
+// Slim bar above both modes: the logo (opens the Project menu) on the left,
+// the mode switch centered, the theme switch on the right.
 export default function TopBar() {
   const mode = useModeStore((state) => state.mode)
   const theme = useUiStore((state) => state.theme)
@@ -47,11 +46,9 @@ export default function TopBar() {
 
   return (
     <header className="top-bar">
-      <h1 className="top-bar-title">Maketa</h1>
+      <ProjectMenu />
       <SegmentedSwitch options={MODES} value={mode} onChange={switchMode} />
       <div className="top-bar-end">
-        {/* Plan only: layout files belong to Plan; Personalize works on its Room render. */}
-        {mode === 'plan' && <Button onClick={exportLayout}>Export</Button>}
         <Toggle
           label="Dark theme"
           checked={theme === 'dark'}
