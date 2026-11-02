@@ -8,14 +8,16 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 
 ## Roadmap
 1. Room dimensions
-2. Add objects (Sofa only for now)
+2. Add objects (Sofa in Part B; five more types in Part G)
 3. Arrange objects: select from the list, move, rotate, recolor and delete via Object details (Part C); bigger start room, click-to-select and drag in 3D, move/rotate widget, tilt on all three axes, drag-to-change number values (Part D)
 4. Plan and Personalize modes: a 16:9 frame guide in Plan; switching to Personalize captures a clean render from the Plan camera, shown next to an empty AI image slot (Part E)
 5. AI restyle: upload one reference photo in Personalize, and Generate restyles the Room render to match it while keeping the room shape, camera and sofa placement (Part F)
-6. Soft UI restyle (light and dark theme), five new objects (coffee table, armchair, TV stand with TV, bookshelf, floor lamp), export and import of the layout as JSON (Part G)
+6. Soft UI restyle (light and dark theme), five new objects (coffee table, armchair, TV stand with TV, bookshelf, floor lamp), a Project menu to start, open and save the layout as a JSON file (Part G)
 
 ## Layout
-- Top bar (about 44 px) with a centered "Plan | Personalize" switch. Plan is the mode on page load.
+- Top bar (52 px): the Maketa logo on the left, a centered "Plan | Personalize" switch, the light/dark theme switch on the right. Plan is the mode on page load.
+- Clicking the logo opens the **Project** menu: New Project (asks first, then resets room, objects and Plan camera), Open Project, Save, Save As (asks for a file name). New and Open are disabled in Personalize.
+- Theme: Moss System soft UI, light and dark. Follows the system setting until switched by hand; the manual choice is saved in `localStorage`. The scene's floor and walls and the Room render look the same in both themes.
 - **Plan:** left control panel (20% by default, divider draggable 15–50%), right: 3D scene filling the rest, resizes with the window, with a centered 16:9 frame guide (toggle at its top right, visible by default).
 - **Personalize:** same split layout, split top and bottom with a draggable divider (panel 15–50% of the height). Until dragged, the top part is exactly as tall as the images. Top: "Room render" and the "AI image" slot side by side, both 16:9, edge to edge, captions over the images. Bottom: control panel.
 
@@ -29,14 +31,18 @@ All units in meters.
 
 ```js
 room: { width, depth, height }
-objects: [{ id, type, number, position: [x, y, z], rotation: [x, y, z], size: { width, depth, height }, color }]
+objects: [{ id, type, number, position: [x, y, z], rotation: [x, y, z], size: { width, depth, height }, color, screenInches? }]
+// type: 'sofa' | 'coffeeTable' | 'armchair' | 'bookshelf' | 'floorLamp' | 'tvStand' (defined in objects/catalog.js)
 // number: stable per-type count (Sofa 1, Sofa 2, ...), never reused
+// screenInches: TV stand only, whole inches 32-85 (default 55); its size is computed from it
 // position: y is always 0 (on the floor); a tilted object is lifted by the renderer so its lowest point touches the floor
 // rotation: radians, Euler order 'YXZ': y turns the object on the floor, x and z tilt it
+lastNumbers: { [type]: number }             // highest number handed out per type
 selectedId: string | null
 mode: 'plan' | 'personalize'
 snapshot: string | null                     // PNG data URL of the last Room render, memory only
 planView: { position: [x, y, z], target: [x, y, z] }  // Plan orbit camera, restored when Plan mounts again
+theme: 'light' | 'dark'                     // uiStore; manual choice saved in localStorage
 
 // AI restyle (restyleStore), memory only: kept across mode switches, lost on reload
 photo: { dataUrl, name } | null             // reference photo, resized on upload
@@ -53,6 +59,22 @@ Daily limit counts live on the server (Upstash Redis), not in the stores.
 
 Objects are always a list, even with one type.
 
+## Project file
+Save writes the layout as JSON (`maketa-layout.json`, or the Save As name); Open reads it back. Full rules and checks: Part G spec, "Export and import".
+
+```json
+{
+  "version": 1,
+  "room": { "width": 4.0, "depth": 3.5, "height": 2.6 },
+  "objects": [
+    { "type": "tvStand", "number": 1, "x": 2.0, "z": 0.3, "rotation": 0, "color": "#d9d2bf", "screenInches": 55 }
+  ]
+}
+```
+
+- `rotation` is the Y rotation in whole degrees (0–359); tilt and size are not saved.
+- Open replaces the room and objects, clamps positions inside the walls, clears the selection and continues numbering after the highest number per type. An invalid file shows a short message and changes nothing.
+
 ## Part specs
 | Part | File | Scope | Status |
 |---|---|---|---|
@@ -62,7 +84,7 @@ Objects are always a list, even with one type.
 | D | specs/part-d-arrange.md | Bigger room, click-to-select in 3D, drag, move/rotate widget, tilt, drag-to-change values | Done |
 | E | specs/part-e-personalize.md | Plan/Personalize modes, frame guide, snapshot, Personalize layout | Done |
 | F | specs/part-f-restyle.md | Reference photo, Generate/Regenerate via serverless AI, daily limits | Done |
-| G | specs/part-g-style-objects-layout.md | Soft UI and dark theme, five new objects, export and import | Draft |
+| G | specs/part-g-style-objects-layout.md | Soft UI and dark theme, five new objects, Project menu (new, open, save) | In progress |
 
 ## How we work
 - Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.

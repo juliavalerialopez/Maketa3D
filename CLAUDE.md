@@ -29,22 +29,36 @@ first.
     mode. Modes hold no state: everything that must survive a mode switch
     (room, objects, selection, mode, camera, snapshot, divider positions,
     open sections, frame toggle) lives in `src/store/`.
-  - `layout/`: page layout (top bar, `SplitLayout` with a draggable divider,
-    side by side in Plan, stacked top and bottom in Personalize)
+  - `layout/`: page layout (top bar with the logo's Project menu
+    (`ProjectMenu`: new, open, save, save as) and the theme switch,
+    `SplitLayout` with a draggable divider, side by side in Plan, stacked
+    top and bottom in Personalize)
   - `panel/`: HTML in the control panels (Plan and Personalize), built from
     `Section` and `ui/`
   - `scene/`: R3F room and rendering (floor, walls, objects renderer), the
     frame guide, Plan camera restore and the snapshot. Scene helpers
     (selection box, future grids) set `userData.helper` so the snapshot
     hides them.
-  - `objects/`: one 3D model component per placeable type, plus `catalog.js`
-  - `ui/`: shared panel controls (`NumberField`, `ColorField`, `Button`,
-    `ListItem`, `FieldGroup`, `SegmentedSwitch`, `Toggle`, `MenuButton`, `Dialog`). Every number input, color input, action button and list row
-    in the panel uses these; change their look or behavior only here.
+  - `objects/`: one 3D model component per placeable type, plus `catalog.js`.
+    Models are built from primitives with `Parts.jsx`, origin in the middle
+    of the base, filling their size box.
+  - `ui/`: shared controls (`NumberField`, `ColorField`, `Button`,
+    `ListItem`, `FieldGroup`, `SegmentedSwitch`, `Toggle`, `MenuButton`,
+    `Dialog`). Every number input, color input, action button, list row,
+    menu and dialog uses these; change their look or behavior only here.
 - `src/components/objects/catalog.js`: the single definition of each object type
   (label, component, default size, color). Adding a type = a model file in
-  `objects/` + one catalog entry; do not define types anywhere else.
-- `src/store/`: Zustand stores
+  `objects/` + one catalog entry; do not define types anywhere else. The
+  Objects section shows one button per entry. A type with a screen size (TV
+  stand) also has `screenInches` limits and `sizeFor`; its formula lives in
+  `tvStandSize.js`.
+- `src/store/`: Zustand stores, plus plain helpers: `roomBounds.js` (wall
+  clamping, rotated footprint) and `layoutFile.js` (project file: save, open,
+  validate, new project).
+- `src/index.css`: all styles. Colors are CSS variables per theme on
+  `:root[data-theme="light"]` and `:root[data-theme="dark"]`; components use
+  the role variables (`--accent`, `--on-accent`, `--soft`, ...), never a
+  palette color by name.
 - `src/services/`: browser code that talks to the server or prepares data for
   it (e.g. `restyle.js`: image resizing, `/api/restyle` requests, error
   messages). Requests go through stores; components may import constants
