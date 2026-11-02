@@ -22,7 +22,7 @@ export default function ControlPanel() {
         <div className="add-buttons">
           {Object.entries(OBJECT_TYPES).map(([type, { label }]) => (
             <Button key={type} onClick={() => addObject(type)}>
-              Add {label}
+              {label}
             </Button>
           ))}
         </div>

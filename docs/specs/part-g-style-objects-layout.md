@@ -44,7 +44,7 @@ Status: **Draft**. Builds on Part F (Plan and Personalize, Room render, AI resty
 | TV stand with TV | TV width + 0.20 | 0.40 | stand 0.45 + TV | See below |
 
 - Each type is one model file in `src/components/objects/` plus one entry in `catalog.js`. Nothing else defines a type.
-- The Objects section shows one "Add <label>" button per catalog type, built from the catalog, so a new type appears without panel changes.
+- The Objects section shows one button per catalog type, labeled with the type's label only (e.g. "Sofa", no "Add"), built from the catalog, so a new type appears without panel changes.
 - Every new type has the same selection, move, rotation (including tilt), color, delete and numbering behavior as the Sofa.
 
 ### TV stand with TV
@@ -92,6 +92,7 @@ Tasks are in build order. Each one follows the checkpoint workflow.
 - ✅ G.3 Dark theme and switch: system default, pill toggle with sun and moon in the top bar, choice saved.
 - ✅ G.4 Scene colors: page background around the scene and selection box follow the theme; new fixed floor and wall colors; snapshot unchanged.
 - ✅ G.5 Coffee table, and one Add button per catalog type in the Objects section.
+  - ✅ G.5.1 Add buttons show the type label only, without the word "Add" (added 2026-11-02)
 - ✅ G.6 Armchair.
 - ✅ G.7 Bookshelf.
 - ✅ G.8 Floor lamp.
@@ -135,3 +136,4 @@ The style mock shows a few things that do not exist in the app. They are not par
 - 2026-10-30: Draft created from Julia's outline. Changes to the outline: export keeps Y rotation only (tilt is lost, stated); floor and walls stay the same in both themes so the AI input is unchanged; Export and Import in Plan only; one Add button per catalog type; extra import checks (room limits, color, screen size); saving AI images as alternatives moved to Part H.
 - 2026-10-30: Accent swap from the mock written down (forest in light, sage in dark); theme switch uses the mock's pill toggle with sun and moon.
 - 2026-10-30: G.4: the selection box gets its own `--selection` color instead of the accent (sage would hardly show on the light floor in dark).
+- 2026-11-02: G.5.1: the per-type buttons in Objects drop the word "Add" and show the label only.
