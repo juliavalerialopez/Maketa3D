@@ -13,6 +13,7 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 4. Plan and Personalize modes: a 16:9 frame guide in Plan; switching to Personalize captures a clean render from the Plan camera, shown next to an empty AI image slot (Part E)
 5. AI restyle: upload one reference photo in Personalize, and Generate restyles the Room render to match it while keeping the room shape, camera and sofa placement (Part F)
 6. Soft UI restyle (light and dark theme), five new objects (coffee table, armchair, TV stand with TV, bookshelf, floor lamp), a Project menu to start, open and save the layout as a JSON file (Part G)
+7. AI versions and references: up to 6 generated versions with thumbnails and download, a Reference | Creative card per object and for the room, limits from environment variables (Part H)
 
 ## Layout
 - Top bar (52 px): the Maketa logo on the left, a centered "Plan | Personalize" switch, the light/dark theme switch on the right. Plan is the mode on page load.
@@ -85,6 +86,7 @@ Save writes the layout as JSON (`maketa-layout.json`, or the Save As name); Open
 | E | specs/part-e-personalize.md | Plan/Personalize modes, frame guide, snapshot, Personalize layout | Done |
 | F | specs/part-f-restyle.md | Reference photo, Generate/Regenerate via serverless AI, daily limits | Done |
 | G | specs/part-g-style-objects-layout.md | Soft UI and dark theme, five new objects, Project menu (new, open, save) | Done |
+| H | specs/part-h-references-versions.md | Version history, download, a reference image per object and for the room, limits from env vars | Draft |
 
 ## How we work
 - Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.
