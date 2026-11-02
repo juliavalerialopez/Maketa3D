@@ -1,6 +1,6 @@
 # Part G: Soft UI restyle, five new objects, export and import
 
-Status: **Draft**. Builds on Part F (Plan and Personalize, Room render, AI restyle).
+Status: **Done**. Builds on Part F (Plan and Personalize, Room render, AI restyle).
 
 ## Goal
 1. Restyle the editor to the Moss System soft UI, in a light and a dark theme.
@@ -108,7 +108,7 @@ Tasks are in build order. Each one follows the checkpoint workflow.
   - ✅ G.11.1 The Maketa logo opens a Project menu (New Project, Open Project, Save, Save As) that replaces the Export and Import buttons; New and Open disabled in Personalize (added 2026-11-02)
   - ✅ G.11.2 Styled dialog (`ui/Dialog`) for New Project and Save As instead of the browser's confirm and prompt (added 2026-11-02)
   - ✅ G.11.3 New Project also resets the Plan camera to its starting view (added 2026-11-02)
-- ⬜ G.12 Build, deploy, cleanup: `npm run build` on Windows, deploy, check the live site in both themes; update `CLAUDE.md` and the `docs/SPEC.md` roadmap, layout and data model (new objects, `screenInches`, theme, export format).
+- ✅ G.12 Build, deploy, cleanup: `npm run build` on Windows, deploy, check the live site in both themes; update `CLAUDE.md` and the `docs/SPEC.md` roadmap, layout and data model (new objects, `screenInches`, theme, export format).
 
 ## Out of scope
 The style mock shows a few things that do not exist in the app. They are not part of G:
@@ -118,18 +118,18 @@ The style mock shows a few things that do not exist in the app. They are not par
 - Any change to Part F (AI restyle).
 
 ## Acceptance criteria
-- [ ] G.1: switching `data-theme` by hand in dev tools changes the page background, text color and accent (forest in light, sage in dark); the font is Outfit.
-- [ ] G.2: the light theme matches the mock for the panel, top bar and Object details. No behavior changed (checked by hand in `npm run dev`; the repo has no tests).
-- [ ] G.3: both themes look right in Plan and Personalize; reloading keeps the manual choice; with no manual choice the system setting is used.
-- [ ] G.4: the room reads clearly in both themes and the selected object is easy to see; the Room render looks the same in both themes.
-- [ ] G.5–G.8: each new object can be added, selected (list and 3D), moved, rotated, tilted, recolored and deleted; the second one is "<label> 2"; numbers are not reused; it clamps at the walls when rotated (bookshelf: 0.80 × 0.30 footprint near a wall).
-- [ ] G.9: default 55 inch; 32 and 85 visibly change both the TV and the stand width; the stand is always the TV width + 0.20 m; the position re-clamps; delete and numbering work.
-- [ ] G.10: Export downloads `maketa-layout.json` in the format above, with `screenInches` for TV stands.
-- [ ] G.11: export, reload, import restores the same room and objects (tilt aside); an invalid file shows a message and leaves the scene untouched; an object added after import gets the next number.
-- [ ] G.11.1: clicking the logo opens the Project menu in both modes; New Project asks first and resets; Save As uses the chosen file name; New and Open are disabled in Personalize.
-- [ ] No console errors.
-- [ ] `npm run build` succeeds with no errors.
-- [ ] Deployed and working on the live Vercel URL, in both themes.
+- [x] G.1: switching `data-theme` by hand in dev tools changes the page background, text color and accent (forest in light, sage in dark); the font is Outfit.
+- [x] G.2: the light theme matches the mock for the panel, top bar and Object details. No behavior changed (checked by hand in `npm run dev`; the repo has no tests).
+- [x] G.3: both themes look right in Plan and Personalize; reloading keeps the manual choice; with no manual choice the system setting is used.
+- [x] G.4: the room reads clearly in both themes and the selected object is easy to see; the Room render looks the same in both themes.
+- [x] G.5–G.8: each new object can be added, selected (list and 3D), moved, rotated, tilted, recolored and deleted; the second one is "<label> 2"; numbers are not reused; it clamps at the walls when rotated (bookshelf: 0.80 × 0.30 footprint near a wall).
+- [x] G.9: default 55 inch; 32 and 85 visibly change both the TV and the stand width; the stand is always the TV width + 0.20 m; the position re-clamps; delete and numbering work.
+- [x] G.10: Export downloads `maketa-layout.json` in the format above, with `screenInches` for TV stands.
+- [x] G.11: export, reload, import restores the same room and objects (tilt aside); an invalid file shows a message and leaves the scene untouched; an object added after import gets the next number.
+- [x] G.11.1: clicking the logo opens the Project menu in both modes; New Project asks first and resets; Save As uses the chosen file name; New and Open are disabled in Personalize.
+- [x] No console errors.
+- [x] `npm run build` succeeds with no errors.
+- [x] Deployed and working on the live Vercel URL, in both themes.
 
 ## Backlog
 - Saving AI images as alternatives (Part H): each generated image is kept as an option in its own section, so the user can keep several and go back to any of them.
