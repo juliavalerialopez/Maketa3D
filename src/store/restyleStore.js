@@ -37,13 +37,25 @@ function referenceKeyExists(key) {
   return key === ROOM_REFERENCE || useObjectsStore.getState().objects.some((object) => object.id === key)
 }
 
+// The cards in panel order: the room, then the objects in list order.
+function referenceKeys() {
+  return [ROOM_REFERENCE, ...useObjectsStore.getState().objects.map((object) => object.id)]
+}
+
+// Until H.7 sends every photo: the photo sent with the request, which is the
+// room's if it has one, otherwise the first object photo in list order.
+function firstPhoto(references) {
+  for (const key of referenceKeys()) {
+    const reference = references[key]
+    if (reference?.mode === 'reference' && reference.photo) return reference.photo
+  }
+  return null
+}
+
 // AI restyle state (Part F, H.2), memory only: kept across mode switches,
 // lost on reload. generate() runs here, not in a component, so a request keeps going
 // when Personalize unmounts.
 export const useRestyleStore = create((set, get) => ({
-  // Reference photo, resized once on upload: { dataUrl, name } or null.
-  photo: null,
-  photoError: null,
   // One reference per card (H.5), by object id or ROOM_REFERENCE:
   // { mode: 'reference' | 'creative', photo: { dataUrl, name } | null,
   //   photoError: string | null }. A missing key means DEFAULT_REFERENCE.
@@ -65,14 +77,6 @@ export const useRestyleStore = create((set, get) => ({
   visitorLimit: null,
   totalLimit: null,
 
-  setPhotoFile: async (file) => {
-    try {
-      set({ photo: await loadPhoto(file), photoError: null })
-    } catch (error) {
-      set({ photoError: error.message })
-    }
-  },
-  removePhoto: () => set({ photo: null, photoError: null }),
 
   setReferenceMode: (key, mode) =>
     set((state) => ({ references: withReference(state.references, key, { mode }) })),
@@ -90,6 +94,16 @@ export const useRestyleStore = create((set, get) => ({
   },
   removeReferencePhoto: (key) =>
     set((state) => ({ references: withReference(state.references, key, { photo: null, photoError: null }) })),
+  // Clear All: every photo goes (the room's too); the modes stay.
+  clearReferencePhotos: () =>
+    set((state) => ({
+      references: Object.fromEntries(
+        Object.entries(state.references).map(([key, reference]) => [
+          key,
+          { ...reference, photo: null, photoError: null },
+        ]),
+      ),
+    })),
 
   loadRemaining: async () => set(countUpdate(await fetchRemaining())),
 
@@ -116,8 +130,10 @@ export const useRestyleStore = create((set, get) => ({
   },
 
   generate: async () => {
-    const { photo, status, remaining, versions } = get()
+    const { status, remaining, versions } = get()
     const snapshot = useModeStore.getState().snapshot
+    // At least one photo, on any card (H.6.1).
+    const photo = firstPhoto(get().references)
     if (!photo || !snapshot || status === 'loading' || remaining === 0) return
     if (versions.length >= MAX_VERSIONS) return
 
@@ -155,6 +171,14 @@ export const useRestyleStore = create((set, get) => ({
 // The version shown in the AI image, or undefined when none is selected.
 export const selectSelectedVersion = (state) =>
   state.versions.find((version) => version.id === state.selectedVersionId)
+
+// Number of cards (room and objects that exist) with a photo in Reference
+// mode. Generate needs at least one (H.6.1).
+export const selectPhotoCount = (state) =>
+  referenceKeys().filter((key) => {
+    const reference = state.references[key]
+    return reference?.mode === 'reference' && reference.photo
+  }).length
 
 // A card's reference: its stored value, or the default when untouched.
 export const selectReference = (key) => (state) => state.references[key] ?? DEFAULT_REFERENCE

@@ -71,7 +71,7 @@ Status: **Draft**. Builds on Part F (AI restyle) and Part G (soft UI, six object
   1. Every card in Reference mode with no photo is switched to Creative, and the card shows it.
   2. If more than 8 photos would be sent, the extra objects (last in list order) switch to Creative, and a notice says how many.
   3. The request is sent.
-- Disabled when there is no Room render, a request is running, 0 generations are left, or there are already 6 versions. It is not disabled for lack of photos, because an all-Creative room is allowed.
+- Disabled when there is no Room render, a request is running, 0 generations are left, there are already 6 versions, or **no card has a photo** (H.6.1). At least one reference photo is needed, on any card (the room or an object); the other cards may be Creative or empty. With no photo the message is "Add at least one reference photo."
 - "N of X left today", where X comes from the server (see Limits).
 - Errors and messages as in Part F. The visitor and total limit messages use the real numbers from the server.
 
@@ -109,7 +109,8 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 - ✅ H.4 Download menu at the top right of the AI image: this image, or all versions in one ZIP file.
 - ✅ H.5 `ReferenceCard` and references per card in the store (`references: { [objectId | 'room']: { mode, photo, photoError } }`); references of deleted objects are dropped.
   - ✅ H.5.1 Generate button, count and messages move to the top bar, Personalize only, before the theme switch (added 2026-11-03)
-- ⬜ H.6 Reference section: Clear All, Reference Room card, one card per object, the notice and the empty message (replaces the Part F "Reference image" group).
+- ✅ H.6 Reference section: Clear All, Reference Room card, one card per object, the notice and the empty message (replaces the Part F "Reference image" group: its single photo becomes the Reference Room card).
+  - ✅ H.6.1 Generate needs at least one reference photo, on any card (added 2026-11-03)
 - ⬜ H.7 Object positions taken with the Room render; new request format and server checks; Creative switch when there is no photo; the 8-photo cap with its notice; off-frame objects skipped; size budget.
 - ⬜ H.8 Prompt spike and tuning. Prompt v2 tested by hand with two objects whose reference photos also show other furniture, and a room photo. Tests:
   - T7 Only the named item is taken from each reference; the table in the "Reference Sofa" photo does not appear.
@@ -126,7 +127,8 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 - [ ] H.3: the X appears only on hover or focus; deleting the selected version selects a neighbor; deleting all returns to the black slot.
 - [ ] H.4: "Download this image" saves one file matching the big image; "Download all" saves `maketa-restyles.zip` with one image per version, matching the thumbnails; the button is hidden when there is no image.
 - [ ] H.5: one card per object with the title "Reference <name>"; the mode switch works; upload, Replace and Remove work with the Part F checks; deleting an object removes its card.
-- [ ] H.6: the Room card is first; Clear All removes all photos (room included) and keeps the modes; photos survive switching to Plan and back.
+- [ ] H.6: one "Reference" section only; the Room card is first; Clear All removes all photos (room included) and keeps the modes; photos survive switching to Plan and back.
+- [ ] H.6.1: Generate is disabled with "Add at least one reference photo." until any card has a photo; a photo on one object card alone is enough.
 - [ ] H.7: a request with a room photo, two Reference objects and one Creative object passes the server checks; an off-frame object is not sent; a Reference card without a photo turns Creative on Generate; a 9th photo is switched to Creative with the notice; a request over 4 MB is resized or refused with a clear message.
 - [ ] H.8: T7, T8, T9, T10 and T1–T3 pass (2 of 3 runs each).
 - [ ] No console errors.
@@ -147,3 +149,4 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 - 2026-11-02: Draft created from Julia's outline. Changes to the outline: Reference Room card added to H (was open question 1); leaving Personalize asks and clears versions (replaces "a new Room render does not delete versions"); off-frame objects skipped; `SegmentedSwitch` reused (already in `ui/`); `ReferenceCard` in `panel/` instead of `ui/`; Regenerate rule written down; T10 added for the room photo; doors and windows and "Save the Module" moved to Part I.
 - 2026-11-03: H.4: the download button opens a menu: "Download this image" or "Download all" in one ZIP file. Separate files for "all" were tried, but a browser set to ask where to save asks once per file.
 - 2026-11-03: H.5.1: the Generate button, its count and messages move from the Personalize panel to the top bar (Personalize only), before the theme switch.
+- 2026-11-03: H.6 + H.6.1: the Part F "Reference image" group and the H.5 "Reference" section are merged into one "Reference" section (the single image becomes the Reference Room card). Generate now needs at least one photo on any card (was: an all-Creative room allowed). Until H.7, Generate sends one photo: the room's, else the first object photo.

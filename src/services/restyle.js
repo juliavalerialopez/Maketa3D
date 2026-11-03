@@ -17,6 +17,7 @@ export const MESSAGES = {
   failed: 'The image could not be made. Try again.',
   timeout: 'The request took too long. Try again.',
   maxVersions: '6 versions is the maximum. Delete one to make room.',
+  noPhoto: 'Add at least one reference photo.',
 }
 
 // An error with a message for the panel, and the count (see countOf) when

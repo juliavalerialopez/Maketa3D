@@ -2,15 +2,16 @@ import { useEffect } from 'react'
 import Button from '../ui/Button'
 import { limitMessage, MESSAGES } from '../../services/restyle'
 import { useModeStore } from '../../store/modeStore'
-import { MAX_VERSIONS, selectSelectedVersion, useRestyleStore } from '../../store/restyleStore'
+import { MAX_VERSIONS, selectPhotoCount, selectSelectedVersion, useRestyleStore } from '../../store/restyleStore'
 
 // Generate / Regenerate in the top bar (Personalize only), before the theme
-// switch: a short message when there is one (error, limit, 6 versions), the
-// "N of X left today" count, then the button. "Regenerate" when a version is
-// shown in the AI image. Blocked at MAX_VERSIONS until one is deleted.
+// switch: a short message when there is one (error, limit, 6 versions, no
+// photo), the "N of X left today" count, then the button. "Regenerate" when a
+// version is shown in the AI image. Blocked at MAX_VERSIONS until one is
+// deleted, and until at least one card has a photo.
 export default function GenerateButton() {
   const snapshot = useModeStore((state) => state.snapshot)
-  const photo = useRestyleStore((state) => state.photo)
+  const hasPhoto = useRestyleStore((state) => selectPhotoCount(state) > 0)
   const status = useRestyleStore((state) => state.status)
   const error = useRestyleStore((state) => state.error)
   const hasVersion = useRestyleStore((state) => selectSelectedVersion(state) !== undefined)
@@ -27,11 +28,12 @@ export default function GenerateButton() {
   }, [loadRemaining])
 
   const limitReached = remaining === 0
-  const disabled = !photo || !snapshot || status === 'loading' || limitReached || versionsFull
+  const disabled = !hasPhoto || !snapshot || status === 'loading' || limitReached || versionsFull
   const message =
     error ??
     (limitReached ? limitMessage(limit, { visitorLimit, totalLimit }) : null) ??
-    (versionsFull ? MESSAGES.maxVersions : null)
+    (versionsFull ? MESSAGES.maxVersions : null) ??
+    (hasPhoto ? null : MESSAGES.noPhoto)
 
   return (
     <div className="generate">

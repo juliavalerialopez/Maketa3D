@@ -1,4 +1,3 @@
-import ReferenceImage from './ReferenceImage'
 import ReferenceSection from './ReferenceSection'
 
 // Personalize control panel, same style as Plan's. Groups are <Section id="...">
@@ -6,7 +5,6 @@ import ReferenceSection from './ReferenceSection'
 export default function PersonalizePanel() {
   return (
     <div className="control-panel">
-      <ReferenceImage />
       <ReferenceSection />
     </div>
   )

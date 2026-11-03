@@ -383,7 +383,26 @@ canvas {
   font-size: 0.9em;
 }
 
-/* Personalize: Reference image group */
+/* Personalize: Reference section. Clear All on top, then the cards. */
+.reference-section-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.reference-section-actions .ui-button {
+  margin-bottom: 0;
+}
+
+.reference-cards + .panel-placeholder {
+  margin-top: 12px;
+}
+
+.reference-cards ~ .panel-notice {
+  margin-top: 14px;
+}
+
+/* A card's photo preview. */
 .reference-photo img {
   display: block;
   max-width: 160px;
@@ -397,8 +416,8 @@ canvas {
   gap: 6px;
 }
 
-/* Personalize: Reference section, one card per object. Cards wrap side by
-   side when the panel is wide enough. */
+/* The cards (room first, then one per object) wrap side by side when the
+   panel is wide enough. */
 .reference-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
