@@ -441,7 +441,7 @@ canvas {
   gap: 14px;
 }
 
-/* A card: pressed into the section, like a field. */
+/* A card: raised from the section, like the panel sections (H.6.3). */
 .reference-card {
   display: flex;
   flex-direction: column;
@@ -449,7 +449,8 @@ canvas {
   gap: 10px;
   padding: 12px 14px;
   border-radius: 16px;
-  box-shadow: var(--shadow-in);
+  background: var(--surface);
+  box-shadow: var(--shadow-out-small);
 }
 
 .reference-card-title {
