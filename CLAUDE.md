@@ -68,7 +68,8 @@ first.
   (`_gemini.js`, `_limits.js`, `_restyle-prompt.js`). API keys and secrets
   exist only here, as env vars, never in `src/`.
 - `scripts/`: Node scripts run by hand (e.g. `try-restyle.mjs`, the prompt
-  test), not part of the app build
+  test: it sends a request saved from the app, or a test case with image
+  paths, to Gemini with the live prompt), not part of the app build
 - `public/models/`: static assets (`.glb`, etc.), referenced as URL strings
   (e.g. `"/models/x.glb"`), **never** as ES imports
 - `docs/SPEC.md`: product spec (source of truth)
@@ -85,6 +86,9 @@ first.
   `package.json`.
 - `RESTYLE_MOCK=1` in `.env.local` makes `/api/restyle` return the render
   after 2 s, with no AI call and no counting. Never set it in production.
+- `RESTYLE_VISITOR_LIMIT` and `RESTYLE_TOTAL_LIMIT` raise the daily limits
+  (defaults 3 per visitor, 20 in total) for local testing only. Never set
+  them in Vercel production.
 
 ## Specs
 - Read `docs/SPEC.md` and the current part spec before planning.

@@ -43,19 +43,22 @@ lastNumbers: { [type]: number }             // highest number handed out per typ
 selectedId: string | null
 mode: 'plan' | 'personalize'
 snapshot: string | null                     // PNG data URL of the last Room render, memory only
+snapshotObjects: [{ id, x, y, inFrame }]    // each object's centre in the Room render, percent (sent to the AI)
 planView: { position: [x, y, z], target: [x, y, z] }  // Plan orbit camera, restored when Plan mounts again
 snapshotView: { projection, view, width, height } | null  // the camera that took the Room render (in-frame checks)
 theme: 'light' | 'dark'                     // uiStore; manual choice saved in localStorage
 
 // AI restyle (restyleStore), memory only: kept across mode switches, lost on reload
-photo: { dataUrl, name } | null             // reference photo, resized on upload
-photoError: string | null
+references: { [objectId | 'room']: { mode: 'reference' | 'creative', photo: { dataUrl, name } | null, photoError } }
+notice: string | null                       // after Generate switched objects to Creative for the 8-photo limit
 status: 'idle' | 'loading'
 error: string | null
-result: string | null                       // AI image data URL
-resultSnapshot: string | null               // the Room render the result was made from
+versions: [{ id, number, image, roomRender, createdAt }]  // at most 6, oldest first; image and roomRender are data URLs
+selectedVersionId: string | null            // the version shown in the AI image
+lastVersionNumber: number                   // version numbers count up per session (download names)
 remaining: number | null                    // generations this visitor can still make today, from the server
 limit: 'total' | 'visitor' | null           // which limit was reached when remaining is 0
+visitorLimit, totalLimit: number | null     // the current daily limits, from the server
 ```
 
 Daily limit counts live on the server (Upstash Redis), not in the stores.
@@ -89,7 +92,7 @@ Save writes the layout as JSON (`maketa-layout.json`, or the Save As name); Open
 | E | specs/part-e-personalize.md | Plan/Personalize modes, frame guide, snapshot, Personalize layout | Done |
 | F | specs/part-f-restyle.md | Reference photo, Generate/Regenerate via serverless AI, daily limits | Done |
 | G | specs/part-g-style-objects-layout.md | Soft UI and dark theme, five new objects, Project menu (new, open, save) | Done |
-| H | specs/part-h-references-versions.md | Version history, download, a reference image per object and for the room, limits from env vars | Draft |
+| H | specs/part-h-references-versions.md | Version history, download, a reference image per object and for the room, Hide switch, limits from env vars | Done |
 
 ## How we work
 - Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.

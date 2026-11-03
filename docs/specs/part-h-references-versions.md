@@ -135,7 +135,7 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
   - A test passes when it succeeds in at least 2 of 3 runs. If T7 or T8 fail, stop and show the results before continuing.
   - Result (v3): T7, T8, T9, T10, T1 and T2 pass in both cases. T3 and T11 pass with one sofa (3 of 3) but not with several pieces (T3 0 of 3, T11 1 of 3): the model moves the room corner to between the pieces and may drop a chaise. Accepted as a known limitation (see Backlog).
   - ⏭️ H.8.1 Send the wall corners' positions in the Room render with the request, so the prompt can say where they are (added 2026-11-03). Built and tested (v5): no effect on T3 (0 of 3), so not kept. A dark line drawn on the corner by hand did not fix it either (1 of 3).
-- ⬜ H.9 Docs (`CLAUDE.md`, `docs/SPEC.md`, the ADR 0001 note on image count), `npm run build`, deploy, check on the live site. In Vercel, do not set the test limits.
+- ✅ H.9 Docs (`CLAUDE.md`, `docs/SPEC.md`, the ADR 0001 note on image count), `npm run build`, deploy, check on the live site. In Vercel, do not set the test limits.
 
 ## Acceptance criteria
 - [ ] H.1: with `RESTYLE_VISITOR_LIMIT=20` set locally, the page shows "20 of 20 left today" and the count goes down; without it, it shows "3 of 3"; the limit messages use the server's numbers.
