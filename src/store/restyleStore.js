@@ -57,6 +57,18 @@ export const useRestyleStore = create((set, get) => ({
 
   selectVersion: (id) => set({ selectedVersionId: id }),
 
+  // Deletes one version, no confirmation. If it was the selected one, the
+  // next is selected (or the previous one if it was last); none left: black.
+  deleteVersion: (id) =>
+    set((state) => {
+      const index = state.versions.findIndex((version) => version.id === id)
+      if (index === -1) return {}
+      const versions = state.versions.filter((version) => version.id !== id)
+      if (state.selectedVersionId !== id) return { versions }
+      const neighbor = versions[index] ?? versions[index - 1]
+      return { versions, selectedVersionId: neighbor?.id ?? null }
+    }),
+
   // Leaving Personalize (after the confirmation) or a new Room render: all
   // versions go, the AI image is black again, and a running request is
   // dropped when it answers (its count is still kept).

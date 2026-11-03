@@ -102,7 +102,7 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 
 - ✅ H.1 Limits from environment variables: server reads both variables, answers include the numbers, the page and messages use them, defaults stay 3 and 20.
 - ✅ H.2 Version history in `restyleStore` (`versions: [{ id, number, image, roomRender, createdAt }]`, `selectedVersionId`): Generate adds a version and selects it; the top left image follows the selected version; blocked at 6. The leave-Personalize dialog clears versions.
-- ⬜ H.3 Thumbnail row with the hover X: shared `Thumbnail` and `IconButton` components.
+- ✅ H.3 Thumbnail row with the hover X: shared `Thumbnail` and `IconButton` components.
 - ⬜ H.4 Download button at the top right of the AI image.
 - ⬜ H.5 `ReferenceCard` and references per card in the store (`references: { [objectId | 'room']: { mode, photo, photoError } }`); references of deleted objects are dropped.
 - ⬜ H.6 Reference section: Clear All, Reference Room card, one card per object, the notice and the empty message (replaces the Part F "Reference image" group).

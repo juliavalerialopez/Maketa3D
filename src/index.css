@@ -185,14 +185,25 @@ canvas {
   color: var(--text);
 }
 
+/* One image with what sits under it: the versions strip (AI image) or an
+   empty space of the same height (Room render), so both images line up. */
+.render-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--strip-gap);
+}
+
 /* Half the width minus the gap; only when the top part is too short for
-   that (divider dragged up), the 16:9 width of its height. */
+   that (divider dragged up), the 16:9 width of its height minus the strip. */
 .render-slot {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: min((100cqw - var(--render-gap)) / 2, 100cqh * 16 / 9);
+  width: min(
+    (100cqw - var(--render-gap)) / 2,
+    (100cqh - var(--strip-height) - var(--strip-gap)) * 16 / 9
+  );
   aspect-ratio: 16 / 9;
   margin: 0;
   background: #000;
@@ -240,6 +251,23 @@ canvas {
 }
 
 /* A mode that measures its own area. */
+/* Thumbnails of the AI versions, oldest first, under the AI image. Scrolls
+   sideways if the image is too narrow for all six. */
+.version-strip,
+.version-strip-spacer {
+  flex: 0 0 var(--strip-height);
+}
+
+.version-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* Room for the delete X, which pokes out 6px at the top left. */
+  padding: 0 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 .mode-fill {
   width: 100%;
   height: 100%;
@@ -595,6 +623,98 @@ canvas {
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
+}
+
+/* ui/IconButton: a round raised button showing only an icon. */
+.ui-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow-out-small);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.ui-icon-button.small {
+  width: 20px;
+  height: 20px;
+}
+
+.ui-icon-button svg {
+  width: 55%;
+  height: 55%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.ui-icon-button:hover {
+  color: var(--accent);
+}
+
+.ui-icon-button:active {
+  box-shadow: var(--shadow-in);
+}
+
+.ui-icon-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ui/Thumbnail: a small 16:9 image button; selected = pressed with an accent
+   ring. The delete X sits on its top left corner, shown on hover or focus. */
+.ui-thumbnail {
+  position: relative;
+  flex: none;
+}
+
+.ui-thumbnail-image {
+  display: block;
+  height: 40px;
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: var(--shadow-out-small);
+  cursor: pointer;
+}
+
+.ui-thumbnail-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ui-thumbnail.selected .ui-thumbnail-image {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.ui-thumbnail-image:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ui-thumbnail-delete {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  visibility: hidden;
+}
+
+.ui-thumbnail:hover .ui-thumbnail-delete,
+.ui-thumbnail:focus-within .ui-thumbnail-delete {
+  visibility: visible;
 }
 
 /* ui/Dialog: a raised card over a dimmed page. */
