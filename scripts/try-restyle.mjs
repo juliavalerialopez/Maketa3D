@@ -1,61 +1,113 @@
-// Prompt spike (Part F, F.1 and F.2): sends a Room render fixture and a
-// reference photo to Gemini with the live prompt and saves the results.
+// Prompt test (Part F, H.8): sends one test case to Gemini with the live
+// prompt (v2, buildPrompt) and saves the results. Same prompt and image order
+// as /api/restyle, with no limits and no counting.
 //
-//   node --env-file=.env.local scripts/try-restyle.mjs <render> <photo> [--white] [--runs N]
+//   node --env-file=.env.local scripts/try-restyle.mjs <case.json> [--white] [--runs N]
+//
+// case.json is either a test case written by hand, with image paths relative
+// to the JSON file:
+//   {
+//     "render": "fixture-two-sofas.png",
+//     "room": { "mode": "reference", "photo": "room.jpg" },
+//     "objects": [
+//       { "name": "Sofa 1", "x": 30, "y": 62, "mode": "reference", "photo": "sofa-with-table.jpg" },
+//       { "name": "Coffee table 1", "x": 52, "y": 70, "mode": "creative" }
+//     ]
+//   }
+// or a request body copied from the app (DevTools, Network, the restyle
+// request, Payload), where render and photos are base64 JPEG. Positions (x, y)
+// are percent from the left and top of the render; the app's request shows them.
 //
 // --white  adds the T6 white-area line to the prompt
 // --runs   number of runs (default 3, the pass rule needs 2 of 3)
-// Results go to scratch/restyle-runs/ (gitignored).
+// Results go to scratch/restyle-runs/ (gitignored), with the prompt as a .txt.
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { basename, extname, join } from 'node:path'
+import { basename, dirname, extname, join, resolve } from 'node:path'
 import { restyleImage, MODEL } from '../api/_gemini.js'
-// Still the Part F prompt (one photo); H.8 moves this script to v2.
-import { PROMPT_V1 as PROMPT, withWhiteAreaLine } from '../api/_restyle-prompt.js'
-
-const PROMPT_VERSION = 'v1'
+import { buildPrompt, promptImages, PROMPT_VERSION, withWhiteAreaLine } from '../api/_restyle-prompt.js'
 
 const MIME_TYPES = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' }
 const OUT_DIR = 'scratch/restyle-runs'
 
 function usage(message) {
   console.error(message)
-  console.error('Usage: node --env-file=.env.local scripts/try-restyle.mjs <render> <photo> [--white] [--runs N]')
+  console.error('Usage: node --env-file=.env.local scripts/try-restyle.mjs <case.json> [--white] [--runs N]')
   process.exit(1)
-}
-
-async function loadImage(path) {
-  const mimeType = MIME_TYPES[extname(path).toLowerCase()]
-  if (!mimeType) usage(`Unsupported image type: ${path}`)
-  return { data: (await readFile(path)).toString('base64'), mimeType }
 }
 
 const args = process.argv.slice(2)
 const white = args.includes('--white')
 const runsIndex = args.indexOf('--runs')
 const runs = runsIndex >= 0 ? Number(args[runsIndex + 1]) : 3
-const [renderPath, photoPath] = args.filter(
-  (arg, i) => !arg.startsWith('--') && !(runsIndex >= 0 && i === runsIndex + 1),
-)
+const [casePath] = args.filter((arg, i) => !arg.startsWith('--') && !(runsIndex >= 0 && i === runsIndex + 1))
 
 if (!process.env.GEMINI_API_KEY) usage('GEMINI_API_KEY is not set (put it in .env.local).')
-if (!renderPath || !photoPath) usage('Give a render and a photo.')
+if (!casePath) usage('Give a test case (JSON).')
 if (!Number.isInteger(runs) || runs < 1) usage('--runs must be a whole number of at least 1.')
 
-const render = await loadImage(renderPath)
-const photo = await loadImage(photoPath)
-const prompt = white ? withWhiteAreaLine(PROMPT) : PROMPT
-const label = `${basename(renderPath, extname(renderPath))}-${PROMPT_VERSION}${white ? '-white' : ''}`
+let testCase
+try {
+  testCase = JSON.parse(await readFile(casePath, 'utf8'))
+} catch (error) {
+  usage(`Could not read ${casePath}: ${error.message}`)
+}
+const caseDir = dirname(resolve(casePath))
+
+// The real type of each image by its base64 data (files may be PNG; the
+// app always sends JPEG).
+const mimeTypes = new Map()
+
+// An image value: a file path (relative to the case file) or base64 data.
+// Returns base64 data.
+async function loadImage(value, what) {
+  if (typeof value !== 'string' || !value) usage(`${what}: missing image.`)
+  const extension = extname(value).toLowerCase()
+  if (!MIME_TYPES[extension]) return value.replace(/^data:image\/\w+;base64,/, '')
+  try {
+    const data = (await readFile(join(caseDir, value))).toString('base64')
+    mimeTypes.set(data, MIME_TYPES[extension])
+    return data
+  } catch (error) {
+    return usage(`${what}: ${error.message}`)
+  }
+}
+
+// A card as /api/restyle gets it: { mode, photo? }; a photo means Reference.
+async function loadCard(card = {}, what) {
+  const mode = card.mode ?? (card.photo ? 'reference' : 'creative')
+  if (mode === 'creative') return { mode }
+  return { mode, photo: await loadImage(card.photo, what) }
+}
+
+const input = {
+  render: await loadImage(testCase.render, 'render'),
+  room: await loadCard(testCase.room, 'room photo'),
+  objects: await Promise.all(
+    (testCase.objects ?? []).map(async (object) => {
+      if (typeof object.name !== 'string' || typeof object.x !== 'number' || typeof object.y !== 'number') {
+        usage('Each object needs a name, x and y.')
+      }
+      return { name: object.name, x: object.x, y: object.y, ...(await loadCard(object, object.name)) }
+    }),
+  ),
+}
+
+const images = promptImages(input).map((image) => ({ ...image, mimeType: mimeTypes.get(image.data) ?? image.mimeType }))
+const basePrompt = buildPrompt(input)
+const prompt = white ? withWhiteAreaLine(basePrompt) : basePrompt
+const label = `${basename(casePath, extname(casePath))}-${PROMPT_VERSION}${white ? '-white' : ''}`
 const stamp = new Date().toISOString().replace(/[:.]/g, '-')
 await mkdir(OUT_DIR, { recursive: true })
+await writeFile(join(OUT_DIR, `${stamp}-${label}-prompt.txt`), prompt)
 
-console.log(`${MODEL}, prompt ${PROMPT_VERSION}${white ? ' + white line' : ''}, ${runs} run(s): ${label}`)
+console.log(`${MODEL}, prompt ${PROMPT_VERSION}${white ? ' + white line' : ''}, ${images.length} image(s), ${runs} run(s): ${label}`)
 for (let run = 1; run <= runs; run++) {
   const started = Date.now()
   try {
     const result = await restyleImage({
       apiKey: process.env.GEMINI_API_KEY,
       prompt,
-      images: [render, photo],
+      images,
       signal: AbortSignal.timeout(60_000),
     })
     const extension = result.mimeType === 'image/jpeg' ? 'jpg' : 'png'

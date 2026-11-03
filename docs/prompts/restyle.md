@@ -13,9 +13,75 @@ Output: 1K, 16:9.
 
 ## Versions
 - v1 – 2026-10-28: first version; decor rule allows the new sofa and its pillows.
-- v2 – 2026-11-03: built per request (H.7): a room part (reference photo or creative) and one line per object with its list name, its position in image 1 (percent from the left and top) and its reference image or creative rule. Draft: to be tested in H.8 (T7–T10, T1–T3).
+- v2 – 2026-11-03: built per request (H.7): a room part (reference photo or creative) and one line per object with its list name, its position in image 1 (percent from the left and top) and its reference image or creative rule. Tested in H.8: T10 and T3 failed.
+- v3 – 2026-11-03 (live): v2 plus: the room photo restyles the walls and floor (paneling, moldings included); a reference's own form wins over the grey shape (T11); the camera line asks for a result that lines up with image 1.
+- v4 and v5 – 2026-11-03: tried in H.8 and not kept (see v3 Results).
 
-## v2 (2026-11-03, draft)
+## v3 (2026-11-03, live)
+
+Built by `buildPrompt` in `api/_restyle-prompt.js`. Parts in `<...>` are filled per request; image numbers count up from 2 in the order above.
+
+```text
+Edit image 1. It is a plain 3D render of a room. The grey box shapes in it are placeholder furniture.
+Make image 1 look like a real photograph of the same room, with real furniture in place of the grey shapes.
+
+Keep exactly as in image 1:
+- The camera: same viewpoint, height, angle, lens and framing. Do not rotate, zoom or move the view. The result must line up with image 1 when laid over it: every wall corner and floor edge stays at the same place in the frame.
+- The room's shape: the same walls, corners and floor edges. Do not add windows, doors, beams, baseboards or openings.
+- Every piece of furniture listed below: the same place on the floor, about the same size, and the same orientation as its grey shape. Each must be seen from the same side and at the same angle. Do not turn any piece to face the camera.
+
+The grey shapes only mark where each piece stands, how big it is and which way it faces; they are not its design. A piece with a reference photo takes its form from that photo, even when it differs from the grey shape (for example a round table on a rectangular shape, or a sofa with a chaise on a straight shape).
+
+The room (walls, floor, light):
+<room reference:>
+Image <n> is the room reference. Restyle the walls and floor of image 1 to match it: the wall color, the wall finish with any paneling, wainscoting or moldings, the floor material and color, the light, the time of day and the mood.
+These replace the plain grey walls and floor of image 1; only their shape and position stay.
+Ignore all furniture, objects and decor in image <n>.
+<room creative:>
+Choose a wall color and finish, a floor material and a light that suit the furniture below.
+
+The furniture:
+<per object, in list order:>
+- <Name> (<a/an kind>): its grey shape is centered at <x>% from the left and <y>% from the top of image 1.
+<reference:>
+  Image <n> is its reference. Replace the grey shape with the <kind> from image <n> only, in its own form: its outline (round, square, L-shaped, with or without a chaise), arms, legs, fabric or material and color. Do not reshape it to fit the grey shape.
+  Ignore everything else in image <n>: other furniture, walls, floor, plants and decor.
+<creative:>
+  No reference: replace the grey shape with a realistic <kind> in a style that fits the room and the other pieces.
+
+Do not add anything else: no plants, rugs, shelves, wall slats, beams, artwork, lamps, tables, chairs or other furniture. Every object in the result must be one of the pieces listed above.
+
+Output one photorealistic 16:9 image.
+```
+
+### Results
+2026-11-03, `scripts/try-restyle.mjs` with requests saved from the app, 3 runs each, scored by Claude from the images and checked by Julia.
+
+Case 1: Sofa 1 (green leather sofa with a chaise; its photo also shows nesting tables, a plant, a lamp and a rug), Sofa 2 (floral sofa; its photo also shows tables and lamps), Coffee table 1 Creative, and a room photo (grey-green wainscoting, with its own sofa). Default-like camera; the wall corner is at about 15% from the left.
+
+Case 2: one sofa (the green chaise photo), room Creative; the wall corner is at about 22% from the left.
+
+| Test | v2, case 1 | v3, case 1 | v3, case 2 |
+|---|---|---|---|
+| T7 only the named item | 3/3 | 3/3 | 3/3 |
+| T8 right photo per sofa | 3/3 | 3/3 | – |
+| T9 Creative table | 3/3 | 3/3 | – |
+| T10 room photo sets walls, floor, light | 0/3 (plain walls) | 3/3 (wainscoting) | – |
+| T11 reference form kept (chaise) | 0/3 | 1/3 | 3/3 |
+| T1 angle kept | 3/3 | 3/3 | 3/3 |
+| T2 no added decor | 3/3 | 3/3 | 3/3 |
+| T3 room shape kept | 0/3 | 0/3 | 3/3 |
+
+With several pieces the model moves the room corner to between them (to 35–50% from the left) and often drops the chaise. With one piece it keeps both. Accepted as a known limitation (Part H Backlog).
+
+Tried and not kept:
+- **v4** (v3 plus a line naming "the faint vertical line where two grey walls meet" and asking to keep it, and "keep that form even if it reaches past the grey shape"): T3 1/3, T11 1/3, and worse elsewhere (T8 2/3: sofas swapped once; T10 1/3: cream paneling; T2 2/3: a book added).
+- **v5** (v3 plus the exact corner line from the app, "a vertical line from 13.7% from the left and 44.7% from the top up to 16% from the left and 0% from the top"; H.8.1): T3 0/3 (corner at 32–49%), T11 0/3. Code removed.
+- **v3 with a dark line drawn on the corner** in the render (by hand, to test a clearer render): T3 1/3 (one run close, but with an extra corner added), T11 2/3.
+
+Not tested: 8 photos in one request (the most tested was 3 photos, 4 images).
+
+## v2 (2026-11-03)
 
 Built by `buildPrompt` in `api/_restyle-prompt.js`. Parts in `<...>` are filled per request; image numbers count up from 2 in the order above.
 
@@ -50,7 +116,7 @@ Output one photorealistic 16:9 image.
 ```
 
 ### Results
-Not tested yet (H.8).
+Tested in H.8, see the v3 Results.
 
 ## v1 (2026-10-28)
 

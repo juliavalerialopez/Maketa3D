@@ -10,7 +10,7 @@
 // The Gemini key stays here; photos and results are never stored or logged.
 import { restyleImage } from './_gemini.js'
 import { limits, release, remaining, reserve } from './_limits.js'
-import { buildPrompt } from './_restyle-prompt.js'
+import { buildPrompt, promptImages } from './_restyle-prompt.js'
 
 // Vercel allows 4.5 MB per request body; the browser keeps it under 3.9 MB.
 const MAX_BODY = 4_000_000
@@ -84,14 +84,6 @@ async function readInput(request) {
   return { render, room, objects }
 }
 
-// The images in the order the prompt names them: the render, the room photo,
-// then the object photos in list order.
-function imagesFor({ render, room, objects }) {
-  const jpeg = (data) => ({ data, mimeType: 'image/jpeg' })
-  const photos = [room, ...objects].filter((card) => card.photo).map((card) => jpeg(card.photo))
-  return [jpeg(render), ...photos]
-}
-
 export async function GET(request) {
   if (isMock()) return reply({ remaining: null })
   try {
@@ -134,7 +126,7 @@ export async function POST(request) {
     const result = await restyleImage({
       apiKey,
       prompt: buildPrompt(input),
-      images: imagesFor(input),
+      images: promptImages(input),
       signal: controller.signal,
     })
     return reply({

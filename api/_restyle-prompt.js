@@ -1,13 +1,22 @@
 // Live restyle prompt. Must match the latest version in docs/prompts/restyle.md.
-// v2 (H.7): built per request from the Reference Room card and the objects.
+// v3 (H.8): built per request from the Reference Room card and the objects.
 // Images are sent in this order: 1 = Room render, then the room photo (if the
 // room is in Reference mode), then the object photos in list order.
-export const PROMPT_VERSION = 'v2'
+export const PROMPT_VERSION = 'v3'
 
 // The kind of item from its list name: "Coffee table 2" -> "coffee table".
 const kindOf = (name) => name.replace(/\s+\d+$/, '').toLowerCase()
 // "a sofa", "an armchair".
 const withArticle = (kind) => (/^[aeiou]/.test(kind) ? `an ${kind}` : `a ${kind}`)
+
+// The images in the order the prompt names them: the render, the room photo,
+// then the object photos in list order. Shared by /api/restyle and the
+// prompt test script. render and photos are base64 JPEG.
+export function promptImages({ render, room, objects }) {
+  const jpeg = (data) => ({ data, mimeType: 'image/jpeg' })
+  const photos = [room, ...objects].filter((card) => card.photo).map((card) => jpeg(card.photo))
+  return [jpeg(render), ...photos]
+}
 
 // room: { mode, photo? }; objects: [{ name, mode, x, y, photo? }] (x and y in
 // percent of the image from the left and from the top). Returns the prompt
@@ -18,7 +27,8 @@ export function buildPrompt({ room, objects }) {
 
   const roomLines = roomImage
     ? [
-        `Image ${roomImage} is the room reference. Take only the wall color and finish, the floor material, the light, the time of day and the mood from it.`,
+        `Image ${roomImage} is the room reference. Restyle the walls and floor of image 1 to match it: the wall color, the wall finish with any paneling, wainscoting or moldings, the floor material and color, the light, the time of day and the mood.`,
+        `These replace the plain grey walls and floor of image 1; only their shape and position stay.`,
         `Ignore all furniture, objects and decor in image ${roomImage}.`,
       ]
     : ['Choose a wall color and finish, a floor material and a light that suit the furniture below.']
@@ -30,7 +40,7 @@ export function buildPrompt({ room, objects }) {
       const image = nextImage++
       return [
         `- ${where}`,
-        `  Image ${image} is its reference. Replace the grey shape with the ${kind} from image ${image} only: its design, shape, legs, fabric or material and color.`,
+        `  Image ${image} is its reference. Replace the grey shape with the ${kind} from image ${image} only, in its own form: its outline (round, square, L-shaped, with or without a chaise), arms, legs, fabric or material and color. Do not reshape it to fit the grey shape.`,
         `  Ignore everything else in image ${image}: other furniture, walls, floor, plants and decor.`,
       ].join('\n')
     }
@@ -44,9 +54,11 @@ export function buildPrompt({ room, objects }) {
 Make image 1 look like a real photograph of the same room, with real furniture in place of the grey shapes.
 
 Keep exactly as in image 1:
-- The camera: same viewpoint, height, angle, lens and framing. Do not rotate, zoom or move the view.
-- The room: the same walls, corners and floor edges in the same places. Do not add windows, doors, beams, baseboards or openings.
-- Every piece of furniture listed below: the same place on the floor, the same size and the same orientation as its grey shape. Each must be seen from the same side and at the same angle. Do not turn any piece to face the camera.
+- The camera: same viewpoint, height, angle, lens and framing. Do not rotate, zoom or move the view. The result must line up with image 1 when laid over it: every wall corner and floor edge stays at the same place in the frame.
+- The room's shape: the same walls, corners and floor edges. Do not add windows, doors, beams, baseboards or openings.
+- Every piece of furniture listed below: the same place on the floor, about the same size, and the same orientation as its grey shape. Each must be seen from the same side and at the same angle. Do not turn any piece to face the camera.
+
+The grey shapes only mark where each piece stands, how big it is and which way it faces; they are not its design. A piece with a reference photo takes its form from that photo, even when it differs from the grey shape (for example a round table on a rectangular shape, or a sofa with a chaise on a straight shape).
 
 The room (walls, floor, light):
 ${roomLines.join('\n')}
@@ -59,26 +71,8 @@ Do not add anything else: no plants, rugs, shelves, wall slats, beams, artwork, 
 Output one photorealistic 16:9 image.`
 }
 
-// Part F prompt (v1), one reference photo for the sofa and the room. Kept for
-// the prompt spike script until H.8 moves it to v2.
-export const PROMPT_V1 = `Edit image 1. It is a plain 3D render of a room with one grey box-shaped sofa. Image 2 is a reference photo.
-Make image 1 look like a real photograph of the same room, restyled to match image 2.
-
-Keep exactly as in image 1:
-- The camera: same viewpoint, height, angle, lens and framing. Do not rotate, zoom or move the view.
-- The room: the same walls, corners and floor edges in the same places. Do not add windows, doors, beams, baseboards or openings.
-- The sofa: the same place on the floor and the same orientation. It must be seen from the same side and at the same angle as the grey sofa. Do not turn it to face the camera.
-
-Take from image 2:
-- The sofa's design: shape, arms, legs, cushions, fabric, color and the pillows on it. Its size may follow the sofa in image 2, centered where the grey sofa is.
-- The room's style: wall color and finish, floor material, light, time of day and mood.
-
-Do not add anything else: no plants, rugs, shelves, wall slats, beams, artwork, lamps, tables, chairs or other furniture. Every object in the result must already be in image 1, except the sofa and the pillows on it.
-
-Output one photorealistic 16:9 image.`
-
-// T6 experiment (F.1.3): optional line about the white area outside the room,
-// inserted before the last line.
+// T6 experiment (Part F): optional line about the white area outside the
+// room, inserted before the last line. Used only by scripts/try-restyle.mjs.
 export const WHITE_AREA_LINE = 'The white area outside the room is empty background; keep it plain.'
 
 export function withWhiteAreaLine(prompt) {
