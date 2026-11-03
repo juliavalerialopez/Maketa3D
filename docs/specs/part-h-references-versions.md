@@ -42,8 +42,10 @@ Status: **Draft**. Builds on Part F (AI restyle) and Part G (soft UI, six object
 - Coming back to Personalize takes a new Room render, as in Part E. The AI slot is black until the next Generate.
 
 ### Download
-- A small icon button at the top right of the AI image, shown only when a version is selected.
-- It downloads the shown image as a file named `maketa-restyle-<number>.<ext>`, using the image's own type (`png` or `jpg`). `<number>` counts up per version in the session and is not reused. No server call.
+- A small round download button at the top right of the AI image, shown only when a version is selected. It opens a small menu:
+  - **Download this image**: the version on screen, as one image file.
+  - **Download all (N) as ZIP**: every version in one ZIP file, `maketa-restyles.zip`, so there is one save prompt and one place (separate files would ask once per file in a browser set to ask where to save).
+- Each image (alone or inside the ZIP) is named `maketa-restyle-<number>.<ext>`, using the image's own type (`png` or `jpg`). `<number>` counts up per version in the session and is not reused. The ZIP is made in the browser (stored, no compression, no library). No server call.
 
 ### Reference section (Personalize panel)
 - One collapsible `Section` titled "Reference". At its top, a "Clear All" button (shared `Button`, secondary) that removes every uploaded photo at once, the room's included. Modes stay as they are. No confirmation.
@@ -103,7 +105,7 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 - ✅ H.1 Limits from environment variables: server reads both variables, answers include the numbers, the page and messages use them, defaults stay 3 and 20.
 - ✅ H.2 Version history in `restyleStore` (`versions: [{ id, number, image, roomRender, createdAt }]`, `selectedVersionId`): Generate adds a version and selects it; the top left image follows the selected version; blocked at 6. The leave-Personalize dialog clears versions.
 - ✅ H.3 Thumbnail row with the hover X: shared `Thumbnail` and `IconButton` components.
-- ⬜ H.4 Download button at the top right of the AI image.
+- ✅ H.4 Download menu at the top right of the AI image: this image, or all versions in one ZIP file.
 - ⬜ H.5 `ReferenceCard` and references per card in the store (`references: { [objectId | 'room']: { mode, photo, photoError } }`); references of deleted objects are dropped.
 - ⬜ H.6 Reference section: Clear All, Reference Room card, one card per object, the notice and the empty message (replaces the Part F "Reference image" group).
 - ⬜ H.7 Object positions taken with the Room render; new request format and server checks; Creative switch when there is no photo; the 8-photo cap with its notice; off-frame objects skipped; size budget.
@@ -120,7 +122,7 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 - [ ] H.1: with `RESTYLE_VISITOR_LIMIT=20` set locally, the page shows "20 of 20 left today" and the count goes down; without it, it shows "3 of 3"; the limit messages use the server's numbers.
 - [ ] H.2: three Generates give three versions; selecting each changes both top images; the 7th Generate is blocked with the message; going back to Plan with versions asks first, Cancel keeps everything, confirm clears the versions.
 - [ ] H.3: the X appears only on hover or focus; deleting the selected version selects a neighbor; deleting all returns to the black slot.
-- [ ] H.4: the downloaded file opens and matches the big image; the button is hidden when there is no image.
+- [ ] H.4: "Download this image" saves one file matching the big image; "Download all" saves `maketa-restyles.zip` with one image per version, matching the thumbnails; the button is hidden when there is no image.
 - [ ] H.5: one card per object with the title "Reference <name>"; the mode switch works; upload, Replace and Remove work with the Part F checks; deleting an object removes its card.
 - [ ] H.6: the Room card is first; Clear All removes all photos (room included) and keeps the modes; photos survive switching to Plan and back.
 - [ ] H.7: a request with a room photo, two Reference objects and one Creative object passes the server checks; an off-frame object is not sent; a Reference card without a photo turns Creative on Generate; a 9th photo is switched to Creative with the notice; a request over 4 MB is resized or refused with a clear message.
@@ -141,3 +143,4 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 
 ## Changelog
 - 2026-11-02: Draft created from Julia's outline. Changes to the outline: Reference Room card added to H (was open question 1); leaving Personalize asks and clears versions (replaces "a new Room render does not delete versions"); off-frame objects skipped; `SegmentedSwitch` reused (already in `ui/`); `ReferenceCard` in `panel/` instead of `ui/`; Regenerate rule written down; T10 added for the room photo; doors and windows and "Save the Module" moved to Part I.
+- 2026-11-03: H.4: the download button opens a menu: "Download this image" or "Download all" in one ZIP file. Separate files for "all" were tried, but a browser set to ask where to save asks once per file.

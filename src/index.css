@@ -185,6 +185,13 @@ canvas {
   color: var(--text);
 }
 
+/* Download menu on the AI image, top right. */
+.render-slot .render-slot-download {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
 /* One image with what sits under it: the versions strip (AI image) or an
    empty space of the same height (Room render), so both images line up. */
 .render-column {
@@ -660,7 +667,8 @@ canvas {
   color: var(--accent);
 }
 
-.ui-icon-button:active {
+.ui-icon-button:active,
+.ui-icon-button.pressed {
   box-shadow: var(--shadow-in);
 }
 

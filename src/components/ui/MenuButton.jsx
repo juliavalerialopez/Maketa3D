@@ -6,10 +6,13 @@ import { useEffect, useId, useRef, useState } from 'react'
 // - `title`: optional small heading at the top of the menu.
 // - `variant`: 'pill' (default, a secondary pill button) or 'plain' (no
 //   button look; the label keeps the surrounding text style, e.g. a logo).
+// - `icon`: when given, the button is a round IconButton-style button showing
+//   only this icon; `label` becomes its accessible name and tooltip.
+// - `className`: extra classes on the wrapper (e.g. for positioning).
 // - `align`: 'start' (menu's left edge under the button) or 'end' (default).
 // Closes on Escape (focus goes back to the button) and on a press outside.
 // Arrow Up and Down move between items; the first item is focused on open.
-export default function MenuButton({ label, items, title, variant = 'pill', align = 'end' }) {
+export default function MenuButton({ label, items, title, variant = 'pill', align = 'end', icon, className }) {
   const [open, setOpen] = useState(false)
   const menuId = useId()
   const rootRef = useRef(null)
@@ -55,22 +58,35 @@ export default function MenuButton({ label, items, title, variant = 'pill', alig
     item.onSelect()
   }
 
-  const buttonClasses = ['ui-menu-button-trigger', variant === 'plain' ? 'plain' : 'ui-button secondary']
+  let look = 'ui-button secondary'
+  if (icon) look = 'ui-icon-button normal'
+  else if (variant === 'plain') look = 'plain'
+  const buttonClasses = ['ui-menu-button-trigger', look]
   if (open && variant !== 'plain') buttonClasses.push('pressed')
 
   return (
-    <div className="ui-menu-button" ref={rootRef} onKeyDown={handleKeyDown}>
+    <div
+      className={className ? `ui-menu-button ${className}` : 'ui-menu-button'}
+      ref={rootRef}
+      onKeyDown={handleKeyDown}
+    >
       <button
         ref={buttonRef}
         type="button"
         className={buttonClasses.join(' ')}
+        aria-label={icon ? label : undefined}
+        title={icon ? label : undefined}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         onClick={() => setOpen(!open)}
       >
-        {label}
-        <span className="ui-menu-button-caret" aria-hidden="true">▾</span>
+        {icon ?? (
+          <>
+            {label}
+            <span className="ui-menu-button-caret" aria-hidden="true">▾</span>
+          </>
+        )}
       </button>
       {open && (
         <div className={`ui-menu ${align}`} id={menuId} role="menu" aria-label={title ?? label}>

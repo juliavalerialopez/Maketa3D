@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import SplitLayout from '../layout/SplitLayout'
 import PersonalizePanel from '../panel/PersonalizePanel'
 import Thumbnail from '../ui/Thumbnail'
+import MenuButton from '../ui/MenuButton'
+import { makeZip } from '../../services/zip'
 import { useModeStore } from '../../store/modeStore'
 import { selectSelectedVersion, useRestyleStore } from '../../store/restyleStore'
 import { useUiStore } from '../../store/uiStore'
@@ -36,10 +38,55 @@ function RenderSlot({ caption, children }) {
   )
 }
 
-// The AI image: the selected version, black when none. While generating,
-// the shown version (if any) stays, dimmed, with a small label.
+// File extension for an image data URL's type (the AI sends PNG or JPEG).
+const EXTENSIONS = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' }
+const ZIP_NAME = 'maketa-restyles.zip'
+
+// The images are already in the page (data URLs), so downloads need no
+// server call.
+
+// File name of a version's image: maketa-restyle-<number>.<ext>.
+function versionFileName(version) {
+  const type = version.image.slice(5, version.image.indexOf(';'))
+  return `maketa-restyle-${version.number}.${EXTENSIONS[type] ?? 'png'}`
+}
+
+function saveUrl(url, fileName) {
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  link.click()
+}
+
+// Saves the version on screen as one image file.
+function downloadVersion(version) {
+  saveUrl(version.image, versionFileName(version))
+}
+
+// Saves every version in one ZIP file, so there is one save prompt.
+function downloadAll(versions) {
+  const files = versions.map((version) => {
+    const binary = atob(version.image.slice(version.image.indexOf(',') + 1))
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
+    return { name: versionFileName(version), bytes }
+  })
+  const url = URL.createObjectURL(new Blob([makeZip(files)], { type: 'application/zip' }))
+  saveUrl(url, ZIP_NAME)
+  URL.revokeObjectURL(url)
+}
+
+const DownloadIcon = (
+  <svg viewBox="0 0 16 16" aria-hidden="true">
+    <path d="M8 2.5v8M4.5 7L8 10.5 11.5 7M3 13.5h10" />
+  </svg>
+)
+
+// The AI image: the selected version, black when none, with a download
+// menu at its top right (this image, or all versions in a ZIP). While
+// generating, the shown version (if any) stays, dimmed, with a small label.
 function AiImage({ version }) {
   const loading = useRestyleStore((state) => state.status === 'loading')
+  const versions = useRestyleStore((state) => state.versions)
 
   if (!version) return loading ? 'Generating…' : null
   return (
@@ -50,6 +97,15 @@ function AiImage({ version }) {
         className={loading ? 'dimmed' : undefined}
       />
       {loading && <span className="render-slot-status">Generating…</span>}
+      <MenuButton
+        label="Download"
+        icon={DownloadIcon}
+        className="render-slot-download"
+        items={[
+          { label: 'Download this image', onSelect: () => downloadVersion(version) },
+          { label: `Download all (${versions.length}) as ZIP`, onSelect: () => downloadAll(versions) },
+        ]}
+      />
     </>
   )
 }
