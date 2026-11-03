@@ -28,3 +28,6 @@ scratch
 
 .vercel
 .env*
+
+#Notepad ignore
+start-dev.ps1
