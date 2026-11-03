@@ -3,8 +3,8 @@
 // below Vercel's 4.5 MB body limit.
 const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024
-const PHOTO_MAX_EDGE = 1536
-const PHOTO_QUALITY = 0.85
+const PHOTO_MAX_EDGE = 1024
+const PHOTO_QUALITY = 0.8
 const RENDER_WIDTH = 1280
 const RENDER_HEIGHT = 720
 const RENDER_QUALITY = 0.9
@@ -41,7 +41,8 @@ function toJpeg(source, width, height, quality) {
   return canvas.toDataURL('image/jpeg', quality)
 }
 
-// Checks the file, then decodes and resizes it once (longest edge 1536 px).
+// Checks the file, then decodes and resizes it once (longest edge 1024 px,
+// about 150 to 250 KB, so up to 8 photos fit in one request).
 // Resolves { dataUrl, name }; rejects with a RestyleError for the panel.
 export async function loadPhoto(file) {
   if (!PHOTO_TYPES.includes(file.type)) throw new RestyleError(MESSAGES.photoType)

@@ -106,7 +106,7 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 - ✅ H.2 Version history in `restyleStore` (`versions: [{ id, number, image, roomRender, createdAt }]`, `selectedVersionId`): Generate adds a version and selects it; the top left image follows the selected version; blocked at 6. The leave-Personalize dialog clears versions.
 - ✅ H.3 Thumbnail row with the hover X: shared `Thumbnail` and `IconButton` components.
 - ✅ H.4 Download menu at the top right of the AI image: this image, or all versions in one ZIP file.
-- ⬜ H.5 `ReferenceCard` and references per card in the store (`references: { [objectId | 'room']: { mode, photo, photoError } }`); references of deleted objects are dropped.
+- ✅ H.5 `ReferenceCard` and references per card in the store (`references: { [objectId | 'room']: { mode, photo, photoError } }`); references of deleted objects are dropped.
 - ⬜ H.6 Reference section: Clear All, Reference Room card, one card per object, the notice and the empty message (replaces the Part F "Reference image" group).
 - ⬜ H.7 Object positions taken with the Room render; new request format and server checks; Creative switch when there is no photo; the 8-photo cap with its notice; off-frame objects skipped; size budget.
 - ⬜ H.8 Prompt spike and tuning. Prompt v2 tested by hand with two objects whose reference photos also show other furniture, and a room photo. Tests:

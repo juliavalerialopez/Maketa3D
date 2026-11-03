@@ -1,6 +1,13 @@
 import { create } from 'zustand'
 import { fetchRemaining, loadPhoto, requestRestyle } from '../services/restyle'
 import { useModeStore } from './modeStore'
+import { useObjectsStore } from './objectsStore'
+
+// Key of the Reference Room card in `references` (object cards use the object id).
+export const ROOM_REFERENCE = 'room'
+
+// What a card has before it is touched: Reference mode, no photo.
+export const DEFAULT_REFERENCE = { mode: 'reference', photo: null, photoError: null }
 
 // Most versions kept at once; at this many, Generate is blocked (H.2).
 export const MAX_VERSIONS = 6
@@ -20,6 +27,16 @@ function countUpdate(count) {
   return update
 }
 
+// references with one card changed (missing cards start from the default).
+function withReference(references, key, update) {
+  return { ...references, [key]: { ...DEFAULT_REFERENCE, ...references[key], ...update } }
+}
+
+// True for the room card and for objects that still exist.
+function referenceKeyExists(key) {
+  return key === ROOM_REFERENCE || useObjectsStore.getState().objects.some((object) => object.id === key)
+}
+
 // AI restyle state (Part F, H.2), memory only: kept across mode switches,
 // lost on reload. generate() runs here, not in a component, so a request keeps going
 // when Personalize unmounts.
@@ -27,6 +44,10 @@ export const useRestyleStore = create((set, get) => ({
   // Reference photo, resized once on upload: { dataUrl, name } or null.
   photo: null,
   photoError: null,
+  // One reference per card (H.5), by object id or ROOM_REFERENCE:
+  // { mode: 'reference' | 'creative', photo: { dataUrl, name } | null,
+  //   photoError: string | null }. A missing key means DEFAULT_REFERENCE.
+  references: {},
   status: 'idle', // 'idle' | 'loading'
   error: null,
   // Generated images, oldest first, at most MAX_VERSIONS:
@@ -52,6 +73,23 @@ export const useRestyleStore = create((set, get) => ({
     }
   },
   removePhoto: () => set({ photo: null, photoError: null }),
+
+  setReferenceMode: (key, mode) =>
+    set((state) => ({ references: withReference(state.references, key, { mode }) })),
+  // Checks and resizes the photo (Part F checks), then stores it, unless the
+  // object was deleted while the photo loaded.
+  setReferencePhotoFile: async (key, file) => {
+    let update
+    try {
+      update = { photo: await loadPhoto(file), photoError: null }
+    } catch (error) {
+      update = { photoError: error.message }
+    }
+    if (!referenceKeyExists(key)) return
+    set((state) => ({ references: withReference(state.references, key, update) }))
+  },
+  removeReferencePhoto: (key) =>
+    set((state) => ({ references: withReference(state.references, key, { photo: null, photoError: null }) })),
 
   loadRemaining: async () => set(countUpdate(await fetchRemaining())),
 
@@ -117,3 +155,19 @@ export const useRestyleStore = create((set, get) => ({
 // The version shown in the AI image, or undefined when none is selected.
 export const selectSelectedVersion = (state) =>
   state.versions.find((version) => version.id === state.selectedVersionId)
+
+// A card's reference: its stored value, or the default when untouched.
+export const selectReference = (key) => (state) => state.references[key] ?? DEFAULT_REFERENCE
+
+// A deleted object (Delete, New Project, Open Project) loses its card and its
+// photo: references for ids that no longer exist are dropped.
+useObjectsStore.subscribe((state, previous) => {
+  if (state.objects === previous.objects) return
+  const ids = new Set(state.objects.map((object) => object.id))
+  const { references } = useRestyleStore.getState()
+  const stale = Object.keys(references).filter((key) => key !== ROOM_REFERENCE && !ids.has(key))
+  if (stale.length === 0) return
+  const kept = { ...references }
+  stale.forEach((key) => delete kept[key])
+  useRestyleStore.setState({ references: kept })
+})

@@ -1,8 +1,9 @@
 // Shared segmented switch: one button per option, the current one highlighted.
-// options: [{ value, label }]
-export default function SegmentedSwitch({ options, value, onChange }) {
+// options: [{ value, label }]. `label` names the group for screen readers.
+// `size` is 'normal' (default, e.g. the top bar) or 'small' (inside a card).
+export default function SegmentedSwitch({ options, value, onChange, label, size = 'normal' }) {
   return (
-    <div className="ui-segmented" role="group">
+    <div className={size === 'small' ? 'ui-segmented small' : 'ui-segmented'} role="group" aria-label={label}>
       {options.map((option) => (
         <button
           key={option.value}
