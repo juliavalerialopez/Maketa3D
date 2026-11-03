@@ -4,9 +4,10 @@ import { limitMessage, MESSAGES } from '../../services/restyle'
 import { useModeStore } from '../../store/modeStore'
 import { MAX_VERSIONS, selectSelectedVersion, useRestyleStore } from '../../store/restyleStore'
 
-// Generate / Regenerate, below the Reference image group and always visible.
-// "Regenerate" when a version is shown in the AI image. Blocked at
-// MAX_VERSIONS until one is deleted.
+// Generate / Regenerate in the top bar (Personalize only), before the theme
+// switch: a short message when there is one (error, limit, 6 versions), the
+// "N of X left today" count, then the button. "Regenerate" when a version is
+// shown in the AI image. Blocked at MAX_VERSIONS until one is deleted.
 export default function GenerateButton() {
   const snapshot = useModeStore((state) => state.snapshot)
   const photo = useRestyleStore((state) => state.photo)
@@ -34,22 +35,20 @@ export default function GenerateButton() {
 
   return (
     <div className="generate">
-      <div className="generate-row">
-        <Button variant="primary" onClick={generate} disabled={disabled}>
-          {hasVersion ? 'Regenerate' : 'Generate'}
-        </Button>
-        {remaining !== null && (
-          <span className="generate-count">
-            {remaining}
-            {visitorLimit !== null && ` of ${visitorLimit}`} left today
-          </span>
-        )}
-      </div>
       {message && (
-        <p className="panel-error" role="alert">
+        <span className="generate-message" role="alert">
           {message}
-        </p>
+        </span>
       )}
+      {remaining !== null && (
+        <span className="generate-count">
+          {remaining}
+          {visitorLimit !== null && ` of ${visitorLimit}`} left today
+        </span>
+      )}
+      <Button variant="primary" onClick={generate} disabled={disabled}>
+        {hasVersion ? 'Regenerate' : 'Generate'}
+      </Button>
     </div>
   )
 }

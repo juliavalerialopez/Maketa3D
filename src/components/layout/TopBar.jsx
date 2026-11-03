@@ -3,6 +3,7 @@ import SegmentedSwitch from '../ui/SegmentedSwitch'
 import Toggle from '../ui/Toggle'
 import Dialog from '../ui/Dialog'
 import ProjectMenu from './ProjectMenu'
+import GenerateButton from './GenerateButton'
 import { useModeStore } from '../../store/modeStore'
 import { useUiStore } from '../../store/uiStore'
 import { useRestyleStore } from '../../store/restyleStore'
@@ -47,7 +48,8 @@ const MoonIcon = (
 )
 
 // Slim bar above both modes: the logo (opens the Project menu) on the left,
-// the mode switch centered, the theme switch on the right.
+// the mode switch centered, Generate (Personalize only) and the theme switch
+// on the right.
 export default function TopBar() {
   const mode = useModeStore((state) => state.mode)
   const theme = useUiStore((state) => state.theme)
@@ -83,6 +85,7 @@ export default function TopBar() {
         />
       )}
       <div className="top-bar-end">
+        {mode === 'personalize' && <GenerateButton />}
         <Toggle
           label="Dark theme"
           checked={theme === 'dark'}

@@ -65,7 +65,8 @@ Status: **Draft**. Builds on Part F (AI restyle) and Part G (soft UI, six object
 - The privacy notice now says "Your photos are sent to Google's Gemini API to make the image. Maketa does not store them. Google may keep requests for a short time to detect misuse."
 
 ### Generate
-- One Generate / Regenerate button below the Reference section, always visible. "Regenerate" when a version is selected, otherwise "Generate".
+- One Generate / Regenerate button in the **top bar, Personalize only**, just before the theme switch (H.5.1; was below the Reference section). "Regenerate" when a version is selected, otherwise "Generate".
+- Next to it, to its left: the "N of X left today" count, and before that any message (error, limit, 6 versions) as short red text.
 - When pressed:
   1. Every card in Reference mode with no photo is switched to Creative, and the card shows it.
   2. If more than 8 photos would be sent, the extra objects (last in list order) switch to Creative, and a notice says how many.
@@ -107,6 +108,7 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 - ✅ H.3 Thumbnail row with the hover X: shared `Thumbnail` and `IconButton` components.
 - ✅ H.4 Download menu at the top right of the AI image: this image, or all versions in one ZIP file.
 - ✅ H.5 `ReferenceCard` and references per card in the store (`references: { [objectId | 'room']: { mode, photo, photoError } }`); references of deleted objects are dropped.
+  - ✅ H.5.1 Generate button, count and messages move to the top bar, Personalize only, before the theme switch (added 2026-11-03)
 - ⬜ H.6 Reference section: Clear All, Reference Room card, one card per object, the notice and the empty message (replaces the Part F "Reference image" group).
 - ⬜ H.7 Object positions taken with the Room render; new request format and server checks; Creative switch when there is no photo; the 8-photo cap with its notice; off-frame objects skipped; size budget.
 - ⬜ H.8 Prompt spike and tuning. Prompt v2 tested by hand with two objects whose reference photos also show other furniture, and a room photo. Tests:
@@ -144,3 +146,4 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 ## Changelog
 - 2026-11-02: Draft created from Julia's outline. Changes to the outline: Reference Room card added to H (was open question 1); leaving Personalize asks and clears versions (replaces "a new Room render does not delete versions"); off-frame objects skipped; `SegmentedSwitch` reused (already in `ui/`); `ReferenceCard` in `panel/` instead of `ui/`; Regenerate rule written down; T10 added for the room photo; doors and windows and "Save the Module" moved to Part I.
 - 2026-11-03: H.4: the download button opens a menu: "Download this image" or "Download all" in one ZIP file. Separate files for "all" were tried, but a browser set to ask where to save asks once per file.
+- 2026-11-03: H.5.1: the Generate button, its count and messages move from the Personalize panel to the top bar (Personalize only), before the theme switch.
