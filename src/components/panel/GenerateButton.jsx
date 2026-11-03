@@ -1,18 +1,19 @@
 import { useEffect } from 'react'
 import Button from '../ui/Button'
-import { limitMessage } from '../../services/restyle'
+import { limitMessage, MESSAGES } from '../../services/restyle'
 import { useModeStore } from '../../store/modeStore'
-import { useRestyleStore } from '../../store/restyleStore'
+import { MAX_VERSIONS, selectSelectedVersion, useRestyleStore } from '../../store/restyleStore'
 
 // Generate / Regenerate, below the Reference image group and always visible.
-// "Regenerate" when the AI image shows a result for the current Room render.
+// "Regenerate" when a version is shown in the AI image. Blocked at
+// MAX_VERSIONS until one is deleted.
 export default function GenerateButton() {
   const snapshot = useModeStore((state) => state.snapshot)
   const photo = useRestyleStore((state) => state.photo)
   const status = useRestyleStore((state) => state.status)
   const error = useRestyleStore((state) => state.error)
-  const result = useRestyleStore((state) => state.result)
-  const resultSnapshot = useRestyleStore((state) => state.resultSnapshot)
+  const hasVersion = useRestyleStore((state) => selectSelectedVersion(state) !== undefined)
+  const versionsFull = useRestyleStore((state) => state.versions.length >= MAX_VERSIONS)
   const remaining = useRestyleStore((state) => state.remaining)
   const limit = useRestyleStore((state) => state.limit)
   const visitorLimit = useRestyleStore((state) => state.visitorLimit)
@@ -24,16 +25,18 @@ export default function GenerateButton() {
     loadRemaining()
   }, [loadRemaining])
 
-  const hasResult = result !== null && resultSnapshot === snapshot
   const limitReached = remaining === 0
-  const disabled = !photo || !snapshot || status === 'loading' || limitReached
-  const message = error ?? (limitReached ? limitMessage(limit, { visitorLimit, totalLimit }) : null)
+  const disabled = !photo || !snapshot || status === 'loading' || limitReached || versionsFull
+  const message =
+    error ??
+    (limitReached ? limitMessage(limit, { visitorLimit, totalLimit }) : null) ??
+    (versionsFull ? MESSAGES.maxVersions : null)
 
   return (
     <div className="generate">
       <div className="generate-row">
         <Button variant="primary" onClick={generate} disabled={disabled}>
-          {hasResult ? 'Regenerate' : 'Generate'}
+          {hasVersion ? 'Regenerate' : 'Generate'}
         </Button>
         {remaining !== null && (
           <span className="generate-count">

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import SplitLayout from '../layout/SplitLayout'
 import PersonalizePanel from '../panel/PersonalizePanel'
 import { useModeStore } from '../../store/modeStore'
-import { useRestyleStore } from '../../store/restyleStore'
+import { selectSelectedVersion, useRestyleStore } from '../../store/restyleStore'
 import { useUiStore } from '../../store/uiStore'
 
 // Space between the two images, in pixels (also used by .render-row).
@@ -30,16 +30,19 @@ function RenderSlot({ caption, children }) {
   )
 }
 
-// The AI image: black until the first result. While generating, the old
-// result (if any) stays, dimmed, with a small label.
-function AiImage() {
-  const result = useRestyleStore((state) => state.result)
+// The AI image: the selected version, black when none. While generating,
+// the shown version (if any) stays, dimmed, with a small label.
+function AiImage({ version }) {
   const loading = useRestyleStore((state) => state.status === 'loading')
 
-  if (!result) return loading ? 'Generating…' : null
+  if (!version) return loading ? 'Generating…' : null
   return (
     <>
-      <img src={result} alt="AI image" className={loading ? 'dimmed' : undefined} />
+      <img
+        src={version.image}
+        alt={`AI image, version ${version.number}`}
+        className={loading ? 'dimmed' : undefined}
+      />
       {loading && <span className="render-slot-status">Generating…</span>}
     </>
   )
@@ -50,6 +53,9 @@ function AiImage() {
 // window so the images fill it exactly; a dragged position is kept in uiStore.
 export default function PersonalizeMode() {
   const snapshot = useModeStore((state) => state.snapshot)
+  const version = useRestyleStore(selectSelectedVersion)
+  // The top two images always match: a version shows its own Room render.
+  const roomRender = version ? version.roomRender : snapshot
   const personalizePercent = useUiStore((state) => state.personalizePercent)
   const setPersonalizePercent = useUiStore((state) => state.setPersonalizePercent)
   const containerRef = useRef(null)
@@ -73,10 +79,10 @@ export default function PersonalizeMode() {
         first={
           <div className="render-row" style={{ '--render-gap': `${GAP}px` }}>
             <RenderSlot caption="Room render">
-              {snapshot ? <img src={snapshot} alt="Room render" /> : 'No render'}
+              {roomRender ? <img src={roomRender} alt="Room render" /> : 'No render'}
             </RenderSlot>
             <RenderSlot caption="AI image">
-              <AiImage />
+              <AiImage version={version} />
             </RenderSlot>
           </div>
         }

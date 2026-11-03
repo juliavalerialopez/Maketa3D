@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import SegmentedSwitch from '../ui/SegmentedSwitch'
 import Toggle from '../ui/Toggle'
+import Dialog from '../ui/Dialog'
 import ProjectMenu from './ProjectMenu'
 import { useModeStore } from '../../store/modeStore'
 import { useUiStore } from '../../store/uiStore'
@@ -13,15 +15,22 @@ const MODES = [
 
 // Switching to Personalize unmounts the Plan canvas, so the Room render is
 // taken first, while the canvas is still there. Null if it fails. A new
-// render clears the AI image, so the two images always match.
+// render starts with no versions, so the two images always match.
 function switchMode(next) {
   const { mode, setMode, setSnapshot } = useModeStore.getState()
   if (next === mode) return
   if (next === 'personalize') {
     setSnapshot(takeSnapshot())
-    useRestyleStore.getState().clearResult()
+    useRestyleStore.getState().clearVersions()
   }
   setMode(next)
+}
+
+// Leaving Personalize clears the versions, so it asks first when there is
+// something to lose: a version, or a request still running.
+function hasWorkToLose() {
+  const { versions, status } = useRestyleStore.getState()
+  return versions.length > 0 || status === 'loading'
 }
 
 const SunIcon = (
@@ -43,11 +52,36 @@ export default function TopBar() {
   const mode = useModeStore((state) => state.mode)
   const theme = useUiStore((state) => state.theme)
   const setTheme = useUiStore((state) => state.setTheme)
+  // The "Go back to Plan?" dialog is open.
+  const [confirmingLeave, setConfirmingLeave] = useState(false)
+
+  function handleModeChange(next) {
+    if (mode === 'personalize' && next === 'plan' && hasWorkToLose()) {
+      setConfirmingLeave(true)
+      return
+    }
+    switchMode(next)
+  }
+
+  function leavePersonalize() {
+    setConfirmingLeave(false)
+    useRestyleStore.getState().clearVersions()
+    switchMode('plan')
+  }
 
   return (
     <header className="top-bar">
       <ProjectMenu />
-      <SegmentedSwitch options={MODES} value={mode} onChange={switchMode} />
+      <SegmentedSwitch options={MODES} value={mode} onChange={handleModeChange} />
+      {confirmingLeave && (
+        <Dialog
+          title="Go back to Plan?"
+          message="Your AI versions will be cleared."
+          confirmLabel="Go to Plan"
+          onConfirm={leavePersonalize}
+          onCancel={() => setConfirmingLeave(false)}
+        />
+      )}
       <div className="top-bar-end">
         <Toggle
           label="Dark theme"
