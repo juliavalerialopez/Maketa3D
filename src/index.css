@@ -386,8 +386,23 @@ canvas {
 /* Personalize: Reference section. Clear All on top, then the cards. */
 .reference-section-actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 12px;
   margin-bottom: 12px;
+}
+
+/* After Generate switched objects to Creative for the photo limit. */
+.reference-section-notice {
+  flex: 1;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+/* An object outside the Room render: not sent, shown faded. */
+.reference-card.out-of-frame {
+  opacity: 0.6;
 }
 
 .reference-section-actions .ui-button {

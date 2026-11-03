@@ -22,8 +22,24 @@ export function frameRect(width, height) {
   }
 }
 
-// Takes the snapshot now: a PNG data URL, or null when there is no Plan
-// canvas or the render fails (e.g. WebGL context lost).
+// Where a point (a Vector3, world space) shows in the Room render: percent
+// of the frame's width from the left and of its height from the top, and
+// whether it is inside the frame and in front of the camera. `width` and
+// `height` are the canvas size the frame is cut from. Changes `point`.
+export function framePosition(point, camera, width, height) {
+  point.project(camera)
+  const rect = frameRect(width, height)
+  const x = (((point.x + 1) / 2) * width - rect.x) / rect.width
+  const y = (((1 - point.y) / 2) * height - rect.y) / rect.height
+  const inFrame = point.z > -1 && point.z < 1 && x >= 0 && x <= 1 && y >= 0 && y <= 1
+  const percent = (value) => Math.round(Math.min(1, Math.max(0, value)) * 1000) / 10
+  return { x: percent(x), y: percent(y), inFrame }
+}
+
+// Takes the snapshot now: { image, objects } with image a PNG data URL and
+// objects [{ id, x, y, inFrame }] (see framePosition, for each object's
+// centre), or null when there is no Plan canvas or the render fails (e.g.
+// WebGL context lost).
 export function takeSnapshot() {
   try {
     return snapshotBridge.capture?.() ?? null

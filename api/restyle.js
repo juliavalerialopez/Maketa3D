@@ -1,5 +1,7 @@
-// Restyle function (Part F): POST { render, photo } (base64 JPEG) returns
-// { image, remaining } with the AI image as a data URL. GET returns
+// Restyle function (Part F, H.7): POST { render, room, objects } returns
+// { image, remaining } with the AI image as a data URL. render is a base64
+// JPEG; room is { mode, photo? }; objects is [{ id, type, name, mode, x, y,
+// photo? }] (see readInput); photos are base64 JPEG. GET returns
 // { remaining } without counting. When remaining is 0, `limit` says which
 // limit was reached ('total' | 'visitor'). Every answer also carries the
 // current limits, visitorLimit and totalLimit (H.1). Errors are { error: code }:
@@ -8,10 +10,20 @@
 // The Gemini key stays here; photos and results are never stored or logged.
 import { restyleImage } from './_gemini.js'
 import { limits, release, remaining, reserve } from './_limits.js'
-import { PROMPT } from './_restyle-prompt.js'
+import { buildPrompt } from './_restyle-prompt.js'
 
-// Vercel allows 4.5 MB per request body; the browser sends about 1.5 MB.
+// Vercel allows 4.5 MB per request body; the browser keeps it under 3.9 MB.
 const MAX_BODY = 4_000_000
+// Reference photos per request, the room's included (src/services/restyle.js
+// uses the same number), and objects per request.
+const MAX_PHOTOS = 8
+const MAX_OBJECTS = 60
+const MODES = ['reference', 'creative']
+const ID = /^[A-Za-z0-9-]{1,64}$/
+const TYPE = /^[A-Za-z]{1,30}$/
+// List names like "Coffee table 2": letters, digits and spaces only, since
+// they go into the prompt.
+const NAME = /^[A-Za-z][A-Za-z0-9 ]{0,39}$/
 // Own limit on the Gemini call, well below Vercel's 300 s.
 const TIMEOUT_MS = 60_000
 const MOCK_DELAY_MS = 2_000
@@ -28,7 +40,27 @@ function isJpegBase64(value) {
   return head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff
 }
 
-// The checked { render, photo }, or { error: Response }.
+const isPercent = (value) => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 100
+
+// A card's photo is required in Reference mode and not allowed in Creative.
+function isValidCard(card) {
+  if (!card || typeof card !== 'object' || !MODES.includes(card.mode)) return false
+  return card.mode === 'reference' ? isJpegBase64(card.photo) : card.photo === undefined
+}
+
+function isValidObject(object) {
+  return (
+    isValidCard(object) &&
+    ID.test(object.id ?? '') &&
+    TYPE.test(object.type ?? '') &&
+    NAME.test(object.name ?? '') &&
+    isPercent(object.x) &&
+    isPercent(object.y)
+  )
+}
+
+// The checked { render, room, objects }, or { error: Response }. At least
+// one photo (H.6.1) and at most MAX_PHOTOS.
 async function readInput(request) {
   if (Number(request.headers.get('content-length')) > MAX_BODY) return { error: fail(413, 'too_large') }
   const text = await request.text()
@@ -39,8 +71,25 @@ async function readInput(request) {
   } catch {
     return { error: fail(400, 'bad_input') }
   }
-  if (!isJpegBase64(body?.render) || !isJpegBase64(body?.photo)) return { error: fail(400, 'bad_input') }
-  return { render: body.render, photo: body.photo }
+  const { render, room, objects } = body ?? {}
+  const valid =
+    isJpegBase64(render) &&
+    isValidCard(room) &&
+    Array.isArray(objects) &&
+    objects.length <= MAX_OBJECTS &&
+    objects.every(isValidObject)
+  if (!valid) return { error: fail(400, 'bad_input') }
+  const photos = [room, ...objects].filter((card) => card.photo).length
+  if (photos < 1 || photos > MAX_PHOTOS) return { error: fail(400, 'bad_input') }
+  return { render, room, objects }
+}
+
+// The images in the order the prompt names them: the render, the room photo,
+// then the object photos in list order.
+function imagesFor({ render, room, objects }) {
+  const jpeg = (data) => ({ data, mimeType: 'image/jpeg' })
+  const photos = [room, ...objects].filter((card) => card.photo).map((card) => jpeg(card.photo))
+  return [jpeg(render), ...photos]
 }
 
 export async function GET(request) {
@@ -84,9 +133,8 @@ export async function POST(request) {
   try {
     const result = await restyleImage({
       apiKey,
-      prompt: PROMPT,
-      render: { data: input.render, mimeType: 'image/jpeg' },
-      photo: { data: input.photo, mimeType: 'image/jpeg' },
+      prompt: buildPrompt(input),
+      images: imagesFor(input),
       signal: controller.signal,
     })
     return reply({

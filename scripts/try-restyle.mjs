@@ -9,7 +9,10 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import { restyleImage, MODEL } from '../api/_gemini.js'
-import { PROMPT, PROMPT_VERSION, withWhiteAreaLine } from '../api/_restyle-prompt.js'
+// Still the Part F prompt (one photo); H.8 moves this script to v2.
+import { PROMPT_V1 as PROMPT, withWhiteAreaLine } from '../api/_restyle-prompt.js'
+
+const PROMPT_VERSION = 'v1'
 
 const MIME_TYPES = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' }
 const OUT_DIR = 'scratch/restyle-runs'
@@ -52,8 +55,7 @@ for (let run = 1; run <= runs; run++) {
     const result = await restyleImage({
       apiKey: process.env.GEMINI_API_KEY,
       prompt,
-      render,
-      photo,
+      images: [render, photo],
       signal: AbortSignal.timeout(60_000),
     })
     const extension = result.mimeType === 'image/jpeg' ? 'jpg' : 'png'

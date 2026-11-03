@@ -25,10 +25,10 @@ function lastImage(value) {
   return found
 }
 
-// render and photo: { data: base64, mimeType }. Returns { data, mimeType }
-// of the generated 1K 16:9 image. Throws GeminiError, or an AbortError when
-// `signal` aborts.
-export async function restyleImage({ apiKey, prompt, render, photo, signal }) {
+// images: [{ data: base64, mimeType }], in the order the prompt names them
+// (image 1 = the Room render). Returns { data, mimeType } of the generated 1K
+// 16:9 image. Throws GeminiError, or an AbortError when `signal` aborts.
+export async function restyleImage({ apiKey, prompt, images, signal }) {
   const response = await fetch(ENDPOINT, {
     method: 'POST',
     headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
@@ -36,8 +36,7 @@ export async function restyleImage({ apiKey, prompt, render, photo, signal }) {
       model: MODEL,
       input: [
         { type: 'text', text: prompt },
-        { type: 'image', mime_type: render.mimeType, data: render.data },
-        { type: 'image', mime_type: photo.mimeType, data: photo.data },
+        ...images.map((image) => ({ type: 'image', mime_type: image.mimeType, data: image.data })),
       ],
       response_format: { type: 'image', aspect_ratio: '16:9', image_size: '1K' },
     }),

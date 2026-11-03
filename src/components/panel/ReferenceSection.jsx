@@ -4,7 +4,8 @@ import ReferenceCard from './ReferenceCard'
 import Button from '../ui/Button'
 import { objectLabel } from '../objects/catalog'
 import { useObjectsStore } from '../../store/objectsStore'
-import { ROOM_REFERENCE, useRestyleStore } from '../../store/restyleStore'
+import { isOutOfFrame, ROOM_REFERENCE, useRestyleStore } from '../../store/restyleStore'
+import { useModeStore } from '../../store/modeStore'
 
 const ROOM_CREATIVE_TEXT = 'The AI will choose walls, floor and light to suit the pieces.'
 
@@ -17,16 +18,25 @@ export default function ReferenceSection() {
   const ids = useObjectsStore(useShallow((state) => state.objects.map((object) => object.id)))
   const labels = useObjectsStore(useShallow((state) => state.objects.map(objectLabel)))
   const clearReferencePhotos = useRestyleStore((state) => state.clearReferencePhotos)
+  const notice = useRestyleStore((state) => state.notice)
+  // Re-render when a new Room render (with new object positions) is taken.
+  useModeStore((state) => state.snapshotObjects)
 
   return (
     <Section id="references" title="Reference">
       <div className="reference-section-actions">
+        {notice && <p className="reference-section-notice">{notice}</p>}
         <Button onClick={clearReferencePhotos}>Clear All</Button>
       </div>
       <div className="reference-cards">
         <ReferenceCard referenceKey={ROOM_REFERENCE} title="Reference Room" creativeText={ROOM_CREATIVE_TEXT} />
         {ids.map((id, index) => (
-          <ReferenceCard key={id} referenceKey={id} title={`Reference ${labels[index]}`} />
+          <ReferenceCard
+            key={id}
+            referenceKey={id}
+            title={`Reference ${labels[index]}`}
+            outOfFrame={isOutOfFrame(id)}
+          />
         ))}
       </div>
       {ids.length === 0 && <p className="panel-placeholder">Add objects in Plan to give them a reference.</p>}

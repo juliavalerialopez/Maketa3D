@@ -1,15 +1,56 @@
 # Restyle prompt
 
-The prompt sent with every Generate (Part F). The live copy is in `api/_restyle-prompt.js` and must match the latest version here.
+The prompt sent with every Generate (Part F, Part H). The live copy is in `api/_restyle-prompt.js` and must match the latest version here.
 
-Images are sent in this order:
+Images are sent in this order (v2):
 1. Image 1: the Room render (1280 × 720 JPEG).
-2. Image 2: the reference photo (longest edge 1536 px, JPEG).
+2. Then the room photo, if the Reference Room card is in Reference mode.
+3. Then one photo per object in Reference mode, in the Objects list order.
+
+Photos: longest edge 1024 px, JPEG (v1: 1536 px). At most 8 photos, the room's included.
 
 Output: 1K, 16:9.
 
 ## Versions
 - v1 – 2026-10-28: first version; decor rule allows the new sofa and its pillows.
+- v2 – 2026-11-03: built per request (H.7): a room part (reference photo or creative) and one line per object with its list name, its position in image 1 (percent from the left and top) and its reference image or creative rule. Draft: to be tested in H.8 (T7–T10, T1–T3).
+
+## v2 (2026-11-03, draft)
+
+Built by `buildPrompt` in `api/_restyle-prompt.js`. Parts in `<...>` are filled per request; image numbers count up from 2 in the order above.
+
+```text
+Edit image 1. It is a plain 3D render of a room. The grey box shapes in it are placeholder furniture.
+Make image 1 look like a real photograph of the same room, with real furniture in place of the grey shapes.
+
+Keep exactly as in image 1:
+- The camera: same viewpoint, height, angle, lens and framing. Do not rotate, zoom or move the view.
+- The room: the same walls, corners and floor edges in the same places. Do not add windows, doors, beams, baseboards or openings.
+- Every piece of furniture listed below: the same place on the floor, the same size and the same orientation as its grey shape. Each must be seen from the same side and at the same angle. Do not turn any piece to face the camera.
+
+The room (walls, floor, light):
+<room reference:>
+Image <n> is the room reference. Take only the wall color and finish, the floor material, the light, the time of day and the mood from it.
+Ignore all furniture, objects and decor in image <n>.
+<room creative:>
+Choose a wall color and finish, a floor material and a light that suit the furniture below.
+
+The furniture:
+<per object, in list order:>
+- <Name> (<a/an kind>): its grey shape is centered at <x>% from the left and <y>% from the top of image 1.
+<reference:>
+  Image <n> is its reference. Replace the grey shape with the <kind> from image <n> only: its design, shape, legs, fabric or material and color.
+  Ignore everything else in image <n>: other furniture, walls, floor, plants and decor.
+<creative:>
+  No reference: replace the grey shape with a realistic <kind> in a style that fits the room and the other pieces.
+
+Do not add anything else: no plants, rugs, shelves, wall slats, beams, artwork, lamps, tables, chairs or other furniture. Every object in the result must be one of the pieces listed above.
+
+Output one photorealistic 16:9 image.
+```
+
+### Results
+Not tested yet (H.8).
 
 ## v1 (2026-10-28)
 

@@ -111,7 +111,7 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
   - ✅ H.5.1 Generate button, count and messages move to the top bar, Personalize only, before the theme switch (added 2026-11-03)
 - ✅ H.6 Reference section: Clear All, Reference Room card, one card per object, the notice and the empty message (replaces the Part F "Reference image" group: its single photo becomes the Reference Room card).
   - ✅ H.6.1 Generate needs at least one reference photo, on any card (added 2026-11-03)
-- ⬜ H.7 Object positions taken with the Room render; new request format and server checks; Creative switch when there is no photo; the 8-photo cap with its notice; off-frame objects skipped; size budget.
+- ✅ H.7 Object positions taken with the Room render; new request format and server checks; Creative switch when there is no photo; the 8-photo cap with its notice; off-frame objects skipped; size budget.
 - ⬜ H.8 Prompt spike and tuning. Prompt v2 tested by hand with two objects whose reference photos also show other furniture, and a room photo. Tests:
   - T7 Only the named item is taken from each reference; the table in the "Reference Sofa" photo does not appear.
   - T8 Two objects of the same type are matched by position to the right photo.

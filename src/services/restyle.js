@@ -1,6 +1,6 @@
-// Browser side of the AI restyle (Part F): photo checks and resizing, and the
-// requests to /api/restyle. Images are resized here so a request stays far
-// below Vercel's 4.5 MB body limit.
+// Browser side of the AI restyle (Part F, H.7): photo checks and resizing,
+// and the requests to /api/restyle. Images are resized here so a request
+// stays below Vercel's 4.5 MB body limit.
 const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024
 const PHOTO_MAX_EDGE = 1024
@@ -9,6 +9,16 @@ const RENDER_WIDTH = 1280
 const RENDER_HEIGHT = 720
 const RENDER_QUALITY = 0.9
 const ENDPOINT = '/api/restyle'
+// Most reference photos per request, the room's included (api/restyle.js
+// checks the same number).
+export const MAX_PHOTOS = 8
+// The request body must stay under this (the server refuses above 4 MB).
+const BODY_BUDGET = 3_900_000
+// When the body is over budget, the photos are made smaller: this scale per
+// step, at this JPEG quality, at most this many steps.
+const SHRINK_SCALE = 0.75
+const SHRINK_QUALITY = 0.7
+const SHRINK_STEPS = 3
 
 export const MESSAGES = {
   photoType: 'Use a JPG, PNG or WebP image.',
@@ -18,6 +28,7 @@ export const MESSAGES = {
   timeout: 'The request took too long. Try again.',
   maxVersions: '6 versions is the maximum. Delete one to make room.',
   noPhoto: 'Add at least one reference photo.',
+  tooLarge: 'The photos are too large to send together. Use fewer photos.',
 }
 
 // An error with a message for the panel, and the count (see countOf) when
@@ -62,14 +73,27 @@ export async function loadPhoto(file) {
   return { dataUrl, name: file.name }
 }
 
-// The Room render (PNG data URL) as a 1280 x 720 JPEG data URL.
-function renderToJpeg(snapshot) {
+// A data URL as a loaded <img>.
+function loadImage(dataUrl) {
   return new Promise((resolve, reject) => {
     const image = new Image()
-    image.onload = () => resolve(toJpeg(image, RENDER_WIDTH, RENDER_HEIGHT, RENDER_QUALITY))
+    image.onload = () => resolve(image)
     image.onerror = () => reject(new RestyleError(MESSAGES.failed))
-    image.src = snapshot
+    image.src = dataUrl
   })
+}
+
+// The Room render (PNG data URL) as a 1280 x 720 JPEG data URL.
+async function renderToJpeg(snapshot) {
+  return toJpeg(await loadImage(snapshot), RENDER_WIDTH, RENDER_HEIGHT, RENDER_QUALITY)
+}
+
+// A photo (JPEG data URL) scaled down by `scale`, as a JPEG data URL.
+async function shrinkPhoto(dataUrl, scale) {
+  const image = await loadImage(dataUrl)
+  const width = Math.max(1, Math.round(image.naturalWidth * scale))
+  const height = Math.max(1, Math.round(image.naturalHeight * scale))
+  return toJpeg(image, width, height, SHRINK_QUALITY)
 }
 
 const base64Of = (dataUrl) => dataUrl.slice(dataUrl.indexOf(',') + 1)
@@ -119,24 +143,49 @@ function errorFor(status, body) {
   }
   // A 504 can also come from Vercel itself, without a JSON body.
   if (status === 504) return new RestyleError(MESSAGES.timeout)
+  if (status === 413) return new RestyleError(MESSAGES.tooLarge)
   return new RestyleError(MESSAGES.failed)
 }
 
-// Sends the Room render and the photo. Resolves { image, count } (see
-// countOf); rejects with a RestyleError for the panel.
-export async function requestRestyle(snapshot, photoDataUrl) {
+// The JSON body: the render, the room card and each object, with the photos
+// as base64 JPEG. room: { mode, photo? }; objects: [{ id, type, name, mode,
+// x, y, photo? }]; photo values here are data URLs.
+function bodyFor(render, room, objects) {
+  const withPhoto = ({ photo, ...rest }) => (photo ? { ...rest, photo: base64Of(photo) } : rest)
+  return JSON.stringify({ render: base64Of(render), room: withPhoto(room), objects: objects.map(withPhoto) })
+}
+
+// The body, with the photos made smaller step by step while it is over
+// budget. Rejects with tooLarge if it still does not fit.
+async function fittingBody(render, room, objects) {
+  let body = bodyFor(render, room, objects)
+  for (let step = 0; body.length > BODY_BUDGET; step++) {
+    if (step === SHRINK_STEPS) throw new RestyleError(MESSAGES.tooLarge)
+    const shrink = async (item) => (item.photo ? { ...item, photo: await shrinkPhoto(item.photo, SHRINK_SCALE) } : item)
+    room = await shrink(room)
+    objects = await Promise.all(objects.map(shrink))
+    body = bodyFor(render, room, objects)
+  }
+  return body
+}
+
+// Sends the Room render, the room card and the objects in the frame (see
+// bodyFor). Resolves { image, count } (see countOf); rejects with a
+// RestyleError for the panel.
+export async function requestRestyle({ snapshot, room, objects }) {
   const render = await renderToJpeg(snapshot)
+  const body = await fittingBody(render, room, objects)
   let response
   try {
     response = await fetch(ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ render: base64Of(render), photo: base64Of(photoDataUrl) }),
+      body,
     })
   } catch {
     throw new RestyleError(MESSAGES.failed)
   }
-  const body = await response.json().catch(() => null)
-  if (!response.ok || typeof body?.image !== 'string') throw errorFor(response.status, body)
-  return { image: body.image, count: countOf(body) }
+  const answer = await response.json().catch(() => null)
+  if (!response.ok || typeof answer?.image !== 'string') throw errorFor(response.status, answer)
+  return { image: answer.image, count: countOf(answer) }
 }

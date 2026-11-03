@@ -13,8 +13,10 @@ const DEFAULT_CREATIVE_TEXT = 'The AI will design this one to match the room.'
 // One reference card: a title, the Reference | Creative switch, then the photo
 // (Upload, or a preview with Replace and Remove) in Reference mode, or a short
 // line in Creative mode. `referenceKey` is an object id or ROOM_REFERENCE.
-// The file input is hidden; the shared Button opens it.
-export default function ReferenceCard({ referenceKey, title, creativeText = DEFAULT_CREATIVE_TEXT }) {
+// `outOfFrame`: the object is outside the Room render, so it is not sent;
+// the card says so and can still be edited. The file input is hidden; the
+// shared Button opens it.
+export default function ReferenceCard({ referenceKey, title, creativeText = DEFAULT_CREATIVE_TEXT, outOfFrame = false }) {
   const { mode, photo, photoError } = useRestyleStore(selectReference(referenceKey))
   const setReferenceMode = useRestyleStore((state) => state.setReferenceMode)
   const setReferencePhotoFile = useRestyleStore((state) => state.setReferencePhotoFile)
@@ -30,8 +32,9 @@ export default function ReferenceCard({ referenceKey, title, creativeText = DEFA
   }
 
   return (
-    <div className="reference-card">
+    <div className={outOfFrame ? 'reference-card out-of-frame' : 'reference-card'}>
       <p className="reference-card-title">{title}</p>
+      {outOfFrame && <p className="reference-card-note">Not in the Room render, so it is not sent.</p>}
       <SegmentedSwitch
         options={MODES}
         value={mode}

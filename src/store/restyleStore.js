@@ -1,7 +1,8 @@
 import { create } from 'zustand'
-import { fetchRemaining, loadPhoto, requestRestyle } from '../services/restyle'
+import { fetchRemaining, loadPhoto, MAX_PHOTOS, requestRestyle } from '../services/restyle'
 import { useModeStore } from './modeStore'
 import { useObjectsStore } from './objectsStore'
+import { objectLabel } from '../components/objects/catalog'
 
 // Key of the Reference Room card in `references` (object cards use the object id).
 export const ROOM_REFERENCE = 'room'
@@ -37,19 +38,71 @@ function referenceKeyExists(key) {
   return key === ROOM_REFERENCE || useObjectsStore.getState().objects.some((object) => object.id === key)
 }
 
-// The cards in panel order: the room, then the objects in list order.
-function referenceKeys() {
-  return [ROOM_REFERENCE, ...useObjectsStore.getState().objects.map((object) => object.id)]
+// Where an object shows in the current Room render ({ x, y, inFrame }), or
+// undefined if the render has no position for it.
+function framePositionOf(id) {
+  return useModeStore.getState().snapshotObjects.find((item) => item.id === id)
 }
 
-// Until H.7 sends every photo: the photo sent with the request, which is the
-// room's if it has one, otherwise the first object photo in list order.
-function firstPhoto(references) {
-  for (const key of referenceKeys()) {
-    const reference = references[key]
-    if (reference?.mode === 'reference' && reference.photo) return reference.photo
+// True when the object is not in the Room render's frame: it is not sent.
+export function isOutOfFrame(id) {
+  return framePositionOf(id)?.inFrame === false
+}
+
+// The cards that are sent, in panel order: the room, then the objects in
+// list order that are inside the Room render's frame.
+function sentKeys() {
+  const ids = useObjectsStore.getState().objects.map((object) => object.id)
+  return [ROOM_REFERENCE, ...ids.filter((id) => !isOutOfFrame(id))]
+}
+
+const hasPhoto = (reference) => reference?.mode === 'reference' && Boolean(reference.photo)
+
+// The references as they are sent (H.7): a Reference card with no photo
+// becomes Creative, and past MAX_PHOTOS photos the later objects become
+// Creative too. Returns { references, capped } (capped: how many objects
+// were switched for the limit).
+function referencesToSend(references) {
+  const next = { ...references }
+  let photos = 0
+  let capped = 0
+  for (const key of sentKeys()) {
+    const reference = { ...DEFAULT_REFERENCE, ...references[key] }
+    if (reference.mode !== 'reference') continue
+    if (!reference.photo) {
+      next[key] = { ...reference, mode: 'creative' }
+    } else if (photos === MAX_PHOTOS) {
+      next[key] = { ...reference, mode: 'creative' }
+      capped++
+    } else {
+      photos++
+    }
   }
-  return null
+  return { references: next, capped }
+}
+
+// The notice after the limit switched some objects to Creative.
+function cappedNotice(capped) {
+  if (capped === 0) return null
+  const what = capped === 1 ? '1 object was' : `${capped} objects were`
+  return `${what} switched to Creative: at most ${MAX_PHOTOS} photos per image.`
+}
+
+// The request content for the sent cards (see requestRestyle).
+function requestContent(references) {
+  const card = (key) => {
+    const { mode, photo } = references[key] ?? DEFAULT_REFERENCE
+    return mode === 'reference' && photo ? { mode, photo: photo.dataUrl } : { mode: 'creative' }
+  }
+  const sent = new Set(sentKeys())
+  const objects = useObjectsStore
+    .getState()
+    .objects.filter((object) => sent.has(object.id))
+    .map((object) => {
+      const { x, y } = framePositionOf(object.id) ?? { x: 50, y: 50 }
+      return { id: object.id, type: object.type, name: objectLabel(object), x, y, ...card(object.id) }
+    })
+  return { room: card(ROOM_REFERENCE), objects }
 }
 
 // AI restyle state (Part F, H.2), memory only: kept across mode switches,
@@ -60,6 +113,9 @@ export const useRestyleStore = create((set, get) => ({
   // { mode: 'reference' | 'creative', photo: { dataUrl, name } | null,
   //   photoError: string | null }. A missing key means DEFAULT_REFERENCE.
   references: {},
+  // Shown under the Reference title after Generate switched objects to
+  // Creative for the photo limit; null otherwise.
+  notice: null,
   status: 'idle', // 'idle' | 'loading'
   error: null,
   // Generated images, oldest first, at most MAX_VERSIONS:
@@ -132,15 +188,17 @@ export const useRestyleStore = create((set, get) => ({
   generate: async () => {
     const { status, remaining, versions } = get()
     const snapshot = useModeStore.getState().snapshot
-    // At least one photo, on any card (H.6.1).
-    const photo = firstPhoto(get().references)
-    if (!photo || !snapshot || status === 'loading' || remaining === 0) return
+    // At least one photo, on a card that is sent (H.6.1).
+    if (selectPhotoCount(get()) === 0 || !snapshot || status === 'loading' || remaining === 0) return
     if (versions.length >= MAX_VERSIONS) return
 
+    // Empty Reference cards and photos past the limit become Creative; the
+    // cards show it.
+    const { references, capped } = referencesToSend(get().references)
     const request = ++latestRequest
-    set({ status: 'loading', error: null })
+    set({ references, notice: cappedNotice(capped), status: 'loading', error: null })
     try {
-      const { image, count } = await requestRestyle(snapshot, photo.dataUrl)
+      const { image, count } = await requestRestyle({ snapshot, ...requestContent(references) })
       // The versions were cleared meanwhile: drop the image, keep the count.
       if (request !== latestRequest) return set(countUpdate(count))
       // The new version goes at the end and is shown.
@@ -172,13 +230,9 @@ export const useRestyleStore = create((set, get) => ({
 export const selectSelectedVersion = (state) =>
   state.versions.find((version) => version.id === state.selectedVersionId)
 
-// Number of cards (room and objects that exist) with a photo in Reference
-// mode. Generate needs at least one (H.6.1).
-export const selectPhotoCount = (state) =>
-  referenceKeys().filter((key) => {
-    const reference = state.references[key]
-    return reference?.mode === 'reference' && reference.photo
-  }).length
+// Number of sent cards (the room, objects in the frame) with a photo in
+// Reference mode. Generate needs at least one (H.6.1).
+export const selectPhotoCount = (state) => sentKeys().filter((key) => hasPhoto(state.references[key])).length
 
 // A card's reference: its stored value, or the default when untouched.
 export const selectReference = (key) => (state) => state.references[key] ?? DEFAULT_REFERENCE
