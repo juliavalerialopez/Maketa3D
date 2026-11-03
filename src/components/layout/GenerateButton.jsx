@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import Button from '../ui/Button'
 import { limitMessage, MESSAGES } from '../../services/restyle'
 import { useModeStore } from '../../store/modeStore'
+import { useObjectsStore } from '../../store/objectsStore'
 import { MAX_VERSIONS, selectPhotoCount, selectSelectedVersion, useRestyleStore } from '../../store/restyleStore'
 
 // Generate / Regenerate in the top bar (Personalize only), before the theme
@@ -11,7 +12,10 @@ import { MAX_VERSIONS, selectPhotoCount, selectSelectedVersion, useRestyleStore 
 // deleted, and until at least one card has a photo.
 export default function GenerateButton() {
   const snapshot = useModeStore((state) => state.snapshot)
-  const hasPhoto = useRestyleStore((state) => selectPhotoCount(state) > 0)
+  // Which cards are sent depends on the objects and the Room render's camera.
+  const objectsState = useObjectsStore()
+  useModeStore((state) => state.snapshotView)
+  const hasPhoto = useRestyleStore((state) => selectPhotoCount(state, objectsState) > 0)
   const status = useRestyleStore((state) => state.status)
   const error = useRestyleStore((state) => state.error)
   const hasVersion = useRestyleStore((state) => selectSelectedVersion(state) !== undefined)

@@ -88,8 +88,8 @@ Status: **Draft**. Builds on Part F (AI restyle) and Part G (soft UI, six object
 ### What is sent to the AI
 Each Generate sends the Room render, the room photo (if Reference) and one photo per Reference object, plus a text description of the room card and every object in the frame.
 
-- Per object: its type, its list name, its mode, and its position in the Room render as a percentage from the left and from the top. The position is the center of the object's 3D bounding box, projected through the same camera as the render when the render is taken. This is how the AI knows which grey box is "Sofa 1" and which is "Sofa 2".
-- Off-frame and hidden objects have no card and are not sent. Until H.7.1, the request still leaves out objects by their center point only (outside the frame or behind the camera).
+- Per object: its type, its list name, its mode, and its position in the Room render as a percentage from the left and from the top. The position is the center of the object's 3D bounding box, projected through the same camera as the render when the render is taken. For a partly visible object whose center is outside the frame, the position is clamped to the frame's edge. This is how the AI knows which grey box is "Sofa 1" and which is "Sofa 2".
+- Only objects with a card are sent (`selectReferenceObjects`, H.7.1): off-frame and hidden objects are not sent, and a partly visible object is. The 8-photo cap and "at least one photo" count the same cards.
 - Image order and labels are fixed:
   - image 1 is the Room render;
   - then the room photo, if any, labeled "Room";
@@ -123,7 +123,7 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
   - ✅ H.6.1 Generate needs at least one reference photo, on any card (added 2026-11-03)
   - ✅ H.6.2 No reference card for off-frame or hidden objects (`isInFrame` on the box corners with the Room render's camera); Hide switch in the Objects list and Object details; "Hidden" and "Not in the Room render" lines; `selectReferenceObjects`; `hidden` in the layout file (added 2026-11-03)
 - ✅ H.7 Object positions taken with the Room render; new request format and server checks; Creative switch when there is no photo; the 8-photo cap with its notice; off-frame and hidden objects have no card and are not sent (H.7.1); size budget.
-  - ⬜ H.7.1 The request and the 8-photo cap use `selectReferenceObjects`, so hidden objects and partly visible objects follow the card rules (added 2026-11-03)
+  - ✅ H.7.1 The request and the 8-photo cap use `selectReferenceObjects`, so hidden objects and partly visible objects follow the card rules (added 2026-11-03)
 - ⬜ H.8 Prompt spike and tuning. Prompt v2 tested by hand with two objects whose reference photos also show other furniture, and a room photo. Tests:
   - T7 Only the named item is taken from each reference; the table in the "Reference Sofa" photo does not appear.
   - T8 Two objects of the same type are matched by position to the right photo.
@@ -147,7 +147,8 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
   - C: a hidden object is faded in Plan, missing in the Room render, has no card, and "Hidden: <name>" shows; shown again, its card returns with its photo.
   - D: a layout exported with a hidden object imports with it still hidden; an older file without the flag still imports.
   - E: no console errors; `npm run lint` and `npm run build` pass (the repo has no tests).
-- [ ] H.7: a request with a room photo, two Reference objects and one Creative object passes the server checks; an off-frame object is not sent (H.7.1: nor a hidden one); a Reference card without a photo turns Creative on Generate; a 9th photo is switched to Creative with the notice; a request over 4 MB is resized or refused with a clear message.
+- [ ] H.7: a request with a room photo, two Reference objects and one Creative object passes the server checks; an off-frame object is not sent; a Reference card without a photo turns Creative on Generate; a 9th photo is switched to Creative with the notice; a request over 4 MB is resized or refused with a clear message.
+- [ ] H.7.1: a hidden object is not in the request; a partly visible object whose center is outside the frame is sent with its photo (position at the frame's edge); a hidden object's photo is not counted for the 8-photo cap or for "at least one photo".
 - [ ] H.8: T7, T8, T9, T10 and T1–T3 pass (2 of 3 runs each).
 - [ ] No console errors.
 - [ ] `npm run build` succeeds with no errors.
@@ -169,3 +170,4 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 - 2026-11-03: H.5.1: the Generate button, its count and messages move from the Personalize panel to the top bar (Personalize only), before the theme switch.
 - 2026-11-03: H.6 + H.6.1: the Part F "Reference image" group and the H.5 "Reference" section are merged into one "Reference" section (the single image becomes the Reference Room card). Generate now needs at least one photo on any card (was: an all-Creative room allowed). Until H.7, Generate sends one photo: the room's, else the first object photo.
 - 2026-11-03: H.6.2: off-frame objects no longer get a faded card: objects outside the Room render (checked on all box corners with the render's camera) and hidden objects get no card, listed in two lines under the cards. New Hide switch per object (Objects list and Object details), saved as "hidden": true in the layout file. `selectReferenceObjects` added; H.7.1 added so the request and the cap use it (the H.7 request is unchanged for now).
+- 2026-11-03: H.7.1: the request, the 8-photo cap and the "at least one photo" check use `selectReferenceObjects`: exactly the objects with a card are sent (hidden objects no longer; partly visible objects whose center is off-frame now are).

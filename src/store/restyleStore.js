@@ -39,22 +39,17 @@ function referenceKeyExists(key) {
   return key === ROOM_REFERENCE || useObjectsStore.getState().objects.some((object) => object.id === key)
 }
 
-// Where an object shows in the current Room render ({ x, y, inFrame }), or
-// undefined if the render has no position for it.
+// Where an object's centre shows in the current Room render ({ x, y }, in
+// percent, clamped to the frame), or undefined if the render has no position for it.
 function framePositionOf(id) {
   return useModeStore.getState().snapshotObjects.find((item) => item.id === id)
 }
 
-// True when the object is not in the Room render's frame: it is not sent.
-export function isOutOfFrame(id) {
-  return framePositionOf(id)?.inFrame === false
-}
-
-// The cards that are sent, in panel order: the room, then the objects in
-// list order that are inside the Room render's frame.
-function sentKeys() {
-  const ids = useObjectsStore.getState().objects.map((object) => object.id)
-  return [ROOM_REFERENCE, ...ids.filter((id) => !isOutOfFrame(id))]
+// The cards that are sent, in panel order: the room, then the objects with a
+// card (selectReferenceObjects: not hidden, some part in the Room render), in
+// list order (H.7.1).
+function sentKeys(objectsState = useObjectsStore.getState()) {
+  return [ROOM_REFERENCE, ...selectReferenceObjects(objectsState).map((object) => object.id)]
 }
 
 const hasPhoto = (reference) => reference?.mode === 'reference' && Boolean(reference.photo)
@@ -231,13 +226,15 @@ export const useRestyleStore = create((set, get) => ({
 export const selectSelectedVersion = (state) =>
   state.versions.find((version) => version.id === state.selectedVersionId)
 
-// Number of sent cards (the room, objects in the frame) with a photo in
-// Reference mode. Generate needs at least one (H.6.1).
-export const selectPhotoCount = (state) => sentKeys().filter((key) => hasPhoto(state.references[key])).length
+// Number of sent cards (the room, objects with a card) with a photo in
+// Reference mode. Generate needs at least one (H.6.1). Pass the objects
+// store's state to recompute when it changes; it is read now otherwise.
+export const selectPhotoCount = (state, objectsState) =>
+  sentKeys(objectsState).filter((key) => hasPhoto(state.references[key])).length
 
 // The objects that get a reference card (H.6.2): not hidden, and with some
 // part inside the current Room render (checked with the camera that took it).
-// Takes the objects store's state. H.7.1 will build the request from this.
+// Takes the objects store's state. The request is built from this (H.7.1).
 export const selectReferenceObjects = (objectsState) => {
   const view = useModeStore.getState().snapshotView
   return objectsState.objects.filter((object) => !object.hidden && isInFrame(object, view))
