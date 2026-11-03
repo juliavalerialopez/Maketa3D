@@ -6,7 +6,7 @@ const LEG_INSET = 0.03 // from the table edge
 
 // A top slab and four legs, filling its size bounds exactly. Drawn at the
 // origin, standing on y = 0; the scene places and rotates it.
-export default function CoffeeTable({ size, color }) {
+export default function CoffeeTable({ size, color, faded }) {
   const { width, depth, height } = size
   const legHeight = height - TOP_THICKNESS
   const legX = width / 2 - LEG_INSET - LEG / 2
@@ -22,5 +22,5 @@ export default function CoffeeTable({ size, color }) {
     ].map(([x, z]) => ({ position: [x, legHeight / 2, z], box: [LEG, legHeight, LEG] })),
   ]
 
-  return <Parts parts={parts} color={color} />
+  return <Parts parts={parts} color={color} faded={faded} />
 }

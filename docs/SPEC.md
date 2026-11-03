@@ -32,10 +32,11 @@ All units in meters.
 
 ```js
 room: { width, depth, height }
-objects: [{ id, type, number, position: [x, y, z], rotation: [x, y, z], size: { width, depth, height }, color, screenInches? }]
+objects: [{ id, type, number, position: [x, y, z], rotation: [x, y, z], size: { width, depth, height }, color, screenInches?, hidden? }]
 // type: 'sofa' | 'coffeeTable' | 'armchair' | 'bookshelf' | 'floorLamp' | 'tvStand' (defined in objects/catalog.js)
 // number: stable per-type count (Sofa 1, Sofa 2, ...), never reused
 // screenInches: TV stand only, whole inches 32-85 (default 55); its size is computed from it
+// hidden: true only when the Hide switch is on (Part H, H.6.2): not in the Room render, no reference card, faded in Plan
 // position: y is always 0 (on the floor); a tilted object is lifted by the renderer so its lowest point touches the floor
 // rotation: radians, Euler order 'YXZ': y turns the object on the floor, x and z tilt it
 lastNumbers: { [type]: number }             // highest number handed out per type
@@ -43,6 +44,7 @@ selectedId: string | null
 mode: 'plan' | 'personalize'
 snapshot: string | null                     // PNG data URL of the last Room render, memory only
 planView: { position: [x, y, z], target: [x, y, z] }  // Plan orbit camera, restored when Plan mounts again
+snapshotView: { projection, view, width, height } | null  // the camera that took the Room render (in-frame checks)
 theme: 'light' | 'dark'                     // uiStore; manual choice saved in localStorage
 
 // AI restyle (restyleStore), memory only: kept across mode switches, lost on reload
@@ -74,6 +76,7 @@ Save writes the layout as JSON (`maketa-layout.json`, or the Save As name); Open
 ```
 
 - `rotation` is the Y rotation in whole degrees (0–359); tilt and size are not saved.
+- `"hidden": true` is saved only for hidden objects. Files without it import with every object shown.
 - Open replaces the room and objects, clamps positions inside the walls, clears the selection and continues numbering after the highest number per type. An invalid file shows a short message and changes nothing.
 
 ## Part specs

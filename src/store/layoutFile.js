@@ -8,6 +8,8 @@ import { OBJECT_TYPES } from '../components/objects/catalog'
 // (see the Part G spec).
 // Only Y rotation is kept, in whole degrees 0-359; tilt and size are not
 // saved (size comes from the catalog, or from screenInches for a TV stand).
+// A hidden object (H.6.2) has "hidden": true; shown objects have no flag, so
+// files from before the Hide switch still import.
 export const LAYOUT_VERSION = 1
 export const LAYOUT_FILE_NAME = 'maketa-layout.json'
 
@@ -31,6 +33,7 @@ export function layoutData() {
       rotation: wholeDegrees(object.rotation[1]),
       color: object.color,
       ...(object.screenInches !== undefined && { screenInches: object.screenInches }),
+      ...(object.hidden && { hidden: true }),
     })),
   }
 }
@@ -78,7 +81,8 @@ function isValidObject(item) {
     isNumber(item.z) &&
     isNumber(item.rotation) &&
     isHexColor(item.color) &&
-    (!screen || isWhole(item.screenInches, screen.min, screen.max))
+    (!screen || isWhole(item.screenInches, screen.min, screen.max)) &&
+    (item.hidden === undefined || typeof item.hidden === 'boolean')
   )
 }
 
@@ -128,6 +132,7 @@ export function importLayout(text) {
       size,
       color: item.color,
       ...(entry.screenInches && { screenInches: item.screenInches }),
+      ...(item.hidden === true && { hidden: true }),
     }
   })
 

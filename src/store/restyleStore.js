@@ -3,6 +3,7 @@ import { fetchRemaining, loadPhoto, MAX_PHOTOS, requestRestyle } from '../servic
 import { useModeStore } from './modeStore'
 import { useObjectsStore } from './objectsStore'
 import { objectLabel } from '../components/objects/catalog'
+import { isInFrame } from '../services/frame'
 
 // Key of the Reference Room card in `references` (object cards use the object id).
 export const ROOM_REFERENCE = 'room'
@@ -233,6 +234,14 @@ export const selectSelectedVersion = (state) =>
 // Number of sent cards (the room, objects in the frame) with a photo in
 // Reference mode. Generate needs at least one (H.6.1).
 export const selectPhotoCount = (state) => sentKeys().filter((key) => hasPhoto(state.references[key])).length
+
+// The objects that get a reference card (H.6.2): not hidden, and with some
+// part inside the current Room render (checked with the camera that took it).
+// Takes the objects store's state. H.7.1 will build the request from this.
+export const selectReferenceObjects = (objectsState) => {
+  const view = useModeStore.getState().snapshotView
+  return objectsState.objects.filter((object) => !object.hidden && isInFrame(object, view))
+}
 
 // A card's reference: its stored value, or the default when untouched.
 export const selectReference = (key) => (state) => state.references[key] ?? DEFAULT_REFERENCE

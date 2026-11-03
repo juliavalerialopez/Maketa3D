@@ -6,6 +6,7 @@ import NumberField from '../ui/NumberField'
 import FieldGroup from '../ui/FieldGroup'
 import ColorField from '../ui/ColorField'
 import Button from '../ui/Button'
+import HideButton from './HideButton'
 
 const DEGREES_PER_RADIAN = 180 / Math.PI
 const normalizeDegrees = (degrees) => ((degrees % 360) + 360) % 360
@@ -47,7 +48,10 @@ export default function ObjectDetails() {
 
   return (
     <div className="field-stack">
-      <p className="object-details-name">{objectLabel(object)}</p>
+      <div className="object-details-header">
+        <p className="object-details-name">{objectLabel(object)}</p>
+        <HideButton object={object} name={objectLabel(object)} />
+      </div>
       <FieldGroup title="Location" unit="m">
         <NumberField
           compact

@@ -16,11 +16,19 @@ export const useModeStore = create((set) => ({
   // Where each object shows in that render, taken with it (H.7):
   // [{ id, x, y, inFrame }], x and y in percent from the left and top.
   snapshotObjects: [],
+  // The camera that took that render (cameraView in services/frame.js), so
+  // in-frame checks use it and not the current Plan camera (H.6.2).
+  snapshotView: null,
 
   setMode: (mode) => set({ mode }),
   setPlanView: (planView) => set({ planView }),
   resetPlanView: () =>
     set((state) => ({ planView: DEFAULT_PLAN_VIEW, planViewResets: state.planViewResets + 1 })),
   // capture: what takeSnapshot returns ({ image, objects }), or null.
-  setSnapshot: (capture) => set({ snapshot: capture?.image ?? null, snapshotObjects: capture?.objects ?? [] }),
+  setSnapshot: (capture) =>
+    set({
+      snapshot: capture?.image ?? null,
+      snapshotObjects: capture?.objects ?? [],
+      snapshotView: capture?.view ?? null,
+    }),
 }))

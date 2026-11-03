@@ -14,7 +14,7 @@ Status: **Draft**. Builds on Part F (AI restyle) and Part G (soft UI, six object
 - Limits come from **environment variables**. The public defaults stay 3 per visitor and 20 per day.
 - **Leaving Personalize asks first.** Going back to Plan clears the versions (after a confirmation), so every version always belongs to the current Room render.
 - At **6 versions** Generate is blocked until I delete one.
-- Objects outside the 16:9 frame are **skipped** on Generate.
+- Objects outside the 16:9 frame, and objects switched to **Hidden** in Plan, get **no reference card** and are not sent (H.6.2, H.7.1).
 
 ## Out of scope
 - Saving versions or references across reloads (memory only, like the Part F photo).
@@ -55,9 +55,19 @@ Status: **Draft**. Builds on Part F (AI restyle) and Part G (soft UI, six object
   - the **Reference | Creative** switch (shared `SegmentedSwitch`, default Reference);
   - in Reference mode: Upload photo, then a small preview with Replace and Remove. Same file checks and messages as Part F (JPG, PNG, WebP, 10 MB, decodes);
   - in Creative mode: a short line "The AI will design this one to match the room." and no upload;
-  - if the object is outside the Room render's frame: "Not in the Room render", and it is not sent.
 - If there are no objects, below the Room card: "Add objects in Plan to give them a reference."
 - Deleting an object in Plan (or New Project, or Open Project) removes its card and its photo. Photos stay when switching between Plan and Personalize.
+
+### Objects without a card (H.6.2)
+- **Off-frame:** an object gets a card only if some part of it shows in the Room render. One helper (`isInFrame` in `src/services/frame.js`) projects the 8 corners of the object's box with the camera that took the Room render (stored with it as `snapshotView`, not the current Plan camera) and checks whether they overlap the 16:9 frame. A partly visible object is in frame.
+- **Hide switch:** every object has an eye button (shared `IconButton`) in the Objects list in Plan and next to its name in Object details. A hidden object (`hidden: true` in `objectsStore`) is not drawn in the Room render; in Plan it stays, drawn faded, and its list row shows an eye with a line through it. Hiding is done in Plan, because the Room render is taken when entering Personalize.
+- Under the cards, one line each, only when not empty:
+  - "Hidden: Sofa 2." for hidden objects;
+  - "Not in the Room render: Coffee table 1, Floor lamp 1." for the other objects without a card.
+  - An object that is both hidden and off-frame is listed as hidden.
+- A photo uploaded for an object stays in memory while it has no card. When a later Room render has it in frame (or it is shown again), its card returns with the photo.
+- `selectReferenceObjects` (`src/store/restyleStore.js`) returns the objects with a card: not hidden and in frame.
+- Layout file: a hidden object is saved with `"hidden": true`; shown objects have no flag. Older files without it import as before; a `hidden` that is not true or false makes the file invalid.
 - Components:
   - `ReferenceCard` goes in `src/components/panel/`, because it reads the stores and object names.
   - `Thumbnail` (image, selected state, delete button) and `IconButton` are new shared components in `src/components/ui/`, using the Part G soft styles.
@@ -79,7 +89,7 @@ Status: **Draft**. Builds on Part F (AI restyle) and Part G (soft UI, six object
 Each Generate sends the Room render, the room photo (if Reference) and one photo per Reference object, plus a text description of the room card and every object in the frame.
 
 - Per object: its type, its list name, its mode, and its position in the Room render as a percentage from the left and from the top. The position is the center of the object's 3D bounding box, projected through the same camera as the render when the render is taken. This is how the AI knows which grey box is "Sofa 1" and which is "Sofa 2".
-- Objects whose center is outside the frame or behind the camera are left out completely.
+- Off-frame and hidden objects have no card and are not sent. Until H.7.1, the request still leaves out objects by their center point only (outside the frame or behind the camera).
 - Image order and labels are fixed:
   - image 1 is the Room render;
   - then the room photo, if any, labeled "Room";
@@ -111,7 +121,9 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
   - ✅ H.5.1 Generate button, count and messages move to the top bar, Personalize only, before the theme switch (added 2026-11-03)
 - ✅ H.6 Reference section: Clear All, Reference Room card, one card per object, the notice and the empty message (replaces the Part F "Reference image" group: its single photo becomes the Reference Room card).
   - ✅ H.6.1 Generate needs at least one reference photo, on any card (added 2026-11-03)
-- ✅ H.7 Object positions taken with the Room render; new request format and server checks; Creative switch when there is no photo; the 8-photo cap with its notice; off-frame objects skipped; size budget.
+  - ✅ H.6.2 No reference card for off-frame or hidden objects (`isInFrame` on the box corners with the Room render's camera); Hide switch in the Objects list and Object details; "Hidden" and "Not in the Room render" lines; `selectReferenceObjects`; `hidden` in the layout file (added 2026-11-03)
+- ✅ H.7 Object positions taken with the Room render; new request format and server checks; Creative switch when there is no photo; the 8-photo cap with its notice; off-frame and hidden objects have no card and are not sent (H.7.1); size budget.
+  - ⬜ H.7.1 The request and the 8-photo cap use `selectReferenceObjects`, so hidden objects and partly visible objects follow the card rules (added 2026-11-03)
 - ⬜ H.8 Prompt spike and tuning. Prompt v2 tested by hand with two objects whose reference photos also show other furniture, and a room photo. Tests:
   - T7 Only the named item is taken from each reference; the table in the "Reference Sofa" photo does not appear.
   - T8 Two objects of the same type are matched by position to the right photo.
@@ -129,7 +141,13 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 - [ ] H.5: one card per object with the title "Reference <name>"; the mode switch works; upload, Replace and Remove work with the Part F checks; deleting an object removes its card.
 - [ ] H.6: one "Reference" section only; the Room card is first; Clear All removes all photos (room included) and keeps the modes; photos survive switching to Plan and back.
 - [ ] H.6.1: Generate is disabled with "Add at least one reference photo." until any card has a photo; a photo on one object card alone is enough.
-- [ ] H.7: a request with a room photo, two Reference objects and one Creative object passes the server checks; an off-frame object is not sent; a Reference card without a photo turns Creative on Generate; a 9th photo is switched to Creative with the notice; a request over 4 MB is resized or refused with a clear message.
+- [ ] H.6.2:
+  - A: an object moved fully outside the camera frame has no card in Personalize, and "Not in the Room render: <name>" shows.
+  - B: an object only partly visible keeps its card.
+  - C: a hidden object is faded in Plan, missing in the Room render, has no card, and "Hidden: <name>" shows; shown again, its card returns with its photo.
+  - D: a layout exported with a hidden object imports with it still hidden; an older file without the flag still imports.
+  - E: no console errors; `npm run lint` and `npm run build` pass (the repo has no tests).
+- [ ] H.7: a request with a room photo, two Reference objects and one Creative object passes the server checks; an off-frame object is not sent (H.7.1: nor a hidden one); a Reference card without a photo turns Creative on Generate; a 9th photo is switched to Creative with the notice; a request over 4 MB is resized or refused with a clear message.
 - [ ] H.8: T7, T8, T9, T10 and T1–T3 pass (2 of 3 runs each).
 - [ ] No console errors.
 - [ ] `npm run build` succeeds with no errors.
@@ -150,3 +168,4 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 - 2026-11-03: H.4: the download button opens a menu: "Download this image" or "Download all" in one ZIP file. Separate files for "all" were tried, but a browser set to ask where to save asks once per file.
 - 2026-11-03: H.5.1: the Generate button, its count and messages move from the Personalize panel to the top bar (Personalize only), before the theme switch.
 - 2026-11-03: H.6 + H.6.1: the Part F "Reference image" group and the H.5 "Reference" section are merged into one "Reference" section (the single image becomes the Reference Room card). Generate now needs at least one photo on any card (was: an all-Creative room allowed). Until H.7, Generate sends one photo: the room's, else the first object photo.
+- 2026-11-03: H.6.2: off-frame objects no longer get a faded card: objects outside the Room render (checked on all box corners with the render's camera) and hidden objects get no card, listed in two lines under the cards. New Hide switch per object (Objects list and Object details), saved as "hidden": true in the layout file. `selectReferenceObjects` added; H.7.1 added so the request and the cap use it (the H.7 request is unchanged for now).

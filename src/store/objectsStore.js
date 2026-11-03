@@ -50,6 +50,18 @@ export const useObjectsStore = create((set) => ({
       }
     }),
   selectObject: (id) => set({ selectedId: id }),
+  // Hide switch (H.6.2): a hidden object is left out of the Room render and
+  // gets no reference card; in Plan it is drawn faded. Stored only as
+  // hidden: true; showing it again removes the flag.
+  setHidden: (id, hidden) =>
+    set((state) => ({
+      objects: state.objects.map((object) => {
+        if (object.id !== id) return object
+        if (hidden) return { ...object, hidden: true }
+        const { hidden: _removed, ...shown } = object
+        return shown
+      }),
+    })),
   updateObject: (id, partial) =>
     set((state) => ({
       objects: state.objects.map((object) => (object.id === id ? { ...object, ...partial } : object)),

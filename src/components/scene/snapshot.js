@@ -1,3 +1,5 @@
+import { frameRect } from '../../services/frame'
+
 // Room render ("snapshot") of the Plan scene, cropped to the 16:9 frame.
 // SnapshotBridge (inside the Canvas) puts the capture function here, so code
 // outside the Canvas (the mode switch) can call it while the Canvas is alive.
@@ -8,19 +10,6 @@ const MAX_WIDTH = 1920
 // Always white, whatever the theme (.scene-pane follows the theme on screen),
 // so the image sent to the AI does not depend on the theme.
 export const SCENE_BACKGROUND = '#ffffff'
-
-// The 16:9 frame inside a width x height area: fits the height, or the width
-// when the area is narrower than 16:9, centered. Same rule as .frame-guide-box.
-export function frameRect(width, height) {
-  const frameWidth = Math.min(width, (height * 16) / 9)
-  const frameHeight = (frameWidth * 9) / 16
-  return {
-    x: (width - frameWidth) / 2,
-    y: (height - frameHeight) / 2,
-    width: frameWidth,
-    height: frameHeight,
-  }
-}
 
 // Where a point (a Vector3, world space) shows in the Room render: percent
 // of the frame's width from the left and of its height from the top, and
@@ -36,10 +25,11 @@ export function framePosition(point, camera, width, height) {
   return { x: percent(x), y: percent(y), inFrame }
 }
 
-// Takes the snapshot now: { image, objects } with image a PNG data URL and
+// Takes the snapshot now: { image, objects, view } with image a PNG data URL,
 // objects [{ id, x, y, inFrame }] (see framePosition, for each object's
-// centre), or null when there is no Plan canvas or the render fails (e.g.
-// WebGL context lost).
+// centre) and view the camera that took it (cameraView in services/frame.js),
+// or null when there is no Plan canvas or the render fails (e.g. WebGL
+// context lost).
 export function takeSnapshot() {
   try {
     return snapshotBridge.capture?.() ?? null

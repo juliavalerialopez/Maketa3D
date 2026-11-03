@@ -8,7 +8,7 @@ const SCREEN_COLOR = '#1b2026'
 // A stand with a TV centered on it, filling its size bounds exactly. The TV
 // size follows from the stand width. The screen faces +z, like the Sofa.
 // The color is the stand's; the TV is always black. Drawn at the origin.
-export default function TvStand({ size, color }) {
+export default function TvStand({ size, color, faded }) {
   const { width, depth } = size
   const tvWidth = width - 2 * STAND_MARGIN
   const tvHeight = (tvWidth * TV_HEIGHT_PER_INCH) / TV_WIDTH_PER_INCH
@@ -29,5 +29,5 @@ export default function TvStand({ size, color }) {
     },
   ]
 
-  return <Parts parts={parts} color={color} />
+  return <Parts parts={parts} color={color} faded={faded} />
 }

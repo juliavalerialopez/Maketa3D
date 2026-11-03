@@ -400,9 +400,11 @@ canvas {
   font-size: 0.85em;
 }
 
-/* An object outside the Room render: not sent, shown faded. */
-.reference-card.out-of-frame {
-  opacity: 0.6;
+/* Under the cards: objects without one (hidden, or outside the Room render). */
+.reference-section-missing {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.9em;
 }
 
 .reference-section-actions .ui-button {
@@ -529,9 +531,21 @@ canvas {
   margin-bottom: 0;
 }
 
+.object-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .object-details-name {
   margin: 0;
   font-weight: 700;
+}
+
+/* Hide switch (H.6.2): muted while the object is hidden. */
+.hide-button.hidden {
+  color: var(--muted);
 }
 
 /* ui/NumberField */
@@ -1017,6 +1031,22 @@ canvas {
 
 .ui-list li + li {
   margin-top: 4px;
+}
+
+/* A row with an action (e.g. the Hide switch) at its right end. */
+.ui-list-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ui-list-row .ui-list-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.ui-list-item.muted {
+  opacity: 0.5;
 }
 
 /* A pill row with a round dot; the selected row is pressed, its dot filled. */

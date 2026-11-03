@@ -8,7 +8,7 @@ const BACK_DEPTH = 0.18
 // Seat, back and two arms, filling its size bounds exactly. The back is at
 // local -z, so an unrotated armchair faces +z, like the Sofa. Drawn at the
 // origin, standing on y = 0; the scene places and rotates it.
-export default function Armchair({ size, color }) {
+export default function Armchair({ size, color, faded }) {
   const { width, depth, height } = size
   const innerWidth = width - 2 * ARM_WIDTH
   const armX = (width - ARM_WIDTH) / 2
@@ -23,5 +23,5 @@ export default function Armchair({ size, color }) {
     { position: [armX, ARM_HEIGHT / 2, 0], box: [ARM_WIDTH, ARM_HEIGHT, depth] },
   ]
 
-  return <Parts parts={parts} color={color} />
+  return <Parts parts={parts} color={color} faded={faded} />
 }

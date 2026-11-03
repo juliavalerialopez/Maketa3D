@@ -61,7 +61,8 @@ first.
   palette color by name.
 - `src/services/`: browser code that talks to the server or prepares data for
   it (e.g. `restyle.js`: image resizing, `/api/restyle` requests, error
-  messages). Requests go through stores; components may import constants
+  messages; `frame.js`: whether an object shows in the Room render, using
+  the camera stored with it; `zip.js`: the ZIP of all AI versions). Requests go through stores; components may import constants
   and message helpers only.
 - `api/`: Vercel functions. Files starting with `_` are helpers, not routes
   (`_gemini.js`, `_limits.js`, `_restyle-prompt.js`). API keys and secrets

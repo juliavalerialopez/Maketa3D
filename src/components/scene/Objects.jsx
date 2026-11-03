@@ -87,7 +87,8 @@ function SceneObject({ id }) {
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
     >
-      <Component size={object.size} color={object.color} />
+      {/* A hidden object (H.6.2) stays in Plan, drawn faded. */}
+      <Component size={object.size} color={object.color} faded={Boolean(object.hidden)} />
     </group>
   )
 }

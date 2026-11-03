@@ -7,7 +7,7 @@ const SHELVES = 4
 // Two sides, top, bottom, four evenly spaced shelves and a thin back, filling
 // its size bounds exactly. The back is at local -z, so an unrotated bookshelf
 // opens toward +z. Drawn at the origin, standing on y = 0.
-export default function Bookshelf({ size, color }) {
+export default function Bookshelf({ size, color, faded }) {
   const { width, depth, height } = size
   const innerWidth = width - 2 * BOARD
   const boardDepth = depth - BACK
@@ -27,5 +27,5 @@ export default function Bookshelf({ size, color }) {
     ...Array.from({ length: SHELVES + 2 }, (_, index) => horizontal(BOARD / 2 + index * gap)),
   ]
 
-  return <Parts parts={parts} color={color} />
+  return <Parts parts={parts} color={color} faded={faded} />
 }

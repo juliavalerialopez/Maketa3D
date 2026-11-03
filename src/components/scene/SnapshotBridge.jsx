@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import { Box3, Vector3 } from 'three'
 import { cropToFrame, framePosition, snapshotBridge } from './snapshot'
+import { cameraView } from '../../services/frame'
 import { widgetControls } from './widgetState'
 import { useObjectsStore } from '../../store/objectsStore'
 
@@ -20,9 +21,10 @@ function objectPositions(scene, camera, width, height) {
   })
 }
 
-// Hides helpers (objects with userData.helper, and the widget), renders the
-// scene once, crops it to the frame and shows the helpers again. All in one
-// call, so the page never shows the scene without its helpers.
+// Hides helpers (objects with userData.helper, and the widget) and hidden
+// objects (H.6.2), renders the scene once, crops it to the frame and shows
+// them again. All in one call, so the page never shows the scene without
+// them. Also returns the object positions and the camera that took it.
 function captureScene(gl, scene, camera) {
   const canvas = gl.domElement
   if (gl.getContext().isContextLost() || !canvas.width || !canvas.height) return null
@@ -37,11 +39,19 @@ function captureScene(gl, scene, camera) {
     if (object.userData.helper) hide(object)
   })
   Object.values(widgetControls).forEach(hide)
+  useObjectsStore
+    .getState()
+    .objects.filter((object) => object.hidden)
+    .forEach((object) => hide(scene.getObjectByName(object.id)))
 
   try {
     gl.render(scene, camera)
     const image = cropToFrame(canvas)
-    return { image, objects: objectPositions(scene, camera, canvas.width, canvas.height) }
+    return {
+      image,
+      objects: objectPositions(scene, camera, canvas.width, canvas.height),
+      view: cameraView(camera, canvas.width, canvas.height),
+    }
   } finally {
     hidden.forEach((object) => (object.visible = true))
   }

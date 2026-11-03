@@ -7,7 +7,7 @@ const SHADE_HEIGHT = 0.3
 // Round base, thin pole and a shade that widens toward the bottom, filling
 // its size bounds: the shade's bottom rim is as wide as the footprint.
 // Drawn at the origin, standing on y = 0.
-export default function FloorLamp({ size, color }) {
+export default function FloorLamp({ size, color, faded }) {
   const { width, height } = size
   const radius = width / 2
   const shadeBottom = height - SHADE_HEIGHT
@@ -22,5 +22,5 @@ export default function FloorLamp({ size, color }) {
     { position: [0, shadeBottom + SHADE_HEIGHT / 2, 0], cylinder: [radius * 0.65, radius, SHADE_HEIGHT] },
   ]
 
-  return <Parts parts={parts} color={color} />
+  return <Parts parts={parts} color={color} faded={faded} />
 }
