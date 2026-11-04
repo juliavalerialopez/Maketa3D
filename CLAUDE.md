@@ -39,17 +39,19 @@ first.
     frame guide, Plan camera restore and the snapshot. Scene helpers
     (selection box, future grids) set `userData.helper` so the snapshot
     hides them.
-  - `objects/`: one 3D model component per placeable type, plus `catalog.js`.
-    Models are built from primitives with `Parts.jsx`, origin in the middle
+  - `objects/`: one 3D model component per placeable type, plus `catalog.js`
+    and `models.js`. Models are built from primitives with `Parts.jsx`, origin in the middle
     of the base, filling their size box.
   - `ui/`: shared controls (`NumberField`, `ColorField`, `Button`,
     `ListItem`, `FieldGroup`, `SegmentedSwitch`, `Toggle`, `MenuButton`,
     `Dialog`). Every number input, color input, action button, list row,
     menu and dialog uses these; change their look or behavior only here.
 - `src/components/objects/catalog.js`: the single definition of each object type
-  (label, component, default size, color). Adding a type = a model file in
-  `objects/` + one catalog entry; do not define types anywhere else. The
-  Objects section shows one button per entry. A type with a screen size (TV
+  (label, default size, color), plain data with no React, so stores and tests
+  can import it. `models.js` maps each type to its model component; only
+  `scene/Objects.jsx` imports it. Adding a type = a model file in
+  `objects/`, one catalog entry and one line in `models.js`; do not define
+  types anywhere else. The Objects section shows one button per entry. A type with a screen size (TV
   stand) also has `screenInches` limits and `sizeFor`; its formula lives in
   `tvStandSize.js`.
 - `src/store/`: Zustand stores, plus plain helpers: `roomBounds.js` (wall

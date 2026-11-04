@@ -5,7 +5,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
 import { clampPosition, objectTransform } from '../../store/roomBounds'
-import { OBJECT_TYPES } from '../objects/catalog'
+import { OBJECT_MODELS } from '../objects/models'
 import { isWidgetActive } from './widgetState'
 
 // Pixels a press may move and still count as a click (same as Fiber's own
@@ -73,7 +73,7 @@ function SceneObject({ id }) {
     useObjectsStore.getState().selectObject(id)
   }
 
-  const Component = OBJECT_TYPES[object.type].component
+  const Component = OBJECT_MODELS[object.type]
   const { position, rotation } = objectTransform(object)
   // The scene owns the transform; models only draw themselves at the origin.
   return (

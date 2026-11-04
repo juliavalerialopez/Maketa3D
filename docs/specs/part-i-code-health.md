@@ -124,7 +124,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - ✅ I.1 Objects stay inside a smaller room: `NumberField` `onCommit`, `objectsStore.fitToRoom`, the room fields clamp on commit.
 - ✅ I.2 One download helper in `services/download.js` (later revoke, ZIP code out of `PersonalizeMode`, one data URL helper).
 - ✅ I.3 Error boundary with Save layout and Reload, also on WebGL context loss.
-- ⬜ I.4 Object catalog without React: `catalog.js` data only, `models.js` for the components, `CLAUDE.md` catalog rule.
+- ✅ I.4 Object catalog without React: `catalog.js` data only, `models.js` for the components, `CLAUDE.md` catalog rule.
 - ⬜ I.5 Tests with `node:test` in `tests/`, `npm test`, full file extensions in the tested files, the verifier runs them.
 - ⬜ I.6 Lint rules and shared angle helpers.
 - ⬜ I.7 `useReferenceObjects` hook; selectors take the Room render camera as an argument.
