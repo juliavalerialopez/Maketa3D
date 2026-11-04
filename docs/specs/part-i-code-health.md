@@ -88,7 +88,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
   - a color pick (one step for the whole pick);
   - Add, Delete, Hide or Show, a room size change (with the I.1 clamp).
 - **Redo** applies an undone step again. Any new change after an undo clears the redo steps.
-- Ctrl+Z undoes, Ctrl+Shift+Z and Ctrl+Y redo (Cmd on Mac), in Plan only, and not while typing in a field or with a dialog or menu open. Small Undo and Redo icon buttons at the top left of the scene, each disabled when there is nothing to undo or redo.
+- Ctrl+Z undoes, Ctrl+Shift+Z and Ctrl+Y redo (Cmd on Mac), in Plan only, and not while typing in a field or with a dialog or menu open. Undo and Redo icon buttons at the top left of the scene, each disabled when there is nothing to undo or redo.
 - An undone Delete brings the object back with the same name, number, color and reference photo (the photo is kept while the object can still come back).
 - At most 50 steps, memory only. New Project and Open Project clear the history.
 - The selection is cleared if the selected object is gone after an undo or redo.
@@ -132,7 +132,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - ✅ I.8 Shared restyle limits in `shared/restyle.js`.
 - ✅ I.9 Limit counter in one Lua script.
 - ✅ I.10 Drag and drop upload on the Reference cards.
-- ⬜ I.11 Undo and redo for room and object changes, one step per gesture.
+- ✅ I.11 Undo and redo for room and object changes, one step per gesture.
 - ⬜ I.12 Room render data in one place (`roomRender`, projection in `services/frame.js`).
 - ⬜ I.13 Fixed 1920 × 1080 Room render.
 - ⬜ I.14 Placeable camera.

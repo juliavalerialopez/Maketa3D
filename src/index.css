@@ -807,6 +807,13 @@ canvas {
   outline-offset: 2px;
 }
 
+.ui-icon-button:disabled {
+  color: var(--muted);
+  opacity: 0.5;
+  box-shadow: var(--shadow-out-small);
+  cursor: default;
+}
+
 /* ui/Thumbnail: a small 16:9 image button; selected = pressed with an accent
    ring. The delete X sits on its top left corner, shown on hover or focus. */
 .ui-thumbnail {
@@ -1189,6 +1196,15 @@ canvas {
 
 .frame-toggle .ui-button {
   margin-bottom: 0;
+}
+
+/* Undo and Redo at the top left of the scene (I.11). */
+.history-buttons {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  gap: 8px;
 }
 
 /* ui/SegmentedSwitch */

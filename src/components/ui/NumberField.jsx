@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 const round = (number) => Math.round(number * 1000) / 1000
 
@@ -27,11 +27,17 @@ const PIXELS_PER_STEP = 4
 // `onCommit` (optional) is called once a value is final, after its onChange:
 // on blur, with the minus and plus buttons, with Up and Down, and when a drag
 // ends. Not while typing, so "10" does not commit its first "1".
+//
+// `onEditStart` and `onEditEnd` (optional) frame one edit (I.11, one undo
+// step): from focus or a press until blur or the end of a drag; a minus or
+// plus click is an edit of its own.
 export default function NumberField({
   label,
   value,
   onChange,
   onCommit,
+  onEditStart,
+  onEditEnd,
   min,
   max,
   step = 0.1,
@@ -46,6 +52,30 @@ export default function NumberField({
   const inputRef = useRef(null)
   // Active press: { pointerId, startX, startValue, dragging, current }.
   const pressRef = useRef(null)
+  // An edit is open (onEditStart called, onEditEnd not yet).
+  const editingRef = useRef(false)
+
+  function startEdit() {
+    if (editingRef.current) return
+    editingRef.current = true
+    onEditStart?.()
+  }
+
+  function endEdit() {
+    if (!editingRef.current) return
+    editingRef.current = false
+    onEditEnd?.()
+  }
+
+  // A field removed while it is being edited (no blur comes) ends its edit.
+  useEffect(
+    () => () => {
+      if (!editingRef.current) return
+      editingRef.current = false
+      onEditEnd?.()
+    },
+    [onEditEnd],
+  )
 
   // Adjusting state during render (React's pattern for reacting to a prop change).
   if (value !== lastValue) {
@@ -85,9 +115,15 @@ export default function NumberField({
     if (Number.isFinite(number)) onChange(number)
   }
 
+  function handleFocus() {
+    setFocused(true)
+    startEdit()
+  }
+
   function handleBlur() {
     setFocused(false)
     commit(value)
+    endEdit()
   }
 
   // While not typing, the press is ours: no focus or text selection yet.
@@ -98,6 +134,7 @@ export default function NumberField({
   function handlePointerDown(event) {
     if (focused || event.button !== 0) return
     event.currentTarget.setPointerCapture(event.pointerId)
+    startEdit()
     pressRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -126,11 +163,24 @@ export default function NumberField({
     pressRef.current = null
     if (press.dragging) {
       commit(press.current)
+      endEdit()
     } else if (event.type === 'pointerup') {
-      // A plain click: start typing, with the text selected.
+      // A plain click: start typing, with the text selected. The edit goes on
+      // until blur.
       inputRef.current.focus()
       inputRef.current.select()
+    } else {
+      endEdit()
     }
+  }
+
+  // A minus or plus click is an edit of its own, unless the field is already
+  // being edited (focused, in a browser where the click keeps the focus).
+  function handleStep(direction) {
+    if (editingRef.current) return commit(value + direction * step)
+    startEdit()
+    commit(value + direction * step)
+    endEdit()
   }
 
   const stepButton = (direction, symbol, name) => (
@@ -138,7 +188,7 @@ export default function NumberField({
       type="button"
       className="ui-number-field-step"
       aria-label={`${name} ${label}`}
-      onClick={() => commit(value + direction * step)}
+      onClick={() => handleStep(direction)}
     >
       {symbol}
     </button>
@@ -159,7 +209,7 @@ export default function NumberField({
         className={focused ? undefined : 'ui-number-field-draggable'}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        onFocus={() => setFocused(true)}
+        onFocus={handleFocus}
         onBlur={handleBlur}
         onMouseDown={handleMouseDown}
         onPointerDown={handlePointerDown}

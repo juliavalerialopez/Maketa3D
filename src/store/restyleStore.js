@@ -4,6 +4,7 @@ import { fetchRemaining, loadPhoto, requestRestyle } from '../services/restyle.j
 import { MAX_PHOTOS } from '../../shared/restyle.js'
 import { useModeStore } from './modeStore.js'
 import { useObjectsStore } from './objectsStore.js'
+import { useHistoryStore } from './historyStore.js'
 import { objectLabel } from '../components/objects/catalog.js'
 import { isInFrame } from '../services/frame.js'
 import { saveVersion, saveVersionsZip } from '../services/download.js'
@@ -263,11 +264,19 @@ export function useReferenceObjects() {
 // A card's reference: its stored value, or the default when untouched.
 export const selectReference = (key) => (state) => state.references[key] ?? DEFAULT_REFERENCE
 
-// A deleted object (Delete, New Project, Open Project) loses its card and its
-// photo: references for ids that no longer exist are dropped.
-useObjectsStore.subscribe((state, previous) => {
-  if (state.objects === previous.objects) return
-  const ids = new Set(state.objects.map((object) => object.id))
+// A deleted object loses its card and its photo once it can no longer come
+// back: references are dropped for ids that are neither in the objects nor
+// in an undo or redo step (I.11). New Project and Open Project clear the
+// history, so their old objects' photos go then. Every change to the objects
+// updates the history, at the latest when its gesture ends (every gesture is
+// ended, also when cut short), so checking on history changes is enough.
+useHistoryStore.subscribe(() => {
+  const { past, future } = useHistoryStore.getState()
+  const ids = new Set(
+    [useObjectsStore.getState().objects, ...[...past, ...future].map((step) => step.objects)].flatMap((objects) =>
+      objects.map((object) => object.id),
+    ),
+  )
   const { references } = useRestyleStore.getState()
   const stale = Object.keys(references).filter((key) => key !== ROOM_REFERENCE && !ids.has(key))
   if (stale.length === 0) return

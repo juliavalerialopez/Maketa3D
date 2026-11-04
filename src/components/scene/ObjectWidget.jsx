@@ -4,6 +4,7 @@ import { TransformControls } from '@react-three/drei'
 import { Quaternion } from 'three'
 import { useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
+import { beginGesture, endGesture } from '../../store/historyStore'
 import { clampPosition, normalizeRadians, objectTransform } from '../../store/roomBounds'
 import { widgetControls } from './widgetState'
 
@@ -39,6 +40,19 @@ export default function ObjectWidget() {
   const rotateRef = useRef(null)
   // Rotation drag start: the group's quaternion and the stored rotation.
   const rotateStartRef = useRef(null)
+  // A widget drag is in progress (its undo step is open, I.11).
+  const draggingRef = useRef(false)
+
+  function startDrag() {
+    draggingRef.current = true
+    beginGesture()
+  }
+
+  function endDrag() {
+    if (!draggingRef.current) return
+    draggingRef.current = false
+    endGesture()
+  }
 
   // The selected object's group, looked up when read, not during render: on a
   // fresh Plan mount the group joins the scene only at commit. TransformControls
@@ -66,8 +80,19 @@ export default function ObjectWidget() {
       if (!rotate.dragging) rotate.enabled = event.value === null
     }
     translate.addEventListener('axis-changed', handleAxisChanged)
+
+    // A drag cut short never sends mouseUp: a cancelled touch, or the widget
+    // going away mid-drag (Escape or Delete). Its undo step ends here.
+    const cancelDrag = () => {
+      if (!draggingRef.current) return
+      draggingRef.current = false
+      endGesture()
+    }
+    window.addEventListener('pointercancel', cancelDrag)
     return () => {
       translate.removeEventListener('axis-changed', handleAxisChanged)
+      window.removeEventListener('pointercancel', cancelDrag)
+      cancelDrag()
       widgetControls.translate = null
       widgetControls.rotate = null
     }
@@ -83,6 +108,7 @@ export default function ObjectWidget() {
   }
 
   function handleRotateStart() {
+    startDrag()
     const group = target.current
     const object = getObject(selectedId)
     if (!group || !object) return
@@ -110,6 +136,8 @@ export default function ObjectWidget() {
         object={target}
         mode="translate"
         showY={false}
+        onMouseDown={startDrag}
+        onMouseUp={endDrag}
         onObjectChange={handleMove}
       />
       <TransformControls
@@ -121,6 +149,7 @@ export default function ObjectWidget() {
         rotationSnap={ROTATION_STEP}
         size={RING_SIZE}
         onMouseDown={handleRotateStart}
+        onMouseUp={endDrag}
         onObjectChange={handleRotate}
       />
     </>

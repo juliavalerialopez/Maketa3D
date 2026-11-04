@@ -1,5 +1,6 @@
 import { ROOM_LIMITS, useRoomStore } from '../../store/roomStore'
 import { useObjectsStore } from '../../store/objectsStore'
+import { editGesture } from '../../store/historyStore'
 import NumberField from '../ui/NumberField'
 
 const FIELDS = [
@@ -26,6 +27,7 @@ export default function RoomInputs() {
           value={room[field.key]}
           onChange={(value) => setRoomSize({ [field.key]: value })}
           onCommit={fitObjects}
+          {...editGesture}
           min={ROOM_LIMITS[field.key][0]}
           max={ROOM_LIMITS[field.key][1]}
           unit="m"

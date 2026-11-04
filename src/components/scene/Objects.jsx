@@ -1,9 +1,10 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useThree } from '@react-three/fiber'
 import { Plane, Vector3 } from 'three'
 import { useShallow } from 'zustand/react/shallow'
 import { useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
+import { beginGesture, endGesture } from '../../store/historyStore'
 import { clampPosition, objectTransform } from '../../store/roomBounds'
 import { OBJECT_MODELS } from '../objects/models'
 import { isWidgetActive } from './widgetState'
@@ -25,6 +26,19 @@ function SceneObject({ id }) {
   // Active drag: { pointerId, plane, offsetX, offsetZ }.
   const dragRef = useRef(null)
 
+  // Removed in the middle of a drag (e.g. Delete): no pointer up comes, so
+  // the drag's undo step ends here and orbit comes back.
+  useEffect(
+    () => () => {
+      if (!dragRef.current) return
+      dragRef.current = null
+      endGesture()
+      const { controls } = getThree()
+      if (controls) controls.enabled = true
+    },
+    [getThree],
+  )
+
   if (!object) return null
 
   function handlePointerDown(event) {
@@ -40,6 +54,8 @@ function SceneObject({ id }) {
     if (!event.ray.intersectPlane(plane, hit)) return
     const [x, , z] = object.position
     dragRef.current = { pointerId: event.pointerId, plane, offsetX: x - hit.x, offsetZ: z - hit.z }
+    // The whole drag is one undo step (I.11).
+    beginGesture()
     event.target.setPointerCapture(event.pointerId)
     const { controls } = getThree()
     if (controls) controls.enabled = false
@@ -61,6 +77,7 @@ function SceneObject({ id }) {
     const drag = dragRef.current
     if (!drag || drag.pointerId !== event.pointerId) return
     dragRef.current = null
+    endGesture()
     event.target.releasePointerCapture(event.pointerId)
     const { controls } = getThree()
     if (controls) controls.enabled = true

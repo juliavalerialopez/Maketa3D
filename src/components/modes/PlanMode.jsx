@@ -5,6 +5,7 @@ import PlanCamera from '../scene/PlanCamera'
 import SnapshotBridge from '../scene/SnapshotBridge'
 import FrameGuide from '../scene/FrameGuide'
 import ContextLossGuard from '../scene/ContextLossGuard'
+import HistoryButtons from '../scene/HistoryButtons'
 import SplitLayout from '../layout/SplitLayout'
 import ErrorBoundary from '../layout/ErrorBoundary'
 import ControlPanel from '../panel/ControlPanel'
@@ -50,6 +51,7 @@ export default function PlanMode() {
               <ContextLossGuard />
             </Canvas>
             <FrameGuide />
+            <HistoryButtons />
           </ErrorBoundary>
         </div>
       }

@@ -1,6 +1,7 @@
 import { OBJECT_TYPES, objectLabel } from '../objects/catalog'
 import { selectSelectedObject, useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
+import { editGesture } from '../../store/historyStore'
 import { clampPosition, normalizeDegrees, positionLimits, toDegrees, toRadians } from '../../store/roomBounds'
 import NumberField from '../ui/NumberField'
 import FieldGroup from '../ui/FieldGroup'
@@ -55,6 +56,7 @@ export default function ObjectDetails() {
           label="X"
           value={x}
           onChange={(value) => updateObject(object.id, { position: [value, y, z] })}
+          {...editGesture}
           min={limits.x[0]}
           max={limits.x[1]}
         />
@@ -63,6 +65,7 @@ export default function ObjectDetails() {
           label="Z"
           value={z}
           onChange={(value) => updateObject(object.id, { position: [x, y, value] })}
+          {...editGesture}
           min={limits.z[0]}
           max={limits.z[1]}
         />
@@ -75,6 +78,7 @@ export default function ObjectDetails() {
             label={axis}
             value={toDegrees(object.rotation[index])}
             onChange={(degrees) => setRotation(index, degrees)}
+            {...editGesture}
             step={15}
             normalize={normalizeDegrees}
           />
@@ -86,6 +90,7 @@ export default function ObjectDetails() {
           unit="in"
           value={object.screenInches}
           onChange={setScreenInches}
+          {...editGesture}
           min={screen.min}
           max={screen.max}
           step={1}
@@ -96,6 +101,7 @@ export default function ObjectDetails() {
         label="Color"
         value={object.color}
         onChange={(color) => updateObject(object.id, { color })}
+        {...editGesture}
       />
       <Button onClick={() => removeObject(object.id)}>Delete</Button>
     </div>

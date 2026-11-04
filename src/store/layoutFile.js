@@ -1,6 +1,7 @@
 import { DEFAULT_ROOM, ROOM_LIMITS, useRoomStore } from './roomStore.js'
 import { useObjectsStore } from './objectsStore.js'
 import { useModeStore } from './modeStore.js'
+import { useHistoryStore } from './historyStore.js'
 import { clampPosition, normalizeDegrees, toDegrees, toRadians } from './roomBounds.js'
 import { OBJECT_TYPES } from '../components/objects/catalog.js'
 import { saveBlob } from '../services/download.js'
@@ -45,12 +46,13 @@ export function exportLayout(fileName = LAYOUT_FILE_NAME) {
   saveBlob(new Blob([json], { type: 'application/json' }), fileName)
 }
 
-// A new project: the default room, no objects, numbering from 1 again, and
-// the Plan camera back at its starting view.
+// A new project: the default room, no objects, numbering from 1 again, the
+// Plan camera back at its starting view, and no undo history (I.11).
 export function newLayout() {
   useRoomStore.getState().setRoomSize({ ...DEFAULT_ROOM })
   useObjectsStore.getState().replaceObjects([], {})
   useModeStore.getState().resetPlanView()
+  useHistoryStore.getState().clear()
 }
 
 const isNumber = (value) => typeof value === 'number' && Number.isFinite(value)
@@ -132,5 +134,7 @@ export function importLayout(text) {
 
   useRoomStore.getState().setRoomSize(room)
   useObjectsStore.getState().replaceObjects(objects, lastNumbers)
+  // An opened project starts without undo history (I.11).
+  useHistoryStore.getState().clear()
   return true
 }
