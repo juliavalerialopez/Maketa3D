@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import { Box3, Vector3 } from 'three'
-import { cropToFrame, framePosition, snapshotBridge } from './snapshot'
-import { cameraView } from '../../services/frame'
+import { cropToFrame, snapshotBridge } from './snapshot'
+import { cameraView, framePosition } from '../../services/frame'
 import { widgetControls } from './widgetState'
 import { useObjectsStore } from '../../store/objectsStore'
 

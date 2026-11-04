@@ -104,7 +104,8 @@ function VersionStrip() {
 // is dragged, the top part follows the window so it fits exactly; a dragged
 // position is kept in uiStore.
 export default function PersonalizeMode() {
-  const snapshot = useModeStore((state) => state.snapshot)
+  // The current Room render's image (modeStore.roomRender is an object).
+  const snapshot = useModeStore((state) => state.roomRender?.image ?? null)
   const version = useRestyleStore(selectSelectedVersion)
   // The top two images always match: a version shows its own Room render.
   const roomRender = version ? version.roomRender : snapshot

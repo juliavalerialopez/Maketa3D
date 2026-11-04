@@ -59,7 +59,7 @@ Status: **Draft**. Builds on Part F (AI restyle) and Part G (soft UI, six object
 - Deleting an object in Plan (or New Project, or Open Project) removes its card and its photo. Photos stay when switching between Plan and Personalize.
 
 ### Objects without a card (H.6.2)
-- **Off-frame:** an object gets a card only if some part of it shows in the Room render. One helper (`isInFrame` in `src/services/frame.js`) projects the 8 corners of the object's box with the camera that took the Room render (stored with it as `snapshotView`, not the current Plan camera) and checks whether they overlap the 16:9 frame. A partly visible object is in frame.
+- **Off-frame:** an object gets a card only if some part of it shows in the Room render. One helper (`isInFrame` in `src/services/frame.js`) projects the 8 corners of the object's box with the camera that took the Room render (stored with it as `snapshotView`, now `roomRender.view` since Part I, I.12; not the current Plan camera) and checks whether they overlap the 16:9 frame. A partly visible object is in frame.
 - **Hide switch:** every object has an eye button (shared `IconButton`) in the Objects list in Plan and next to its name in Object details. A hidden object (`hidden: true` in `objectsStore`) is not drawn in the Room render; in Plan it stays, drawn faded, and its list row shows an eye with a line through it. Hiding is done in Plan, because the Room render is taken when entering Personalize.
 - Under the cards, one line each, only when not empty:
   - "Hidden: Sofa 2." for hidden objects;

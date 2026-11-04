@@ -46,7 +46,7 @@ function referenceKeyExists(key) {
 // Where an object's centre shows in the current Room render ({ x, y }, in
 // percent, clamped to the frame), or undefined if the render has no position for it.
 function framePositionOf(id) {
-  return useModeStore.getState().snapshotObjects.find((item) => item.id === id)
+  return useModeStore.getState().roomRender?.objects.find((item) => item.id === id)
 }
 
 // The cards that are sent, in panel order: the room, then `referenceObjects`,
@@ -58,7 +58,7 @@ function sentKeys(referenceObjects) {
 // The objects with a card right now, read from both stores. For actions;
 // components use useReferenceObjects, which re-renders when either changes.
 function currentReferenceObjects() {
-  return selectReferenceObjects(useObjectsStore.getState().objects, useModeStore.getState().snapshotView)
+  return selectReferenceObjects(useObjectsStore.getState().objects, useModeStore.getState().roomRender?.view ?? null)
 }
 
 const hasPhoto = (reference) => reference?.mode === 'reference' && Boolean(reference.photo)
@@ -125,7 +125,8 @@ export const useRestyleStore = create((set, get) => ({
   error: null,
   // Generated images, oldest first, at most MAX_VERSIONS:
   // { id, number, image, roomRender, createdAt }. image and roomRender are
-  // data URLs (roomRender is the Room render it was made from); number counts
+  // data URLs (roomRender is the image of the Room render it was made from,
+  // not the { image, objects, view } object in modeStore); number counts
   // up per session and is never reused (download names).
   versions: [],
   selectedVersionId: null,
@@ -199,7 +200,7 @@ export const useRestyleStore = create((set, get) => ({
 
   generate: async () => {
     const { status, remaining, versions } = get()
-    const snapshot = useModeStore.getState().snapshot
+    const snapshot = useModeStore.getState().roomRender?.image
     // At least one photo, on a card that is sent (H.6.1).
     if (selectPhotoCount(get(), currentReferenceObjects()) === 0 || !snapshot || status === 'loading' || remaining === 0) return
     if (versions.length >= MAX_VERSIONS) return
@@ -249,7 +250,7 @@ export const selectPhotoCount = (state, referenceObjects) =>
 
 // The objects that get a reference card (H.6.2): not hidden, and with some
 // part inside the Room render, checked with `view`, the camera that took it
-// (snapshotView). The request is built from this (H.7.1).
+// (roomRender.view). The request is built from this (H.7.1).
 export const selectReferenceObjects = (objects, view) =>
   objects.filter((object) => !object.hidden && isInFrame(object, view))
 
@@ -257,7 +258,7 @@ export const selectReferenceObjects = (objects, view) =>
 // the objects or the Room render's camera change.
 export function useReferenceObjects() {
   const objects = useObjectsStore((state) => state.objects)
-  const view = useModeStore((state) => state.snapshotView)
+  const view = useModeStore((state) => state.roomRender?.view ?? null)
   return useMemo(() => selectReferenceObjects(objects, view), [objects, view])
 }
 

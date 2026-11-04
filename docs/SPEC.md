@@ -42,10 +42,11 @@ objects: [{ id, type, number, position: [x, y, z], rotation: [x, y, z], size: { 
 lastNumbers: { [type]: number }             // highest number handed out per type
 selectedId: string | null
 mode: 'plan' | 'personalize'
-snapshot: string | null                     // PNG data URL of the last Room render, memory only
-snapshotObjects: [{ id, x, y, inFrame }]    // each object's centre in the Room render, percent (sent to the AI)
+roomRender: { image, objects, view } | null  // the last Room render, memory only (Part I, I.12):
+//   image: PNG data URL
+//   objects: [{ id, x, y }], each object's centre in the render, percent (sent to the AI)
+//   view: { projection, view, width, height }, the camera that took it (in-frame checks)
 planView: { position: [x, y, z], target: [x, y, z] }  // Plan orbit camera, restored when Plan mounts again
-snapshotView: { projection, view, width, height } | null  // the camera that took the Room render (in-frame checks)
 theme: 'light' | 'dark'                     // uiStore; manual choice saved in localStorage
 
 // AI restyle (restyleStore), memory only: kept across mode switches, lost on reload

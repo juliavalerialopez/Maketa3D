@@ -11,24 +11,21 @@ export const useModeStore = create((set) => ({
   planView: DEFAULT_PLAN_VIEW,
   // Goes up on each resetPlanView, so a mounted Plan camera applies the reset.
   planViewResets: 0,
-  // Room render (PNG data URL) taken when switching to Personalize; memory only.
-  snapshot: null,
-  // Where each object shows in that render, taken with it (H.7):
-  // [{ id, x, y, inFrame }], x and y in percent from the left and top.
-  snapshotObjects: [],
-  // The camera that took that render (cameraView in services/frame.js), so
-  // in-frame checks use it and not the current Plan camera (H.6.2).
-  snapshotView: null,
+  // The last Room render, taken when switching to Personalize; memory only
+  // (I.12). { image, objects, view } or null:
+  // - image: PNG data URL;
+  // - objects: where each object's centre shows in it (H.7), [{ id, x, y }],
+  //   x and y in percent from the left and top (sent to the AI);
+  // - view: the camera that took it (cameraView in services/frame.js), so
+  //   in-frame checks use it and not the current Plan camera (H.6.2).
+  // Not to be confused with a version's `roomRender` (restyleStore), which is
+  // only the image (a data URL string) that version was made from.
+  roomRender: null,
 
   setMode: (mode) => set({ mode }),
   setPlanView: (planView) => set({ planView }),
   resetPlanView: () =>
     set((state) => ({ planView: DEFAULT_PLAN_VIEW, planViewResets: state.planViewResets + 1 })),
-  // capture: what takeSnapshot returns ({ image, objects }), or null.
-  setSnapshot: (capture) =>
-    set({
-      snapshot: capture?.image ?? null,
-      snapshotObjects: capture?.objects ?? [],
-      snapshotView: capture?.view ?? null,
-    }),
+  // roomRender: what takeSnapshot returns ({ image, objects, view }), or null.
+  setRoomRender: (roomRender) => set({ roomRender: roomRender ?? null }),
 }))

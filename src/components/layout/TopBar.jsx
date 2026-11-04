@@ -18,10 +18,10 @@ const MODES = [
 // taken first, while the canvas is still there. Null if it fails. A new
 // render starts with no versions, so the two images always match.
 function switchMode(next) {
-  const { mode, setMode, setSnapshot } = useModeStore.getState()
+  const { mode, setMode, setRoomRender } = useModeStore.getState()
   if (next === mode) return
   if (next === 'personalize') {
-    setSnapshot(takeSnapshot())
+    setRoomRender(takeSnapshot())
     useRestyleStore.getState().clearVersions()
   }
   setMode(next)

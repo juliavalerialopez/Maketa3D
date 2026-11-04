@@ -98,6 +98,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - `modeStore` keeps one `roomRender: { image, objects, view } | null` instead of `snapshot`, `snapshotObjects` and `snapshotView`.
 - The projection onto the frame (an object's position in percent, the in-frame check) lives only in `services/frame.js`. `framePosition` moves there; its unused `inFrame` field is removed.
 - `docs/SPEC.md` data model updated in the same commit.
+- `framePosition` gets tests in `tests/frame.test.js` now that it lives in `services/frame.js` (added 2026-11-04).
 
 ### I.13 Fixed 1920 × 1080 Room render
 - The Room render is always 1920 × 1080, whatever the window size. It is rendered once into an off-screen target, not cut from the Plan canvas.
@@ -133,7 +134,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - ✅ I.9 Limit counter in one Lua script.
 - ✅ I.10 Drag and drop upload on the Reference cards.
 - ✅ I.11 Undo and redo for room and object changes, one step per gesture.
-- ⬜ I.12 Room render data in one place (`roomRender`, projection in `services/frame.js`).
+- ✅ I.12 Room render data in one place (`roomRender`, projection in `services/frame.js`).
 - ⬜ I.13 Fixed 1920 × 1080 Room render.
 - ⬜ I.14 Placeable camera.
 - ⬜ I.15 Wall shades test for rooms with several pieces.

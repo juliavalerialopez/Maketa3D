@@ -17,6 +17,20 @@ export function frameRect(width, height) {
   }
 }
 
+// Where a point (a Vector3, world space) shows in the Room render: percent of
+// the frame's width from the left and of its height from the top, clamped to
+// the frame (I.12: the one place for this projection, with isInFrame below).
+// `width` and `height` are the canvas size the frame is cut from. Changes
+// `point`.
+export function framePosition(point, camera, width, height) {
+  point.project(camera)
+  const rect = frameRect(width, height)
+  const x = (((point.x + 1) / 2) * width - rect.x) / rect.width
+  const y = (((1 - point.y) / 2) * height - rect.y) / rect.height
+  const percent = (value) => Math.round(Math.min(1, Math.max(0, value)) * 1000) / 10
+  return { x: percent(x), y: percent(y) }
+}
+
 // The camera as plain numbers, stored with the Room render so later checks
 // use the camera that took it: { projection, view, width, height }, with the
 // two 4 x 4 matrices as arrays and the canvas size in pixels.
