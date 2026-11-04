@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { useRoomStore } from './roomStore'
+import { clampPosition } from './roomBounds'
 import { OBJECT_TYPES } from '../components/objects/catalog'
 
 const PLACEMENT_STEP = 0.3
@@ -66,6 +67,22 @@ export const useObjectsStore = create((set) => ({
     set((state) => ({
       objects: state.objects.map((object) => (object.id === id ? { ...object, ...partial } : object)),
     })),
+  // Moves every object back inside the walls of `room` (I.1: after the room
+  // got smaller), with its rotated footprint. An object too big for an axis
+  // is centered on it. Objects that already fit stay the same objects. When
+  // all fit, the state is returned as is, so no listener is called.
+  fitToRoom: (room) =>
+    set((state) => {
+      let moved = false
+      const objects = state.objects.map((object) => {
+        const [x, , z] = object.position
+        const position = clampPosition(object, room, x, z)
+        if (position[0] === x && position[2] === z) return object
+        moved = true
+        return { ...object, position }
+      })
+      return moved ? { objects } : state
+    }),
   // Replaces all objects (layout import). lastNumbers must be at least each
   // type's highest number, so later objects continue after it.
   replaceObjects: (objects, lastNumbers) => set({ objects, lastNumbers, selectedId: null }),

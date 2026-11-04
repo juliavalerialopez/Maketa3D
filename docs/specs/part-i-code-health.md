@@ -1,6 +1,6 @@
 # Part I: Code health and backlog
 
-Status: **Draft**. Builds on Part H (versions, a reference per object, Hide switch).
+Status: **In progress**. Builds on Part H (versions, a reference per object, Hide switch).
 
 ## Goal
 1. Fix the known bugs and risks: objects left outside a smaller room, downloads that can fail, a crash that blanks the page, and a limit counter that can briefly refuse an allowed request.
@@ -120,7 +120,7 @@ Draft: confirm these points before I.14 starts (see Open questions).
 - Run after I.13 and I.14, so the test uses the final Room render.
 
 ## Tasks
-- ⬜ I.1 Objects stay inside a smaller room: `NumberField` `onCommit`, `objectsStore.fitToRoom`, the room fields clamp on commit.
+- ✅ I.1 Objects stay inside a smaller room: `NumberField` `onCommit`, `objectsStore.fitToRoom`, the room fields clamp on commit.
 - ⬜ I.2 One download helper in `services/download.js` (later revoke, ZIP code out of `PersonalizeMode`, one data URL helper).
 - ⬜ I.3 Error boundary with Save layout and Reload, also on WebGL context loss.
 - ⬜ I.4 Object catalog without React: `catalog.js` data only, `models.js` for the components, `CLAUDE.md` catalog rule.
@@ -138,7 +138,7 @@ Draft: confirm these points before I.14 starts (see Open questions).
 - ⬜ I.16 Docs (`CLAUDE.md` Structure, `docs/SPEC.md` roadmap, layout, data model and part table), `npm run build`, deploy, check on the live site.
 
 ## Acceptance criteria
-- [ ] I.1: a sofa against the right wall, room width typed from 10 to 3: the sofa does not move while typing and sits inside the new wall after blur. The same with the minus button and with a drag on the field.
+- [x] I.1: a sofa against the right wall, room width typed from 10 to 3: the sofa does not move while typing and sits inside the new wall after blur. The same with the minus button and with a drag on the field.
 - [ ] I.2: Save, Save As, "Download this image" and "Download all as ZIP" work in Chrome, Firefox and Edge; the ZIP opens and matches the thumbnails.
 - [ ] I.3: a model that throws on purpose shows the error screen, not a blank page; Save layout downloads the layout; Reload works.
 - [ ] I.4: no file under `src/store/` or `src/services/` imports a `.jsx` file; all six types still add, render and save.
@@ -173,3 +173,4 @@ Draft: confirm these points before I.14 starts (see Open questions).
 
 ## Changelog
 - 2026-11-04: Draft created from the code review (bugs, architecture, tests) and five backlog items picked by Julia (drag and drop upload, undo, fixed 1920 × 1080 render, placeable camera, wall-shade test). Order: bugs first, then the code changes the later tasks build on, then the backlog items, the render work last so the wall-shade test uses the final Room render. "Save the Module" and doors and windows move from Part I to Part J.
+- 2026-11-04: Spec approved, Part I started (In progress).

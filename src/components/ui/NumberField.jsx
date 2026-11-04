@@ -23,7 +23,22 @@ const PIXELS_PER_STEP = 4
 // `compact` puts the label above the value, for use inside a FieldGroup. It
 // has no minus and plus buttons (there is no room for them two or three to a
 // row); dragging and the arrow keys still work.
-export default function NumberField({ label, value, onChange, min, max, step = 0.1, unit, normalize, compact }) {
+//
+// `onCommit` (optional) is called once a value is final, after its onChange:
+// on blur, with the minus and plus buttons, with Up and Down, and when a drag
+// ends. Not while typing, so "10" does not commit its first "1".
+export default function NumberField({
+  label,
+  value,
+  onChange,
+  onCommit,
+  min,
+  max,
+  step = 0.1,
+  unit,
+  normalize,
+  compact,
+}) {
   const id = useId()
   const [draft, setDraft] = useState(String(round(value)))
   const [focused, setFocused] = useState(false)
@@ -44,6 +59,7 @@ export default function NumberField({ label, value, onChange, min, max, step = 0
   function commit(number) {
     const result = round(normalize ? normalize(number) : clamp(number))
     onChange(result)
+    onCommit?.(result)
     setDraft(String(result))
   }
 
@@ -57,6 +73,9 @@ export default function NumberField({ label, value, onChange, min, max, step = 0
     const next = round(clamp(current + (event.key === 'ArrowUp' ? step : -step)))
     setDraft(String(next))
     onChange(next)
+    // The committed value is limited like a blur (e.g. 360° -> 0°); the text
+    // keeps the stepped value until then.
+    onCommit?.(round(normalize ? normalize(next) : next))
   }
 
   function handleChange(event) {
