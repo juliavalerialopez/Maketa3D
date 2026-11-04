@@ -12,12 +12,12 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - Tests live in `tests/`, never in `api/` (every file in `api/` without a leading `_` becomes a route).
 - Plain-logic files (stores, services, the object catalog, `api/` helpers) import with full file extensions (`./roomStore.js`), so Node can load them in tests. Vite accepts both.
 - I.4 to I.8 and I.12 change no behavior. Every other task says what changes.
-- Undo is one step per gesture (a whole drag, not every pointer move).
+- Undo and redo are one step per gesture (a whole drag, not every pointer move).
 - The Room render becomes a fixed 1920 × 1080 image (I.13) before the placeable camera (I.14) is built on it.
 - "Save the Module" and doors and windows move to Part J.
 
 ## Out of scope
-- Redo (see Open questions), multi-select, snap to wall, the scene toolbar from the mock.
+- Multi-select, snap to wall, the scene toolbar from the mock.
 - Saving the layout in the browser (autosave).
 - Another image model (only if the I.15 wall-shade test fails, and with a decision record).
 - Splitting the bundle, keeping AI images as Blobs.
@@ -80,16 +80,17 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - While a file is held over a card, the card shows a highlight. A Creative card ignores drops.
 - A file dropped anywhere else on the page does nothing (the browser must not open it and lose the session).
 
-### I.11 Undo
+### I.11 Undo and redo
 - **Undo** reverts the last change to the room or the objects, one step per gesture:
   - a drag in 3D, a widget move or rotate drag (from press to release);
   - editing one number field (from focus or press to commit);
   - a color pick (one step for the whole pick);
   - Add, Delete, Hide or Show, a room size change (with the I.1 clamp).
-- Ctrl+Z (Cmd+Z on Mac) in Plan only, and not while typing in a field or with a dialog or menu open. A small Undo icon button at the top left of the scene, disabled when there is nothing to undo.
+- **Redo** applies an undone step again. Any new change after an undo clears the redo steps.
+- Ctrl+Z undoes, Ctrl+Shift+Z and Ctrl+Y redo (Cmd on Mac), in Plan only, and not while typing in a field or with a dialog or menu open. Small Undo and Redo icon buttons at the top left of the scene, each disabled when there is nothing to undo or redo.
 - An undone Delete brings the object back with the same name, number, color and reference photo (the photo is kept while the object can still come back).
 - At most 50 steps, memory only. New Project and Open Project clear the history.
-- The selection is cleared if the selected object is gone after an undo.
+- The selection is cleared if the selected object is gone after an undo or redo.
 - The history logic gets tests (I.5).
 
 ### I.12 Room render data in one place
@@ -105,7 +106,6 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - Replaces the Part E rule "Size is the on-screen frame size × pixel ratio, at most 1920 × 1080"; that line gets a "(changed in Part I, I.13)" note in the I.13 commit.
 
 ### I.14 Placeable camera
-Draft: confirm these points before I.14 starts (see Open questions).
 - One camera per project, shown as a small camera model with a view direction in Plan, and as "Camera" at the top of the Objects list. It cannot be deleted.
 - It is moved with the existing widget (move on the floor, turn around the vertical axis). Object details for the camera: X, Z, height, pan, tilt, and the lens (field of view).
 - The Room render is taken from this camera (I.13 target), not from the orbit view. Walls are hidden for this camera, whatever the orbit view shows.
@@ -118,6 +118,7 @@ Draft: confirm these points before I.14 starts (see Open questions).
 - Test: make Room renders with one clearly different light shade per wall (a local change to `WALL_COLOR` in `scene/Walls.jsx`), save requests from the app, add a prompt line saying the shades only mark the corners and every wall gets the same finish, and run T3 and T11 with `scripts/try-restyle.mjs` (3 runs each, several pieces).
 - Results go into `docs/prompts/restyle.md`. Keep the shades (and the prompt line as v4) only if T3 or T11 improve; the shades must look the same in both themes. Otherwise nothing changes, and "another model" stays in the Backlog.
 - Run after I.13 and I.14, so the test uses the final Room render.
+- Split (added 2026-11-04): I.15 prepares the test (a local-only switch for the shaded walls, the v4 prompt line as an option in `scripts/try-restyle.mjs`, the steps written in `docs/prompts/restyle.md`). Julia makes the renders and runs it (I.15.1), because it needs the browser and paid Gemini calls.
 
 ## Tasks
 - ✅ I.1 Objects stay inside a smaller room: `NumberField` `onCommit`, `objectsStore.fitToRoom`, the room fields clamp on commit.
@@ -130,11 +131,12 @@ Draft: confirm these points before I.14 starts (see Open questions).
 - ⬜ I.8 Shared restyle limits in `shared/restyle.js`.
 - ⬜ I.9 Limit counter in one Lua script.
 - ⬜ I.10 Drag and drop upload on the Reference cards.
-- ⬜ I.11 Undo for room and object changes, one step per gesture.
+- ⬜ I.11 Undo and redo for room and object changes, one step per gesture.
 - ⬜ I.12 Room render data in one place (`roomRender`, projection in `services/frame.js`).
 - ⬜ I.13 Fixed 1920 × 1080 Room render.
 - ⬜ I.14 Placeable camera.
 - ⬜ I.15 Wall shades test for rooms with several pieces.
+  - ⬜ I.15.1 Make the shaded renders, run T3 and T11, record the results and the decision (Julia) (added 2026-11-04)
 - ⬜ I.16 Docs (`CLAUDE.md` Structure, `docs/SPEC.md` roadmap, layout, data model and part table), `npm run build`, deploy, check on the live site.
 
 ## Acceptance criteria
@@ -148,7 +150,7 @@ Draft: confirm these points before I.14 starts (see Open questions).
 - [ ] I.8: `MAX_PHOTOS` and the body limits exist only in `shared/restyle.js`; a restyle request in `npx vercel dev` with `RESTYLE_MOCK=1` passes the server checks.
 - [ ] I.9: with `RESTYLE_VISITOR_LIMIT=2` locally, the third Generate gets the limit message and the visitor count in Upstash stays at 2.
 - [ ] I.10: a dropped JPG shows the same preview as Upload; a dropped PDF shows the Part F message; a Creative card ignores drops; a file dropped outside the cards changes nothing.
-- [ ] I.11: a sofa dragged across the room comes back in one Ctrl+Z; an undone Delete brings back "Sofa 2" with its photo; a typed room width and its clamp undo in one step; nothing happens in Personalize or while typing.
+- [ ] I.11: a sofa dragged across the room comes back in one Ctrl+Z and goes again with one Ctrl+Shift+Z; an undone Delete brings back "Sofa 2" with its photo; a typed room width and its clamp undo in one step; a new change after an undo disables Redo; nothing happens in Personalize or while typing.
 - [ ] I.12: Plan and Personalize behave as before.
 - [ ] I.13: the Room render is 1920 × 1080 with a narrow and with a wide window, and shows what the frame guide showed; cards are the same in both windows.
 - [ ] I.14: the Room render comes from the placed camera; the preview matches it; the camera survives Save and Open; an older file opens with the default camera.
@@ -158,7 +160,6 @@ Draft: confirm these points before I.14 starts (see Open questions).
 - [ ] Deployed and working on the live Vercel URL, without the test limits set.
 
 ## Backlog
-- Redo.
 - Autosave the layout in the browser (`layoutData` and `importLayout`), restored on load.
 - Split three.js and drei into their own chunk, so a deploy doesn't make visitors download them again (measure first; 323 kB gzipped today).
 - Keep AI versions as Blobs with object URLs instead of data URLs (less memory with 6 versions).
@@ -167,10 +168,9 @@ Draft: confirm these points before I.14 starts (see Open questions).
 - Part J: doors and windows. (from Part H)
 
 ## Open questions
-- I.11: include Redo now, or keep it in the Backlog? (Proposed: Backlog.)
-- I.11: should color changes and Hide be undoable, or only moves, rotations and Delete? (Proposed: all changes to the room and the objects.)
-- I.14: one camera per project, always present? Is the orbit view ever used for the Room render again? Does the frame guide go, replaced by the preview? (Proposed: yes, no, yes.)
+- None blocking. Answered 2026-11-04: undo covers all room and object changes, with redo; one camera per project, always present, the Room render always from it, the frame guide replaced by its preview; the I.15 test is prepared here and run by Julia (I.15.1).
 
 ## Changelog
 - 2026-11-04: Draft created from the code review (bugs, architecture, tests) and five backlog items picked by Julia (drag and drop upload, undo, fixed 1920 × 1080 render, placeable camera, wall-shade test). Order: bugs first, then the code changes the later tasks build on, then the backlog items, the render work last so the wall-shade test uses the final Room render. "Save the Module" and doors and windows move from Part I to Part J.
 - 2026-11-04: Spec approved, Part I started (In progress).
+- 2026-11-04: Open questions answered (Julia): I.11 adds redo (moved from the Backlog); I.14 confirmed as proposed; I.15 split, the run is I.15.1. I.3 to I.15 run in batch mode with one subagent per task; Julia reviews everything before I.16.
