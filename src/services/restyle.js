@@ -2,6 +2,7 @@
 // and the requests to /api/restyle. Images are resized here so a request
 // stays below Vercel's 4.5 MB body limit.
 import { dataUrlParts } from './download.js'
+import { BODY_BUDGET } from '../../shared/restyle.js'
 
 const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024
@@ -11,11 +12,6 @@ const RENDER_WIDTH = 1280
 const RENDER_HEIGHT = 720
 const RENDER_QUALITY = 0.9
 const ENDPOINT = '/api/restyle'
-// Most reference photos per request, the room's included (api/restyle.js
-// checks the same number).
-export const MAX_PHOTOS = 8
-// The request body must stay under this (the server refuses above 4 MB).
-const BODY_BUDGET = 3_900_000
 // When the body is over budget, the photos are made smaller: this scale per
 // step, at this JPEG quality, at most this many steps.
 const SHRINK_SCALE = 0.75
@@ -56,7 +52,7 @@ function toJpeg(source, width, height, quality) {
 }
 
 // Checks the file, then decodes and resizes it once (longest edge 1024 px,
-// about 150 to 250 KB, so up to 8 photos fit in one request).
+// about 150 to 250 KB, so MAX_PHOTOS photos fit in one request).
 // Resolves { dataUrl, name }; rejects with a RestyleError for the panel.
 export async function loadPhoto(file) {
   if (!PHOTO_TYPES.includes(file.type)) throw new RestyleError(MESSAGES.photoType)

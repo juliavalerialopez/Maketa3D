@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { create } from 'zustand'
-import { fetchRemaining, loadPhoto, MAX_PHOTOS, requestRestyle } from '../services/restyle.js'
+import { fetchRemaining, loadPhoto, requestRestyle } from '../services/restyle.js'
+import { MAX_PHOTOS } from '../../shared/restyle.js'
 import { useModeStore } from './modeStore.js'
 import { useObjectsStore } from './objectsStore.js'
 import { objectLabel } from '../components/objects/catalog.js'

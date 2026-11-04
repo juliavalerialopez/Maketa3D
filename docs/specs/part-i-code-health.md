@@ -68,7 +68,8 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 ### I.8 Shared restyle limits
 - New `shared/restyle.js` (plain JS, no imports): the photo limit (8), the object limit (60), the server body limit (4 MB) and the browser's budget below it. `api/restyle.js` and `services/restyle.js` import it, and neither keeps its own copy.
 - Checked with `npx vercel dev` (the function must still bundle) and `RESTYLE_MOCK=1`.
-- `CLAUDE.md` Structure lists `shared/`, and the `api/` rule says local imports are allowed.
+- `CLAUDE.md` Structure lists `shared/`, and the `api/` rule says local imports are allowed. Done in I.16 with the other Structure updates (added 2026-11-04: `CLAUDE.md` has Julia's own uncommitted edit, which must not go into a task commit).
+- Tested in `tests/restyleApi.test.js` (added 2026-11-04): the function is imported in Node with `RESTYLE_MOCK=1` (no Gemini call, no counting) and refuses a 9th photo, a body over the limit and a request with no photo.
 
 ### I.9 Limit counter in one step
 - `api/_limits.js` `reserve` checks and counts in one Upstash `EVAL` Lua script (still plain `fetch`): it adds 1 to the total and the visitor count only when both are below their limits, sets the expiry, and returns the new counts or which limit was reached.
@@ -128,7 +129,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - ✅ I.5 Tests with `node:test` in `tests/`, `npm test`, full file extensions in the tested files, the verifier runs them.
 - ✅ I.6 Lint rules and shared angle helpers.
 - ✅ I.7 `useReferenceObjects` hook; selectors take the Room render camera as an argument.
-- ⬜ I.8 Shared restyle limits in `shared/restyle.js`.
+- ✅ I.8 Shared restyle limits in `shared/restyle.js`.
 - ⬜ I.9 Limit counter in one Lua script.
 - ⬜ I.10 Drag and drop upload on the Reference cards.
 - ⬜ I.11 Undo and redo for room and object changes, one step per gesture.
@@ -137,7 +138,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - ⬜ I.14 Placeable camera.
 - ⬜ I.15 Wall shades test for rooms with several pieces.
   - ⬜ I.15.1 Make the shaded renders, run T3 and T11, record the results and the decision (Julia) (added 2026-11-04)
-- ⬜ I.16 Docs (`CLAUDE.md` Structure, `docs/SPEC.md` roadmap, layout, data model and part table), `npm run build`, deploy, check on the live site.
+- ⬜ I.16 Docs (`CLAUDE.md` Structure, including `shared/` and local imports in `api/` from I.8, `docs/SPEC.md` roadmap, layout, data model and part table), `npm run build`, deploy, check on the live site.
 
 ## Acceptance criteria
 - [x] I.1: a sofa against the right wall, room width typed from 10 to 3: the sofa does not move while typing and sits inside the new wall after blur. The same with the minus button and with a drag on the field.

@@ -11,13 +11,9 @@
 import { restyleImage } from './_gemini.js'
 import { limits, release, remaining, reserve } from './_limits.js'
 import { buildPrompt, promptImages } from './_restyle-prompt.js'
+// Limits shared with the browser (I.8).
+import { MAX_BODY, MAX_OBJECTS, MAX_PHOTOS } from '../shared/restyle.js'
 
-// Vercel allows 4.5 MB per request body; the browser keeps it under 3.9 MB.
-const MAX_BODY = 4_000_000
-// Reference photos per request, the room's included (src/services/restyle.js
-// uses the same number), and objects per request.
-const MAX_PHOTOS = 8
-const MAX_OBJECTS = 60
 const MODES = ['reference', 'creative']
 const ID = /^[A-Za-z0-9-]{1,64}$/
 const TYPE = /^[A-Za-z]{1,30}$/
