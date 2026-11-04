@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { PerspectiveCamera, Vector3 } from 'three'
-import { cameraView, framePosition, isInFrame } from '../src/services/frame.js'
+import { cameraView, frameFov, framePosition, isInFrame } from '../src/services/frame.js'
 
 // A 16:9 canvas, so the frame is the whole canvas. The camera stands at
 // z = 5 and looks at the middle of the room.
@@ -44,6 +44,17 @@ test('positions outside the frame are clamped to its edges', () => {
 test('in a wide canvas the position is measured in the 16:9 frame, not the canvas', () => {
   // 2000 x 900: the frame is 1600 x 900 in the middle, so the centre stays at 50%.
   assert.deepEqual(framePosition(new Vector3(0, 0.4, 0), camera, 2000, 900), { x: 50, y: 50 })
+})
+
+test('the frame camera keeps the field of view when the frame fits the height', () => {
+  assert.equal(frameFov(50, 1600, 900), 50)
+  assert.equal(frameFov(50, 2400, 900), 50)
+})
+
+test('in a canvas taller than 16:9 the frame camera sees only the band of the frame', () => {
+  // 1600 x 1800: the frame is 1600 x 900, half the height.
+  const expected = 2 * Math.atan(Math.tan((25 * Math.PI) / 180) / 2) * (180 / Math.PI)
+  assert.ok(Math.abs(frameFov(50, 1600, 1800) - expected) < 1e-9)
 })
 
 test('without a Room render camera, every object counts', () => {

@@ -1,8 +1,13 @@
-// Is an object in the Room render? (H.6.2) The Room render is the 16:9 frame
-// cut from the Plan canvas; an object is in frame when any part of its box
-// shows inside that frame, so a partly visible object counts.
+// The Room render's frame. The Room render shows exactly the 16:9 frame guide
+// of the Plan view, always at RENDER_WIDTH x RENDER_HEIGHT (I.13). Is an
+// object in it? (H.6.2) Yes when any part of its box shows inside the frame,
+// so a partly visible object counts.
 import { Euler, Matrix4, Vector3 } from 'three'
-import { objectTransform } from '../store/roomBounds.js'
+import { objectTransform, toDegrees, toRadians } from '../store/roomBounds.js'
+
+// The Room render's fixed size, whatever the window size (I.13).
+export const RENDER_WIDTH = 1920
+export const RENDER_HEIGHT = 1080
 
 // The 16:9 frame inside a width x height area: fits the height, or the width
 // when the area is narrower than 16:9, centered. Same rule as .frame-guide-box.
@@ -17,10 +22,20 @@ export function frameRect(width, height) {
   }
 }
 
+// The vertical field of view (degrees) of a 16:9 camera that sees exactly
+// the frame guide of a `width` x `height` canvas whose camera has vertical
+// field of view `fov`. The same when the frame fits the height; narrower when
+// the canvas is taller than 16:9 and the frame is a band across its middle.
+export function frameFov(fov, width, height) {
+  const share = frameRect(width, height).height / height
+  return 2 * toDegrees(Math.atan(Math.tan(toRadians(fov / 2)) * share))
+}
+
 // Where a point (a Vector3, world space) shows in the Room render: percent of
 // the frame's width from the left and of its height from the top, clamped to
 // the frame (I.12: the one place for this projection, with isInFrame below).
-// `width` and `height` are the canvas size the frame is cut from. Changes
+// `width` and `height` are the size the camera renders at (the Room render
+// size, so the frame is the whole image). Changes
 // `point`.
 export function framePosition(point, camera, width, height) {
   point.project(camera)

@@ -101,7 +101,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - `framePosition` gets tests in `tests/frame.test.js` now that it lives in `services/frame.js` (added 2026-11-04).
 
 ### I.13 Fixed 1920 × 1080 Room render
-- The Room render is always 1920 × 1080, whatever the window size. It is rendered once into an off-screen target, not cut from the Plan canvas.
+- The Room render is always 1920 × 1080, whatever the window size. It is rendered once into an off-screen target, not cut from the Plan canvas. (Done as I.13.1 instead.)
 - It shows exactly what the frame guide shows: a copy of the Plan camera with aspect 16:9 and the field of view of the frame (wider than the frame in a tall window, it is narrowed to match).
 - Same look as today: white background, helpers and hidden objects left out, the same walls hidden, smooth edges.
 - Object positions and the in-frame check use this fixed camera and size, so cards and positions no longer change with the window size.
@@ -110,7 +110,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 ### I.14 Placeable camera
 - One camera per project, shown as a small camera model with a view direction in Plan, and as "Camera" at the top of the Objects list. It cannot be deleted.
 - It is moved with the existing widget (move on the floor, turn around the vertical axis). Object details for the camera: X, Z, height, pan, tilt, and the lens (field of view).
-- The Room render is taken from this camera (I.13 target), not from the orbit view. Walls are hidden for this camera, whatever the orbit view shows.
+- The Room render is taken from this camera (the I.13 fixed 1920 × 1080 render), not from the orbit view. Walls are hidden for this camera, whatever the orbit view shows.
 - The frame guide is replaced by a small 16:9 live preview of the camera's view in a corner of the scene.
 - The camera is saved in the layout file as an optional `camera` field. Files without it still open, with the camera at the default Plan view.
 - The camera model and its marker are helpers: never in the Room render.
@@ -135,7 +135,8 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - ✅ I.10 Drag and drop upload on the Reference cards.
 - ✅ I.11 Undo and redo for room and object changes, one step per gesture.
 - ✅ I.12 Room render data in one place (`roomRender`, projection in `services/frame.js`).
-- ⬜ I.13 Fixed 1920 × 1080 Room render.
+- ✅ I.13 Fixed 1920 × 1080 Room render.
+  - ✅ I.13.1 Render into the Plan canvas drawn at 1920 × 1080 for that one render (then set back to its own size and drawn again in the same step), instead of an off-screen target, so the colors stay exactly as on screen (added 2026-11-04)
 - ⬜ I.14 Placeable camera.
 - ⬜ I.15 Wall shades test for rooms with several pieces.
   - ⬜ I.15.1 Make the shaded renders, run T3 and T11, record the results and the decision (Julia) (added 2026-11-04)
@@ -176,3 +177,4 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - 2026-11-04: Draft created from the code review (bugs, architecture, tests) and five backlog items picked by Julia (drag and drop upload, undo, fixed 1920 × 1080 render, placeable camera, wall-shade test). Order: bugs first, then the code changes the later tasks build on, then the backlog items, the render work last so the wall-shade test uses the final Room render. "Save the Module" and doors and windows move from Part I to Part J.
 - 2026-11-04: Spec approved, Part I started (In progress).
 - 2026-11-04: Open questions answered (Julia): I.11 adds redo (moved from the Backlog); I.14 confirmed as proposed; I.15 split, the run is I.15.1. I.3 to I.15 run in batch mode with one subagent per task; Julia reviews everything before I.16.
+- 2026-11-04: I.13.1: the fixed render is drawn into the Plan canvas resized to 1920 × 1080 for one render, not into an off-screen target: an off-screen target skips the screen's color conversion, so the image would come out darker without extra color handling.

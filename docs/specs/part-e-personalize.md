@@ -23,7 +23,7 @@ The app gets two modes, Plan and Personalize, switched from a slim top bar. Plan
 
 ### Snapshot
 - Taken automatically when Personalize is pressed, fresh every time, while the Plan scene is still on screen.
-- Shows exactly what is inside the frame, from the Plan camera. Size is the on-screen frame size × pixel ratio, at most 1920 × 1080.
+- Shows exactly what is inside the frame, from the Plan camera. Size is the on-screen frame size × pixel ratio, at most 1920 × 1080. (changed in Part I, I.13: always 1920 × 1080)
 - Does not contain the selection box, the widget, the frame guide or any helper (helpers carry `userData.helper`).
 - Kept in memory only (`modeStore`), as a PNG data URL.
 - If it can't be taken (WebGL context lost, no canvas), the mode still switches and the "Room render" slot shows black with "No render".
@@ -96,7 +96,7 @@ Image upload. Any AI call, API key, serverless function or prompt. Controls in t
 ## Backlog
 - Manual "Refresh render" button in Personalize.
 - A placeable camera object in the room (the render taken from it instead of the orbit camera). (moved to Part I, I.14)
-- Fixed 1920 × 1080 render through a render target, independent of window size. (moved to Part I, I.13)
+- Fixed 1920 × 1080 render through a render target, independent of window size. (moved to Part I, I.13; built without a render target, see I.13.1)
 - Keep the Personalize panel's group state in `uiStore` once groups exist.
 
 ## Open questions
