@@ -62,7 +62,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - Degrees ↔ radians and the 0–359 normalization live once in `store/roomBounds.js`. `layoutFile.js`, `panel/ObjectDetails.jsx` and `scene/ObjectWidget.jsx` use them.
 
 ### I.7 Reference objects hook
-- The selectors that decide which objects get a card (`selectReferenceObjects`, and the sent cards in `restyleStore`) take the Room render's camera as an argument instead of reading `modeStore` inside.
+- The selectors that decide which objects get a card read no store inside: `selectReferenceObjects` takes the objects and the Room render's camera, and the sent cards and the photo count take that list of objects. Actions read both stores when they run.
 - New hook `useReferenceObjects()` subscribes to the objects and the Room render camera. `ReferenceSection` and `GenerateButton` use it and drop their placeholder subscriptions.
 
 ### I.8 Shared restyle limits
@@ -127,7 +127,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - ✅ I.4 Object catalog without React: `catalog.js` data only, `models.js` for the components, `CLAUDE.md` catalog rule.
 - ✅ I.5 Tests with `node:test` in `tests/`, `npm test`, full file extensions in the tested files, the verifier runs them.
 - ✅ I.6 Lint rules and shared angle helpers.
-- ⬜ I.7 `useReferenceObjects` hook; selectors take the Room render camera as an argument.
+- ✅ I.7 `useReferenceObjects` hook; selectors take the Room render camera as an argument.
 - ⬜ I.8 Shared restyle limits in `shared/restyle.js`.
 - ⬜ I.9 Limit counter in one Lua script.
 - ⬜ I.10 Drag and drop upload on the Reference cards.

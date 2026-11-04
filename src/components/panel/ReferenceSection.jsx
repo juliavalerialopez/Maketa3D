@@ -3,8 +3,7 @@ import ReferenceCard from './ReferenceCard'
 import Button from '../ui/Button'
 import { objectLabel } from '../objects/catalog'
 import { useObjectsStore } from '../../store/objectsStore'
-import { ROOM_REFERENCE, selectReferenceObjects, useRestyleStore } from '../../store/restyleStore'
-import { useModeStore } from '../../store/modeStore'
+import { ROOM_REFERENCE, useReferenceObjects, useRestyleStore } from '../../store/restyleStore'
 
 const ROOM_CREATIVE_TEXT = 'The AI will choose walls, floor and light to suit the pieces.'
 
@@ -13,21 +12,18 @@ const namesLine = (title, objects) => (objects.length > 0 ? `${title}: ${objects
 
 // The "Reference" group, the only group in the Personalize panel: Clear All,
 // the Reference Room card (walls, floor, light), then one card per object
-// that is shown and in the Room render (selectReferenceObjects), titled
+// that is shown and in the Room render (useReferenceObjects), titled
 // "Reference <name>", in the Objects list order. Under the cards, one line
 // each for hidden objects and for objects outside the Room render (H.6.2),
 // then the privacy notice. A card's photo stays in memory while its object
 // has no card, and comes back with it.
 export default function ReferenceSection() {
   // Objects only change in Plan, so reading the whole list costs nothing here.
-  const objectsState = useObjectsStore()
-  // Re-render when a new Room render (with its camera) is taken.
-  useModeStore((state) => state.snapshotView)
+  const objects = useObjectsStore((state) => state.objects)
+  const withCard = useReferenceObjects()
   const clearReferencePhotos = useRestyleStore((state) => state.clearReferencePhotos)
   const notice = useRestyleStore((state) => state.notice)
 
-  const { objects } = objectsState
-  const withCard = selectReferenceObjects(objectsState)
   const hidden = objects.filter((object) => object.hidden)
   // Not hidden and no card: outside the Room render. Hidden wins when both.
   const offFrame = objects.filter((object) => !object.hidden && !withCard.includes(object))

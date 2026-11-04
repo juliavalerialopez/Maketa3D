@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { create } from 'zustand'
 import { fetchRemaining, loadPhoto, MAX_PHOTOS, requestRestyle } from '../services/restyle.js'
 import { useModeStore } from './modeStore.js'
@@ -46,11 +47,16 @@ function framePositionOf(id) {
   return useModeStore.getState().snapshotObjects.find((item) => item.id === id)
 }
 
-// The cards that are sent, in panel order: the room, then the objects with a
-// card (selectReferenceObjects: not hidden, some part in the Room render), in
-// list order (H.7.1).
-function sentKeys(objectsState = useObjectsStore.getState()) {
-  return [ROOM_REFERENCE, ...selectReferenceObjects(objectsState).map((object) => object.id)]
+// The cards that are sent, in panel order: the room, then `referenceObjects`,
+// the objects with a card (selectReferenceObjects), in list order (H.7.1).
+function sentKeys(referenceObjects) {
+  return [ROOM_REFERENCE, ...referenceObjects.map((object) => object.id)]
+}
+
+// The objects with a card right now, read from both stores. For actions;
+// components use useReferenceObjects, which re-renders when either changes.
+function currentReferenceObjects() {
+  return selectReferenceObjects(useObjectsStore.getState().objects, useModeStore.getState().snapshotView)
 }
 
 const hasPhoto = (reference) => reference?.mode === 'reference' && Boolean(reference.photo)
@@ -63,7 +69,7 @@ function referencesToSend(references) {
   const next = { ...references }
   let photos = 0
   let capped = 0
-  for (const key of sentKeys()) {
+  for (const key of sentKeys(currentReferenceObjects())) {
     const reference = { ...DEFAULT_REFERENCE, ...references[key] }
     if (reference.mode !== 'reference') continue
     if (!reference.photo) {
@@ -91,7 +97,7 @@ function requestContent(references) {
     const { mode, photo } = references[key] ?? DEFAULT_REFERENCE
     return mode === 'reference' && photo ? { mode, photo: photo.dataUrl } : { mode: 'creative' }
   }
-  const sent = new Set(sentKeys())
+  const sent = new Set(sentKeys(currentReferenceObjects()))
   const objects = useObjectsStore
     .getState()
     .objects.filter((object) => sent.has(object.id))
@@ -193,7 +199,7 @@ export const useRestyleStore = create((set, get) => ({
     const { status, remaining, versions } = get()
     const snapshot = useModeStore.getState().snapshot
     // At least one photo, on a card that is sent (H.6.1).
-    if (selectPhotoCount(get()) === 0 || !snapshot || status === 'loading' || remaining === 0) return
+    if (selectPhotoCount(get(), currentReferenceObjects()) === 0 || !snapshot || status === 'loading' || remaining === 0) return
     if (versions.length >= MAX_VERSIONS) return
 
     // Empty Reference cards and photos past the limit become Creative; the
@@ -234,18 +240,23 @@ export const useRestyleStore = create((set, get) => ({
 export const selectSelectedVersion = (state) =>
   state.versions.find((version) => version.id === state.selectedVersionId)
 
-// Number of sent cards (the room, objects with a card) with a photo in
-// Reference mode. Generate needs at least one (H.6.1). Pass the objects
-// store's state to recompute when it changes; it is read now otherwise.
-export const selectPhotoCount = (state, objectsState) =>
-  sentKeys(objectsState).filter((key) => hasPhoto(state.references[key])).length
+// Number of sent cards (the room, and `referenceObjects`, the objects with a
+// card) with a photo in Reference mode. Generate needs at least one (H.6.1).
+export const selectPhotoCount = (state, referenceObjects) =>
+  sentKeys(referenceObjects).filter((key) => hasPhoto(state.references[key])).length
 
 // The objects that get a reference card (H.6.2): not hidden, and with some
-// part inside the current Room render (checked with the camera that took it).
-// Takes the objects store's state. The request is built from this (H.7.1).
-export const selectReferenceObjects = (objectsState) => {
-  const view = useModeStore.getState().snapshotView
-  return objectsState.objects.filter((object) => !object.hidden && isInFrame(object, view))
+// part inside the Room render, checked with `view`, the camera that took it
+// (snapshotView). The request is built from this (H.7.1).
+export const selectReferenceObjects = (objects, view) =>
+  objects.filter((object) => !object.hidden && isInFrame(object, view))
+
+// The objects with a reference card, for components (I.7): re-renders when
+// the objects or the Room render's camera change.
+export function useReferenceObjects() {
+  const objects = useObjectsStore((state) => state.objects)
+  const view = useModeStore((state) => state.snapshotView)
+  return useMemo(() => selectReferenceObjects(objects, view), [objects, view])
 }
 
 // A card's reference: its stored value, or the default when untouched.
