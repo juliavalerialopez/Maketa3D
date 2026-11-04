@@ -37,8 +37,8 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - One helper reads a data URL's type and bytes. It is used by the ZIP and by the restyle request.
 
 ### I.3 Error screen instead of a blank page
-- An error boundary around the Plan canvas and one around the whole mode area. When a component throws, or the WebGL context is lost, the area shows a short message ("The 3D view stopped working."), a **Save layout** button (`exportLayout`) and a **Reload** button.
-- The top bar and the Project menu keep working.
+- An error boundary around the Plan canvas and one around the whole mode area. When a component throws, or the WebGL context is lost, the area shows a short message, a **Save layout** button (`exportLayout`) and a **Reload** button. The message is "The 3D view stopped working." for the Plan canvas, and "This part of Maketa stopped working." for the mode area.
+- The top bar and the Project menu keep working. Switching modes starts the mode area fresh, so the other mode can still be used.
 
 ### I.4 Object catalog without React
 - `objects/catalog.js` keeps only data: label, size, color, `screenInches`, `sizeFor`. It is still the single definition of each type.
@@ -123,7 +123,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 ## Tasks
 - ✅ I.1 Objects stay inside a smaller room: `NumberField` `onCommit`, `objectsStore.fitToRoom`, the room fields clamp on commit.
 - ✅ I.2 One download helper in `services/download.js` (later revoke, ZIP code out of `PersonalizeMode`, one data URL helper).
-- ⬜ I.3 Error boundary with Save layout and Reload, also on WebGL context loss.
+- ✅ I.3 Error boundary with Save layout and Reload, also on WebGL context loss.
 - ⬜ I.4 Object catalog without React: `catalog.js` data only, `models.js` for the components, `CLAUDE.md` catalog rule.
 - ⬜ I.5 Tests with `node:test` in `tests/`, `npm test`, full file extensions in the tested files, the verifier runs them.
 - ⬜ I.6 Lint rules and shared angle helpers.

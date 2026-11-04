@@ -4,7 +4,9 @@ import Scene from '../scene/Scene'
 import PlanCamera from '../scene/PlanCamera'
 import SnapshotBridge from '../scene/SnapshotBridge'
 import FrameGuide from '../scene/FrameGuide'
+import ContextLossGuard from '../scene/ContextLossGuard'
 import SplitLayout from '../layout/SplitLayout'
+import ErrorBoundary from '../layout/ErrorBoundary'
 import ControlPanel from '../panel/ControlPanel'
 import { useObjectsStore } from '../../store/objectsStore'
 import { useModeStore } from '../../store/modeStore'
@@ -37,14 +39,18 @@ export default function PlanMode() {
       max={50}
       second={
         <div className="scene-pane">
-          <Canvas camera={{ position: startPosition, fov: 50 }} shadows onPointerMissed={handlePointerMissed}>
-            <Scene />
-            {/* Default controls, so dragging objects and the widget can pause orbit. */}
-            <OrbitControls makeDefault />
-            <PlanCamera />
-            <SnapshotBridge />
-          </Canvas>
-          <FrameGuide />
+          {/* A crash or a lost WebGL context shows the error screen here (I.3). */}
+          <ErrorBoundary message="The 3D view stopped working.">
+            <Canvas camera={{ position: startPosition, fov: 50 }} shadows onPointerMissed={handlePointerMissed}>
+              <Scene />
+              {/* Default controls, so dragging objects and the widget can pause orbit. */}
+              <OrbitControls makeDefault />
+              <PlanCamera />
+              <SnapshotBridge />
+              <ContextLossGuard />
+            </Canvas>
+            <FrameGuide />
+          </ErrorBoundary>
         </div>
       }
     />
