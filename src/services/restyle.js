@@ -1,6 +1,8 @@
 // Browser side of the AI restyle (Part F, H.7): photo checks and resizing,
 // and the requests to /api/restyle. Images are resized here so a request
 // stays below Vercel's 4.5 MB body limit.
+import { dataUrlParts } from './download'
+
 const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024
 const PHOTO_MAX_EDGE = 1024
@@ -96,7 +98,7 @@ async function shrinkPhoto(dataUrl, scale) {
   return toJpeg(image, width, height, SHRINK_QUALITY)
 }
 
-const base64Of = (dataUrl) => dataUrl.slice(dataUrl.indexOf(',') + 1)
+const base64Of = (dataUrl) => dataUrlParts(dataUrl).base64
 
 // The panel message for a reached limit ('total' or 'visitor'), with the
 // numbers from the server ({ visitorLimit, totalLimit }) when known.

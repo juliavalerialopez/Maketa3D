@@ -3,6 +3,7 @@ import { useObjectsStore } from './objectsStore'
 import { useModeStore } from './modeStore'
 import { clampPosition } from './roomBounds'
 import { OBJECT_TYPES } from '../components/objects/catalog'
+import { saveBlob } from '../services/download'
 
 // The layout file: room size and objects, saved as JSON and read back
 // (see the Part G spec).
@@ -42,12 +43,7 @@ export function layoutData() {
 // file name is given. No server involved.
 export function exportLayout(fileName = LAYOUT_FILE_NAME) {
   const json = JSON.stringify(layoutData(), null, 2)
-  const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
-  const link = document.createElement('a')
-  link.href = url
-  link.download = fileName
-  link.click()
-  URL.revokeObjectURL(url)
+  saveBlob(new Blob([json], { type: 'application/json' }), fileName)
 }
 
 // A new project: the default room, no objects, numbering from 1 again, and

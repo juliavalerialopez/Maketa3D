@@ -4,6 +4,7 @@ import { useModeStore } from './modeStore'
 import { useObjectsStore } from './objectsStore'
 import { objectLabel } from '../components/objects/catalog'
 import { isInFrame } from '../services/frame'
+import { saveVersion, saveVersionsZip } from '../services/download'
 
 // Key of the Reference Room card in `references` (object cards use the object id).
 export const ROOM_REFERENCE = 'room'
@@ -160,6 +161,13 @@ export const useRestyleStore = create((set, get) => ({
   loadRemaining: async () => set(countUpdate(await fetchRemaining())),
 
   selectVersion: (id) => set({ selectedVersionId: id }),
+
+  // Download menu (H.4): one version as an image, or every version in one ZIP.
+  downloadVersion: (id) => {
+    const version = get().versions.find((item) => item.id === id)
+    if (version) saveVersion(version)
+  },
+  downloadAllVersions: () => saveVersionsZip(get().versions),
 
   // Deletes one version, no confirmation. If it was the selected one, the
   // next is selected (or the previous one if it was last); none left: black.
