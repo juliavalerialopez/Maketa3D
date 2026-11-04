@@ -72,29 +72,46 @@ export async function remaining(request) {
   return status(Number(result[0] ?? 0), Number(result[1] ?? 0))
 }
 
-// Counts one generation before the AI call. Over a limit, the count is undone:
+// Checks both limits and counts in one step inside Redis (I.9), so a refused
+// request never adds and removes a count, and parallel requests cannot pass
+// a limit. KEYS: total, visitor. ARGV: total limit, visitor limit, expiry.
+// Returns { 1, total, visitor } when counted, or { 0, total, visitor,
+// 'total' | 'visitor' } when a limit is already reached (total checked first).
+export const RESERVE_SCRIPT = `
+local total = tonumber(redis.call('GET', KEYS[1]) or '0')
+local visitor = tonumber(redis.call('GET', KEYS[2]) or '0')
+if total >= tonumber(ARGV[1]) then return {0, total, visitor, 'total'} end
+if visitor >= tonumber(ARGV[2]) then return {0, total, visitor, 'visitor'} end
+total = redis.call('INCR', KEYS[1])
+visitor = redis.call('INCR', KEYS[2])
+redis.call('EXPIRE', KEYS[1], ARGV[3])
+redis.call('EXPIRE', KEYS[2], ARGV[3])
+return {1, total, visitor}
+`
+
+// Counts one generation before the AI call. At a limit, nothing is counted:
 // { ok: false, limit: 'total' | 'visitor', remaining: 0 }. Otherwise
 // { ok: true, keys, remaining, limit? }; call release(keys) if the
 // generation fails.
 export async function reserve(request) {
   const keys = todayKeys(request)
-  const results = await redis('/multi-exec', [
-    ['INCR', keys.total],
-    ['EXPIRE', keys.total, EXPIRY_SECONDS],
-    ['INCR', keys.visitor],
-    ['EXPIRE', keys.visitor, EXPIRY_SECONDS],
-  ])
-  const total = Number(results[0].result)
-  const visitor = Number(results[2].result)
   const { visitorLimit, totalLimit } = limits()
-  if (total > totalLimit || visitor > visitorLimit) {
-    await release(keys)
-    return { ok: false, limit: total > totalLimit ? 'total' : 'visitor', remaining: 0 }
-  }
-  return { ok: true, keys, ...status(total, visitor) }
+  const { result } = await redis('', [
+    'EVAL',
+    RESERVE_SCRIPT,
+    '2',
+    keys.total,
+    keys.visitor,
+    String(totalLimit),
+    String(visitorLimit),
+    EXPIRY_SECONDS,
+  ])
+  const [counted, total, visitor, reached] = result
+  if (Number(counted) !== 1) return { ok: false, limit: reached === 'total' ? 'total' : 'visitor', remaining: 0 }
+  return { ok: true, keys, ...status(Number(total), Number(visitor)) }
 }
 
-// Undoes one reserved generation (over a limit, or the AI call failed).
+// Undoes one reserved generation (the AI call failed).
 export async function release(keys) {
   await redis('/multi-exec', [
     ['DECR', keys.total],

@@ -130,7 +130,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - ✅ I.6 Lint rules and shared angle helpers.
 - ✅ I.7 `useReferenceObjects` hook; selectors take the Room render camera as an argument.
 - ✅ I.8 Shared restyle limits in `shared/restyle.js`.
-- ⬜ I.9 Limit counter in one Lua script.
+- ✅ I.9 Limit counter in one Lua script.
 - ⬜ I.10 Drag and drop upload on the Reference cards.
 - ⬜ I.11 Undo and redo for room and object changes, one step per gesture.
 - ⬜ I.12 Room render data in one place (`roomRender`, projection in `services/frame.js`).

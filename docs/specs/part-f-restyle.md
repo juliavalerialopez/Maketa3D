@@ -61,7 +61,7 @@ In Personalize I upload one photo of a styled living room and press Generate. Th
 - A Vercel Node function. No npm packages: `fetch` and `node:crypto` only.
 - `POST` with a JSON body `{ render, photo }` (base64 JPEG):
   - The browser re-encodes the render to 1280 × 720 JPEG quality 0.9 before sending. Bodies over 4 MB are rejected (Vercel's limit is 4.5 MB).
-  - Increments the total and the visitor count in one Upstash transaction. If either goes over its limit, both are undone and the response is 429 with `limit: 'visitor'` or `limit: 'total'`.
+  - Checks both limits and increments the total and the visitor count in one Upstash Lua script, only when both are below their limits. Otherwise nothing is counted and the response is 429 with `limit: 'visitor'` or `limit: 'total'`. (changed in Part I, I.9; was: increment in a transaction, then undo both when over a limit)
   - Calls Gemini with an explicit 60 second timeout (`AbortController`); it does not rely on the 300 s Vercel limit. A timeout returns 504 and maps to the "took too long" message.
   - If Gemini fails or times out, both counts are undone.
   - Returns `{ image, remaining }`. A 1K output keeps the response under Vercel's 4.5 MB.
