@@ -494,6 +494,12 @@ canvas {
   margin-bottom: 0;
 }
 
+/* A file held over a Reference card (I.10). */
+.reference-card.drop-target {
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+}
+
 .reference-card .reference-photo img {
   border-radius: 8px;
 }
