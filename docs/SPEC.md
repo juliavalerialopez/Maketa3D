@@ -93,6 +93,7 @@ Save writes the layout as JSON (`maketa-layout.json`, or the Save As name); Open
 | F | specs/part-f-restyle.md | Reference photo, Generate/Regenerate via serverless AI, daily limits | Done |
 | G | specs/part-g-style-objects-layout.md | Soft UI and dark theme, five new objects, Project menu (new, open, save) | Done |
 | H | specs/part-h-references-versions.md | Version history, download, a reference image per object and for the room, Hide switch, limits from env vars | Done |
+| I | specs/part-i-code-health.md | Bug fixes, code health and tests; drag and drop upload, undo, fixed 1920 × 1080 render, placeable camera, wall-shade test | Draft |
 
 ## How we work
 - Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.

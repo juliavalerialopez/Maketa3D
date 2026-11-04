@@ -136,7 +136,7 @@ The style mock shows a few things that do not exist in the app. They are not par
 - The restyle prompt assumes one grey box sofa. Other objects in the Room render are not handled by Part F; review in Part H.
 - Export tilt (rotation X and Z).
 - Size editing for objects other than the TV.
-- From the mock: Snap to wall, Undo, scene toolbar.
+- From the mock: Snap to wall, Undo, scene toolbar. (Undo moved to Part I, I.11)
 
 ## Open questions
 - None blocking. Decided while drafting: import does not ask before replacing; light is the default with no system preference; Export stays enabled with no objects.

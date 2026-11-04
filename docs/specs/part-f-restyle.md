@@ -150,12 +150,12 @@ Download. Clear button. Drag and drop. Text instructions. Saving results. More p
 ## Backlog
 - Download the AI image.
 - Clear result button.
-- Drag and drop upload.
+- Drag and drop upload. (moved to Part I, I.10)
 - Text instructions next to the photo.
 - Saving results, for Part H: each generated image is saved as an alternative (an option in its own section), so the user can keep several and go back to any of them.
 - More panel groups.
 - 2K output (needs a way around Vercel's 4.5 MB response limit).
-- Part E backlog, to review: Refresh render button, placeable camera object, fixed 1920 × 1080 render, Personalize group state in `uiStore`.
+- Part E backlog, to review: Refresh render button, placeable camera object, fixed 1920 × 1080 render, Personalize group state in `uiStore`. (placeable camera and fixed render moved to Part I, I.14 and I.13)
 
 ## Open questions
 - How to treat the white areas outside the room (T6): not tested (F.1.3 skipped); v1 stays without the white-area line unless a problem shows up.

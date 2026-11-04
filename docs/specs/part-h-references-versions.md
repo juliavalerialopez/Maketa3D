@@ -19,8 +19,8 @@ Status: **Draft**. Builds on Part F (AI restyle) and Part G (soft UI, six object
 ## Out of scope
 - Saving versions or references across reloads (memory only, like the Part F photo).
 - Text instructions, drag and drop, editing an image.
-- Doors and windows (Part I).
-- Saving a camera view with its styles (Part I, see Backlog).
+- Doors and windows (Part J).
+- Saving a camera view with its styles (Part J, see Backlog).
 
 ## Requirements
 
@@ -160,12 +160,12 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 - [ ] Deployed and working on the live Vercel URL, without the test limits set.
 
 ## Backlog
-- Part I: "Save the Module": save the camera position together with the room styles, so a view and its results can be kept and reopened.
-- Part I: doors and windows (they get reference cards once they exist).
+- Part J: "Save the Module": save the camera position together with the room styles, so a view and its results can be kept and reopened.
+- Part J: doors and windows (they get reference cards once they exist).
 - Export tilt (rotation X and Z). (from Part G)
 - Size editing for objects other than the TV. (from Part G)
-- Room layout with several pieces (H.8): the AI moves the room corner to between the pieces (T3) and may drop a reference's chaise (T11). Prompt wording, corner positions in the prompt, and a line drawn on the corner did not fix it. Ideas: walls with clearly different shades in the Room render, or another model.
-- From the mock: Snap to wall, Undo, scene toolbar. (from Part G)
+- Room layout with several pieces (H.8): the AI moves the room corner to between the pieces (T3) and may drop a reference's chaise (T11). Prompt wording, corner positions in the prompt, and a line drawn on the corner did not fix it. Ideas: walls with clearly different shades in the Room render, or another model. (wall shades test moved to Part I, I.15)
+- From the mock: Snap to wall, Undo, scene toolbar. (from Part G) (Undo moved to Part I, I.11)
 
 ## Open questions
 - None blocking. Answered 2026-11-02: the Room card is part of H and counts toward the 8 photos; blocked at 6 versions; leaving Personalize asks and clears versions; off-frame objects are skipped; titles use the list name ("Reference Sofa 1"); doors and windows come in Part I; test limit is 20 per visitor locally, public stays 3 per visitor and 20 per day.
@@ -179,3 +179,4 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 - 2026-11-03: H.7.1: the request, the 8-photo cap and the "at least one photo" check use `selectReferenceObjects`: exactly the objects with a card are sent (hidden objects no longer; partly visible objects whose center is off-frame now are).
 - 2026-11-03: H.8: prompt v3 live (room photo now restyles walls and floor, including paneling; a reference's form wins over the grey shape; the camera line asks for a result that lines up with the render). T11 added. T3 and T11 with several pieces recorded as a known limitation (Backlog). H.8.1 (corner positions in the request) built, tested and not kept. The prompt script now takes a request saved from the app.
 - 2026-11-03: H.6.3: reference cards raised instead of pressed in (Julia), to match the panel sections.
+- 2026-11-04: Part I is now "Code health and backlog"; "Save the Module" and doors and windows move to Part J.

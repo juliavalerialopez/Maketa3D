@@ -116,9 +116,9 @@ Moving objects up or down (Y). Wall-mounted items. Editing size. Multi-select, u
 - A tall object tilted over can poke through the ceiling (no ceiling clamp).
 - Tilting with the widget (X and Z rings).
 - Edit object size (width, depth, height), with limits to decide.
-- Undo delete, and undo for moves.
+- Undo delete, and undo for moves. (moved to Part I, I.11)
 - New-object placement after a delete can land on an existing object.
-- Keep objects inside the room when the room shrinks.
+- Keep objects inside the room when the room shrinks. (moved to Part I, I.1)
 - Objects overlapping each other while dragging (collision or snapping).
 - Shortcut guard also for the color input (Backspace deletes the object when it has focus).
 - Color swatches next to the native picker.

@@ -47,7 +47,7 @@ Selecting, moving, rotating, deleting objects (Part C). Real .glb models.
 - [x] Deployed and working on the live Vercel URL.
 
 ## Backlog
-- Keep objects inside the room when the room shrinks.
+- Keep objects inside the room when the room shrinks. (moved to Part I, I.1)
 - .glb sofa model instead of a primitive.
 - Redesign the panel UI: room inputs (carried over from Part A backlog) together with the Objects section.
 

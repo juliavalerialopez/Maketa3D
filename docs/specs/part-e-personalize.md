@@ -95,8 +95,8 @@ Image upload. Any AI call, API key, serverless function or prompt. Controls in t
 
 ## Backlog
 - Manual "Refresh render" button in Personalize.
-- A placeable camera object in the room (the render taken from it instead of the orbit camera).
-- Fixed 1920 × 1080 render through a render target, independent of window size.
+- A placeable camera object in the room (the render taken from it instead of the orbit camera). (moved to Part I, I.14)
+- Fixed 1920 × 1080 render through a render target, independent of window size. (moved to Part I, I.13)
 - Keep the Personalize panel's group state in `uiStore` once groups exist.
 
 ## Open questions
