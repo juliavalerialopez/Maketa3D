@@ -1,9 +1,9 @@
-import { DEFAULT_ROOM, ROOM_LIMITS, useRoomStore } from './roomStore'
-import { useObjectsStore } from './objectsStore'
-import { useModeStore } from './modeStore'
-import { clampPosition } from './roomBounds'
-import { OBJECT_TYPES } from '../components/objects/catalog'
-import { saveBlob } from '../services/download'
+import { DEFAULT_ROOM, ROOM_LIMITS, useRoomStore } from './roomStore.js'
+import { useObjectsStore } from './objectsStore.js'
+import { useModeStore } from './modeStore.js'
+import { clampPosition } from './roomBounds.js'
+import { OBJECT_TYPES } from '../components/objects/catalog.js'
+import { saveBlob } from '../services/download.js'
 
 // The layout file: room size and objects, saved as JSON and read back
 // (see the Part G spec).

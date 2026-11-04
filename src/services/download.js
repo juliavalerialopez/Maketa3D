@@ -1,7 +1,7 @@
 // Saving files from the page (I.2): Save / Save As (the layout file) and the
 // AI version downloads. Everything is already in the page, so there is no
 // server call: one link click per file.
-import { makeZip } from './zip'
+import { makeZip } from './zip.js'
 
 // How long an object URL stays valid after its click. Safari and Firefox
 // start the download after the click returns, so revoking right away can

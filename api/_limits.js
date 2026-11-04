@@ -56,7 +56,7 @@ function todayKeys(request) {
 
 // What this visitor can still make today (the smaller of both limits), and
 // when that is 0, which limit was reached.
-function status(total, visitor) {
+export function status(total, visitor) {
   const { visitorLimit, totalLimit } = limits()
   const totalLeft = totalLimit - total
   const visitorLeft = visitorLimit - visitor

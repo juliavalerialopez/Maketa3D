@@ -2,7 +2,7 @@
 // cut from the Plan canvas; an object is in frame when any part of its box
 // shows inside that frame, so a partly visible object counts.
 import { Euler, Matrix4, Vector3 } from 'three'
-import { objectTransform } from '../store/roomBounds'
+import { objectTransform } from '../store/roomBounds.js'
 
 // The 16:9 frame inside a width x height area: fits the height, or the width
 // when the area is narrower than 16:9, centered. Same rule as .frame-guide-box.

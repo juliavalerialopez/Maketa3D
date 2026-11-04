@@ -1,4 +1,4 @@
-import { tvStandSize } from './tvStandSize'
+import { tvStandSize } from './tvStandSize.js'
 
 // One entry per placeable object type: plain data only, no React (I.4), so
 // stores, the layout file and tests can use it without the 3D models. The

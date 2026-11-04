@@ -1,7 +1,7 @@
 import { create } from 'zustand'
-import { useRoomStore } from './roomStore'
-import { clampPosition } from './roomBounds'
-import { OBJECT_TYPES } from '../components/objects/catalog'
+import { useRoomStore } from './roomStore.js'
+import { clampPosition } from './roomBounds.js'
+import { OBJECT_TYPES } from '../components/objects/catalog.js'
 
 const PLACEMENT_STEP = 0.3
 

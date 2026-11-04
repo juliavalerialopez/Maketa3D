@@ -1,10 +1,10 @@
 import { create } from 'zustand'
-import { fetchRemaining, loadPhoto, MAX_PHOTOS, requestRestyle } from '../services/restyle'
-import { useModeStore } from './modeStore'
-import { useObjectsStore } from './objectsStore'
-import { objectLabel } from '../components/objects/catalog'
-import { isInFrame } from '../services/frame'
-import { saveVersion, saveVersionsZip } from '../services/download'
+import { fetchRemaining, loadPhoto, MAX_PHOTOS, requestRestyle } from '../services/restyle.js'
+import { useModeStore } from './modeStore.js'
+import { useObjectsStore } from './objectsStore.js'
+import { objectLabel } from '../components/objects/catalog.js'
+import { isInFrame } from '../services/frame.js'
+import { saveVersion, saveVersionsZip } from '../services/download.js'
 
 // Key of the Reference Room card in `references` (object cards use the object id).
 export const ROOM_REFERENCE = 'room'

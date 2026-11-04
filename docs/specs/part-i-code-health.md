@@ -46,7 +46,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - Adding a type = a model file, one catalog entry and one line in `models.js`. Update the catalog rule in `CLAUDE.md` in the same commit.
 
 ### I.5 Tests
-- `npm test` runs `node --test` on `tests/`. No library.
+- `npm test` runs `node --test` on `tests/*.test.js`. No library. It needs Node 22 or newer locally (Node expands the file pattern itself); the app's `engines` setting is not changed.
 - First tests (pure logic only):
   - `roomBounds`: clamp at each wall, rotated footprint at 90°, tilted object lift, object wider than the room.
   - `layoutFile`: save then open gives the same room and objects; invalid files are refused; `hidden` and `screenInches` survive; numbering continues after the highest number.
@@ -125,7 +125,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - ✅ I.2 One download helper in `services/download.js` (later revoke, ZIP code out of `PersonalizeMode`, one data URL helper).
 - ✅ I.3 Error boundary with Save layout and Reload, also on WebGL context loss.
 - ✅ I.4 Object catalog without React: `catalog.js` data only, `models.js` for the components, `CLAUDE.md` catalog rule.
-- ⬜ I.5 Tests with `node:test` in `tests/`, `npm test`, full file extensions in the tested files, the verifier runs them.
+- ✅ I.5 Tests with `node:test` in `tests/`, `npm test`, full file extensions in the tested files, the verifier runs them.
 - ⬜ I.6 Lint rules and shared angle helpers.
 - ⬜ I.7 `useReferenceObjects` hook; selectors take the Room render camera as an argument.
 - ⬜ I.8 Shared restyle limits in `shared/restyle.js`.

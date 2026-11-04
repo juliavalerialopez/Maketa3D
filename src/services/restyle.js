@@ -1,7 +1,7 @@
 // Browser side of the AI restyle (Part F, H.7): photo checks and resizing,
 // and the requests to /api/restyle. Images are resized here so a request
 // stays below Vercel's 4.5 MB body limit.
-import { dataUrlParts } from './download'
+import { dataUrlParts } from './download.js'
 
 const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024
@@ -117,7 +117,7 @@ const wholeOrNull = (value) => (Number.isInteger(value) && value >= 0 ? value : 
 // { remaining, limit, visitorLimit, totalLimit } from a server answer.
 // remaining is null when unknown; limit is set only when remaining is 0;
 // the two limits are null when the server did not send them.
-function countOf(body) {
+export function countOf(body) {
   const remaining = wholeOrNull(body?.remaining)
   return {
     remaining,
