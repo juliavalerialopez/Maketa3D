@@ -122,3 +122,28 @@ Work one task at a time, with a review stop before each commit:
      (e.g. `docs/specs/part-a-room.md`) in the same commit. Do not push.
    - "change: ...": apply the change, rebuild, and stop again for review.
 5. I push myself. Start the next task only when I say "next".
+
+## Subagents (ask me which to run)
+Project subagents live in `.claude/agents/`: `verifier` (build and lint,
+failures only), `spec-reviewer` (changes vs spec and these rules), `researcher`
+(open technical questions, only when I ask).
+- After finishing a task and running `npm run build`, ask me which subagent to
+  run before the review stop: verifier, spec-reviewer, both, or none. Wait for
+  my answer. Never run a subagent I did not choose.
+- Recommend one in the question, with a short reason (for example: "touches the
+  store and two panels, so I suggest both").
+- Report what the subagents found, then stop for my review as usual.
+
+## Batch mode (only when I ask)
+When I say "do tasks X.1 to X.4 and commit each", the review stop is skipped.
+Ask me once, before starting, which subagents to run on every task in the batch.
+For each task, in order:
+1. Implement only that task.
+2. Run the chosen subagents. Fix build or lint failures and "Missing" or "Rule
+   breaks" findings. Undo "Scope creep", do not add to it.
+3. Commit with the planned message and tick the task in the part spec, in the
+   same commit.
+4. Go to the next task.
+Stop and report instead of continuing if: a check still fails after two fix
+attempts, the spec is unclear, or a task needs a change outside its scope.
+Never push. At the end, list each commit and what to check in `npm run dev`.
