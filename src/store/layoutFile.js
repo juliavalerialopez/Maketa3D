@@ -1,7 +1,7 @@
 import { DEFAULT_ROOM, ROOM_LIMITS, useRoomStore } from './roomStore.js'
 import { useObjectsStore } from './objectsStore.js'
 import { useModeStore } from './modeStore.js'
-import { clampPosition } from './roomBounds.js'
+import { clampPosition, normalizeDegrees, toDegrees, toRadians } from './roomBounds.js'
 import { OBJECT_TYPES } from '../components/objects/catalog.js'
 import { saveBlob } from '../services/download.js'
 
@@ -14,10 +14,9 @@ import { saveBlob } from '../services/download.js'
 export const LAYOUT_VERSION = 1
 export const LAYOUT_FILE_NAME = 'maketa-layout.json'
 
-const DEGREES_PER_RADIAN = 180 / Math.PI
 // Millimetres are enough; this hides float noise like 1.2000000000000002.
 const roundMeters = (meters) => Math.round(meters * 1000) / 1000
-const wholeDegrees = (radians) => ((Math.round(radians * DEGREES_PER_RADIAN) % 360) + 360) % 360
+const wholeDegrees = (radians) => normalizeDegrees(Math.round(toDegrees(radians)))
 
 // The current room and objects, in the file format.
 export function layoutData() {
@@ -116,8 +115,7 @@ export function importLayout(text) {
   const objects = layout.objects.map((item) => {
     const entry = OBJECT_TYPES[item.type]
     const size = entry.screenInches ? entry.sizeFor(item.screenInches) : { ...entry.size }
-    const degrees = ((item.rotation % 360) + 360) % 360
-    const rotation = [0, degrees / DEGREES_PER_RADIAN, 0]
+    const rotation = [0, toRadians(normalizeDegrees(item.rotation)), 0]
     lastNumbers[item.type] = Math.max(lastNumbers[item.type] ?? 0, item.number)
     return {
       id: crypto.randomUUID(),

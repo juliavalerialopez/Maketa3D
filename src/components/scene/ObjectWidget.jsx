@@ -4,15 +4,13 @@ import { TransformControls } from '@react-three/drei'
 import { Quaternion } from 'three'
 import { useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
-import { clampPosition, objectTransform } from '../../store/roomBounds'
+import { clampPosition, normalizeRadians, objectTransform } from '../../store/roomBounds'
 import { widgetControls } from './widgetState'
 
 const ROTATION_STEP = Math.PI / 12 // 15°
 // The ring sits outside the move arrows (arrows reach ~1.1, ring radius 1 × size).
 const RING_SIZE = 1.5
-const FULL_TURN = Math.PI * 2
 
-const normalizeAngle = (radians) => ((radians % FULL_TURN) + FULL_TURN) % FULL_TURN
 const delta = new Quaternion()
 
 function getObject(id) {
@@ -102,7 +100,7 @@ export default function ObjectWidget() {
     delta.copy(group.quaternion).multiply(start.quaternion.clone().invert())
     const angle = 2 * Math.atan2(delta.y, delta.w)
     const [x, y, z] = start.rotation
-    apply(group, object, { rotation: [x, normalizeAngle(y + angle), z] })
+    apply(group, object, { rotation: [x, normalizeRadians(y + angle), z] })
   }
 
   return (

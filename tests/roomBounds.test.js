@@ -1,6 +1,14 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { clampPosition, objectTransform, positionLimits } from '../src/store/roomBounds.js'
+import {
+  clampPosition,
+  normalizeDegrees,
+  normalizeRadians,
+  objectTransform,
+  positionLimits,
+  toDegrees,
+  toRadians,
+} from '../src/store/roomBounds.js'
 
 const room = { width: 6, depth: 5, height: 2.6 }
 const sofa = { size: { width: 2, depth: 0.9, height: 0.8 }, rotation: [0, 0, 0] }
@@ -28,6 +36,16 @@ test('an object wider than the room is centered on that axis', () => {
   const narrow = { width: 1.5, depth: 5, height: 2.6 }
   const [x] = clampPosition(sofa, narrow, 5, 0)
   close(x, 0)
+})
+
+test('angles convert between degrees and radians and stay within one turn', () => {
+  close(toDegrees(Math.PI / 2), 90)
+  close(toRadians(180), Math.PI)
+  assert.equal(normalizeDegrees(-90), 270)
+  assert.equal(normalizeDegrees(360), 0)
+  assert.equal(normalizeDegrees(45), 45)
+  close(normalizeRadians(-Math.PI / 2), (3 * Math.PI) / 2)
+  close(normalizeRadians(2 * Math.PI), 0)
 })
 
 test('a tilted object is lifted so its lowest point touches the floor', () => {

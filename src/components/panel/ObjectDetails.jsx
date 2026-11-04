@@ -1,15 +1,12 @@
 import { OBJECT_TYPES, objectLabel } from '../objects/catalog'
 import { selectSelectedObject, useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
-import { clampPosition, positionLimits } from '../../store/roomBounds'
+import { clampPosition, normalizeDegrees, positionLimits, toDegrees, toRadians } from '../../store/roomBounds'
 import NumberField from '../ui/NumberField'
 import FieldGroup from '../ui/FieldGroup'
 import ColorField from '../ui/ColorField'
 import Button from '../ui/Button'
 import HideButton from './HideButton'
-
-const DEGREES_PER_RADIAN = 180 / Math.PI
-const normalizeDegrees = (degrees) => ((degrees % 360) + 360) % 360
 
 // Fields for the selected object. ControlPanel remounts this per object,
 // so every field starts from the newly selected object's values.
@@ -40,7 +37,7 @@ export default function ObjectDetails() {
   // A new rotation changes the footprint, so the position is clamped with it.
   function setRotation(axisIndex, degrees) {
     const rotation = object.rotation.map((value, index) =>
-      index === axisIndex ? degrees / DEGREES_PER_RADIAN : value,
+      index === axisIndex ? toRadians(degrees) : value,
     )
     const position = clampPosition({ ...object, rotation }, room, x, z)
     updateObject(object.id, { rotation, position })
@@ -76,7 +73,7 @@ export default function ObjectDetails() {
             key={axis}
             compact
             label={axis}
-            value={object.rotation[index] * DEGREES_PER_RADIAN}
+            value={toDegrees(object.rotation[index])}
             onChange={(degrees) => setRotation(index, degrees)}
             step={15}
             normalize={normalizeDegrees}

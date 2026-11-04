@@ -3,6 +3,16 @@ import { Euler, Matrix4 } from 'three'
 // Rotation order for objects: y turns the object on the floor, x and z tilt it.
 export const ROTATION_ORDER = 'YXZ'
 
+// Angles (I.6): the store keeps radians, the panel and the layout file show
+// degrees.
+const DEGREES_PER_RADIAN = 180 / Math.PI
+const FULL_TURN = Math.PI * 2
+export const toDegrees = (radians) => radians * DEGREES_PER_RADIAN
+export const toRadians = (degrees) => degrees / DEGREES_PER_RADIAN
+// The same angle from 0 up to (not including) a full turn: -90° -> 270°, 360° -> 0°.
+export const normalizeDegrees = (degrees) => ((degrees % 360) + 360) % 360
+export const normalizeRadians = (radians) => ((radians % FULL_TURN) + FULL_TURN) % FULL_TURN
+
 const euler = new Euler()
 const matrix = new Matrix4()
 

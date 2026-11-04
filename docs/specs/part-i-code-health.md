@@ -126,7 +126,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - ✅ I.3 Error boundary with Save layout and Reload, also on WebGL context loss.
 - ✅ I.4 Object catalog without React: `catalog.js` data only, `models.js` for the components, `CLAUDE.md` catalog rule.
 - ✅ I.5 Tests with `node:test` in `tests/`, `npm test`, full file extensions in the tested files, the verifier runs them.
-- ⬜ I.6 Lint rules and shared angle helpers.
+- ✅ I.6 Lint rules and shared angle helpers.
 - ⬜ I.7 `useReferenceObjects` hook; selectors take the Room render camera as an argument.
 - ⬜ I.8 Shared restyle limits in `shared/restyle.js`.
 - ⬜ I.9 Limit counter in one Lua script.

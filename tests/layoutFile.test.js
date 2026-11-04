@@ -44,6 +44,17 @@ test('save then open restores the room and the objects', () => {
   assert.equal(openedTv.hidden, undefined)
 })
 
+test('rotations are saved as whole degrees from 0 to 359', () => {
+  const turned = (rotation) => ({ ...layout, objects: [{ ...layout.objects[0], rotation }] })
+  importLayout(text(turned(-90)))
+  assert.equal(layoutData().objects[0].rotation, 270)
+  importLayout(text(turned(450)))
+  assert.equal(layoutData().objects[0].rotation, 90)
+  const [sofa] = objects()
+  useObjectsStore.getState().updateObject(sofa.id, { rotation: [0, (359.6 * Math.PI) / 180, 0] })
+  assert.equal(layoutData().objects[0].rotation, 0)
+})
+
 test('open then save gives the same file', () => {
   assert.equal(importLayout(text(layout)), true)
   assert.deepEqual(layoutData(), layout)
