@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { buildPrompt, promptImages } from '../api/_restyle-prompt.js'
+import { buildPrompt, promptImages, WALL_SHADES_LINE, withWallShadesLine } from '../api/_restyle-prompt.js'
 
 const objects = [
   { name: 'Sofa 1', mode: 'reference', x: 30, y: 60, photo: 'sofa' },
@@ -23,6 +23,14 @@ test('the prompt numbers the images in the same order', () => {
   assert.match(prompt, /Sofa 1 \(a sofa\)[^\n]*\n {2}Image 3 is its reference/)
   assert.match(prompt, /Armchair 2 \(an armchair\)[^\n]*\n {2}Image 4 is its reference/)
   assert.match(prompt, /Coffee table 1 \(a coffee table\)[^\n]*\n {2}No reference/)
+})
+
+test('the wall-shades line (I.15 test only) goes before the last line, and the live prompt has none', () => {
+  const prompt = buildPrompt({ room: { mode: 'creative' }, objects })
+  assert.ok(!prompt.includes(WALL_SHADES_LINE))
+  const lines = withWallShadesLine(prompt).split('\n')
+  assert.equal(lines.at(-1), prompt.split('\n').at(-1))
+  assert.equal(lines.at(-3), WALL_SHADES_LINE)
 })
 
 test('without a room photo the first object photo is image 2', () => {

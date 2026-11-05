@@ -8,6 +8,14 @@ const THICKNESS = 0.05
 // render sent to the AI does not depend on the theme.
 const WALL_COLOR = '#ece7da'
 
+// I.15 wall-shades test, local only: with ?wallShades in the address of the
+// dev server (npm run dev or npx vercel dev, never the live site), each wall
+// gets its own clearly different light shade (back, front, left, right), so
+// the corners show in the Room render. Same in both themes. See
+// docs/prompts/restyle.md, "Wall shades test".
+const WALL_SHADES = ['#ece7da', '#d4ccba', '#bdb4a0', '#f8f5ee']
+const showWallShades = import.meta.env.DEV && new URLSearchParams(window.location.search).has('wallShades')
+
 export default function Walls() {
   const { width, depth, height } = useRoomStore((state) => state.room)
   const wallRefs = useRef([])
@@ -37,7 +45,7 @@ export default function Walls() {
       receiveShadow
     >
       <boxGeometry args={wall.size} />
-      <meshStandardMaterial color={WALL_COLOR} />
+      <meshStandardMaterial color={showWallShades ? WALL_SHADES[index] : WALL_COLOR} />
     </mesh>
   ))
 }

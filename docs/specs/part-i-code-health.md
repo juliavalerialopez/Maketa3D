@@ -121,6 +121,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - Results go into `docs/prompts/restyle.md`. Keep the shades (and the prompt line as v4) only if T3 or T11 improve; the shades must look the same in both themes. Otherwise nothing changes, and "another model" stays in the Backlog.
 - Run after I.13 and I.14, so the test uses the final Room render.
 - Split (added 2026-11-04): I.15 prepares the test (a local-only switch for the shaded walls, the v4 prompt line as an option in `scripts/try-restyle.mjs`, the steps written in `docs/prompts/restyle.md`). Julia makes the renders and runs it (I.15.1), because it needs the browser and paid Gemini calls.
+- (added 2026-11-05) The switch is `?wallShades` on the dev server only; the prompt line is the `--shades` option, named v6 instead of v4, because v4 and v5 are taken by the H.8 tries. The steps compare plain and shaded walls of the same saved room and camera, and also check T1, T2 and T7 to T10.
 
 ## Tasks
 - ✅ I.1 Objects stay inside a smaller room: `NumberField` `onCommit`, `objectsStore.fitToRoom`, the room fields clamp on commit.
@@ -138,7 +139,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - ✅ I.13 Fixed 1920 × 1080 Room render.
   - ✅ I.13.1 Render into the Plan canvas drawn at 1920 × 1080 for that one render (then set back to its own size and drawn again in the same step), instead of an off-screen target, so the colors stay exactly as on screen (added 2026-11-04)
 - ✅ I.14 Placeable camera.
-- ⬜ I.15 Wall shades test for rooms with several pieces.
+- ✅ I.15 Wall shades test for rooms with several pieces.
   - ⬜ I.15.1 Make the shaded renders, run T3 and T11, record the results and the decision (Julia) (added 2026-11-04)
 - ⬜ I.16 Docs (`CLAUDE.md` Structure, including `shared/` and local imports in `api/` from I.8, `docs/SPEC.md` roadmap, layout, data model and part table), `npm run build`, deploy, check on the live site.
 

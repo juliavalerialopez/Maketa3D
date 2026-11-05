@@ -1,8 +1,8 @@
 // Prompt test (Part F, H.8): sends one test case to Gemini with the live
-// prompt (v2, buildPrompt) and saves the results. Same prompt and image order
+// prompt (buildPrompt, PROMPT_VERSION) and saves the results. Same prompt and image order
 // as /api/restyle, with no limits and no counting.
 //
-//   node --env-file=.env.local scripts/try-restyle.mjs <case.json> [--white] [--runs N]
+//   node --env-file=.env.local scripts/try-restyle.mjs <case.json> [--white] [--shades] [--runs N]
 //
 // case.json is either a test case written by hand, with image paths relative
 // to the JSON file:
@@ -19,24 +19,33 @@
 // are percent from the left and top of the render; the app's request shows them.
 //
 // --white  adds the T6 white-area line to the prompt
+// --shades adds the I.15 wall-shades line, the v6 candidate (for renders taken
+//          with ?wallShades, see docs/prompts/restyle.md, "Wall shades test")
 // --runs   number of runs (default 3, the pass rule needs 2 of 3)
 // Results go to scratch/restyle-runs/ (gitignored), with the prompt as a .txt.
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { basename, dirname, extname, join, resolve } from 'node:path'
 import { restyleImage, MODEL } from '../api/_gemini.js'
-import { buildPrompt, promptImages, PROMPT_VERSION, withWhiteAreaLine } from '../api/_restyle-prompt.js'
+import {
+  buildPrompt,
+  promptImages,
+  PROMPT_VERSION,
+  withWallShadesLine,
+  withWhiteAreaLine,
+} from '../api/_restyle-prompt.js'
 
 const MIME_TYPES = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' }
 const OUT_DIR = 'scratch/restyle-runs'
 
 function usage(message) {
   console.error(message)
-  console.error('Usage: node --env-file=.env.local scripts/try-restyle.mjs <case.json> [--white] [--runs N]')
+  console.error('Usage: node --env-file=.env.local scripts/try-restyle.mjs <case.json> [--white] [--shades] [--runs N]')
   process.exit(1)
 }
 
 const args = process.argv.slice(2)
 const white = args.includes('--white')
+const shades = args.includes('--shades')
 const runsIndex = args.indexOf('--runs')
 const runs = runsIndex >= 0 ? Number(args[runsIndex + 1]) : 3
 const [casePath] = args.filter((arg, i) => !arg.startsWith('--') && !(runsIndex >= 0 && i === runsIndex + 1))
@@ -94,13 +103,18 @@ const input = {
 
 const images = promptImages(input).map((image) => ({ ...image, mimeType: mimeTypes.get(image.data) ?? image.mimeType }))
 const basePrompt = buildPrompt(input)
-const prompt = white ? withWhiteAreaLine(basePrompt) : basePrompt
-const label = `${basename(casePath, extname(casePath))}-${PROMPT_VERSION}${white ? '-white' : ''}`
+const withShades = shades ? withWallShadesLine(basePrompt) : basePrompt
+const prompt = white ? withWhiteAreaLine(withShades) : withShades
+const extras = `${white ? '-white' : ''}${shades ? '-shades' : ''}`
+const label = `${basename(casePath, extname(casePath))}-${PROMPT_VERSION}${extras}`
 const stamp = new Date().toISOString().replace(/[:.]/g, '-')
 await mkdir(OUT_DIR, { recursive: true })
 await writeFile(join(OUT_DIR, `${stamp}-${label}-prompt.txt`), prompt)
 
-console.log(`${MODEL}, prompt ${PROMPT_VERSION}${white ? ' + white line' : ''}, ${images.length} image(s), ${runs} run(s): ${label}`)
+const lineNames = [white && 'white line', shades && 'wall-shades line'].filter(Boolean)
+console.log(
+  `${MODEL}, prompt ${PROMPT_VERSION}${lineNames.map((name) => ` + ${name}`).join('')}, ${images.length} image(s), ${runs} run(s): ${label}`,
+)
 for (let run = 1; run <= runs; run++) {
   const started = Date.now()
   try {

@@ -76,7 +76,22 @@ Output one photorealistic 16:9 image.`
 export const WHITE_AREA_LINE = 'The white area outside the room is empty background; keep it plain.'
 
 export function withWhiteAreaLine(prompt) {
+  return withLineBeforeLast(prompt, WHITE_AREA_LINE)
+}
+
+// I.15 wall-shades test (v6 candidate, not live): the Room render gives each
+// wall its own clearly different light shade, so the corners are easy to see.
+// This line tells the model the shades only mark the corners. Used only by
+// scripts/try-restyle.mjs --shades.
+export const WALL_SHADES_LINE =
+  'The walls of image 1 have different light shades only to show where the corners are. Keep every corner exactly where it is, and give all walls the same finish.'
+
+export function withWallShadesLine(prompt) {
+  return withLineBeforeLast(prompt, WALL_SHADES_LINE)
+}
+
+function withLineBeforeLast(prompt, line) {
   const lines = prompt.split('\n')
-  lines.splice(lines.length - 1, 0, WHITE_AREA_LINE, '')
+  lines.splice(lines.length - 1, 0, line, '')
   return lines.join('\n')
 }

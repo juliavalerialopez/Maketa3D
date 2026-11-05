@@ -156,5 +156,36 @@ The white area outside the room is empty background; keep it plain.
 
 Decision: not tested (F.1.3 skipped). v1 stays without the line unless a problem shows up.
 
+## Wall shades test (Part I, I.15)
+Rooms with several pieces fail T3 (the room corner moves to between the pieces) and T11 (a reference's chaise is dropped); see the v3 Results. Idea: give each wall its own clearly different light shade in the Room render, so the corners are easy to see, and tell the model the shades only mark the corners. Candidate **v6** (v4 and v5 are taken by the H.8 tries): v3 plus this line before the last line (`WALL_SHADES_LINE` in `api/_restyle-prompt.js`, used only by the script):
+
+```text
+The walls of image 1 have different light shades only to show where the corners are. Keep every corner exactly where it is, and give all walls the same finish.
+```
+
+### Steps (Julia, I.15.1)
+1. Put `RESTYLE_MOCK=1` in `.env.local` and start the app with `npx vercel dev`, so the Generate in step 4 only echoes the render (no Gemini call, no counting).
+2. Set up one room with several pieces, as in H.8: two sofas (one with a chaise in its reference photo), a coffee table, and a room photo. Place the camera so a room corner shows between the pieces. Save the layout (Project menu, Save As, e.g. `shades-test`), so both requests below use the same room and camera.
+3. Plain walls: switch to Personalize, add the reference photos and press Generate once. In DevTools, Network, open the restyle request, Payload, and save the request body as `scratch/plain-several.json`.
+4. Shaded walls: open the app with `?wallShades` at the end of the address (e.g. `http://localhost:3000/?wallShades`; it only works on the dev server, never on the live site), open the saved layout, and repeat step 3, saving `scratch/shades-several.json`. The walls you see now have clearly different shades (two or three show; the walls on the camera's side are hidden).
+5. Remove `RESTYLE_MOCK=1` again. Run each case 3 times (3 paid images per command, 9 in all). One request covers T3 and T11, and the same images are checked for the other tests:
+   - plain walls, v3: `node --env-file=.env.local scripts/try-restyle.mjs scratch/plain-several.json`
+   - shaded walls, v3: `node --env-file=.env.local scripts/try-restyle.mjs scratch/shades-several.json`
+   - shaded walls, v6 (v3 plus the line): `node --env-file=.env.local scripts/try-restyle.mjs scratch/shades-several.json --shades`
+   The results are in `scratch/restyle-runs/`; the v6 runs end in `-v3-shades`.
+6. Fill in the table below. T3 passes when the corner stays where it is in the render; T11 when the chaise is kept; the others as in the Part F and Part H specs. The pass rule is 2 of 3 runs.
+
+### Results
+| Test | v3, plain walls | v3, shaded walls | v6 (`--shades`), shaded walls |
+|---|---|---|---|
+| T3 room shape kept, several pieces | | | |
+| T11 reference form kept, several pieces | | | |
+| T1, T2 (Part F) | | | |
+| T7 to T10 (Part H) | | | |
+
+For reference, H.8 with the old render (before I.13 and I.14): T3 0/3, T11 1/3.
+
+Decision: open (I.15.1). Keep the shades (as the default wall colors) and v6 only if T3 or T11 improve without making T1, T2 or T7 to T10 worse. Otherwise nothing changes, and "another model" stays in the Part I Backlog.
+
 ## Test cases
 See `docs/specs/part-f-restyle.md` (T1 to T6, pass rule: at least 2 of 3 runs on all three fixtures).
