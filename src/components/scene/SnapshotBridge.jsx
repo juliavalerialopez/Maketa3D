@@ -2,9 +2,10 @@ import { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import { Box3, Vector2, Vector3 } from 'three'
 import { canvasToPng, snapshotBridge } from './snapshot'
-import { RENDER_HEIGHT, RENDER_WIDTH, cameraView, frameFov, framePosition } from '../../services/frame'
-import { widgetControls } from './widgetState'
+import { prepareRoomRender } from './roomRenderView'
+import { RENDER_HEIGHT, RENDER_WIDTH, cameraView, framePosition, renderCamera } from '../../services/frame'
 import { useObjectsStore } from '../../store/objectsStore'
+import { useCameraStore } from '../../store/cameraStore'
 
 const box = new Box3()
 const centre = new Vector3()
@@ -21,62 +22,37 @@ function objectPositions(scene, camera, width, height) {
   })
 }
 
-// A copy of the Plan camera that sees exactly what the frame guide shows, at
-// 16:9 (I.13): same place and direction, field of view narrowed when the
-// canvas is taller than 16:9.
-function frameCamera(camera, width, height) {
-  const renderCamera = camera.clone()
-  renderCamera.aspect = RENDER_WIDTH / RENDER_HEIGHT
-  renderCamera.fov = frameFov(camera.fov, width, height)
-  renderCamera.updateProjectionMatrix()
-  return renderCamera
-}
-
-// Hides helpers (objects with userData.helper, and the widget) and hidden
-// objects (H.6.2), renders the frame once at the fixed Room render size
-// (I.13: the canvas is drawn at 1920 x 1080 for that one render, then set
-// back to its own size and drawn again), and shows them again. All in one
-// call, so the page never shows the scene without them or at the wrong size.
-// Also returns the object positions and the camera that took it.
-function captureScene(gl, scene, camera) {
+// Renders the Room render once from the placeable camera (I.14), at the
+// fixed size (I.13: the canvas is drawn at 1920 x 1080 for that one render,
+// then set back to its own size and drawn again for the Plan view). Helpers,
+// the widget and hidden objects are left out (prepareRoomRender). All in one
+// call, so the page never shows the scene prepared for the render. Also
+// returns the object positions and the camera that took it.
+function captureScene(gl, scene, planCamera) {
   const canvas = gl.domElement
   if (gl.getContext().isContextLost() || !canvas.width || !canvas.height) return null
 
   const size = gl.getSize(new Vector2())
   const pixelRatio = gl.getPixelRatio()
-  const renderCamera = frameCamera(camera, size.x, size.y)
-
-  const hidden = []
-  const hide = (object) => {
-    if (!object?.visible) return
-    object.visible = false
-    hidden.push(object)
-  }
-  scene.traverse((object) => {
-    if (object.userData.helper) hide(object)
-  })
-  Object.values(widgetControls).forEach(hide)
-  useObjectsStore
-    .getState()
-    .objects.filter((object) => object.hidden)
-    .forEach((object) => hide(scene.getObjectByName(object.id)))
+  const camera = renderCamera(useCameraStore.getState().camera)
+  const restore = prepareRoomRender(scene, camera, planCamera)
 
   try {
     gl.setPixelRatio(1)
     gl.setSize(RENDER_WIDTH, RENDER_HEIGHT, false)
-    gl.render(scene, renderCamera)
+    gl.render(scene, camera)
     const image = canvasToPng(canvas)
     return {
       image,
-      objects: objectPositions(scene, renderCamera, RENDER_WIDTH, RENDER_HEIGHT),
-      view: cameraView(renderCamera, RENDER_WIDTH, RENDER_HEIGHT),
+      objects: objectPositions(scene, camera, RENDER_WIDTH, RENDER_HEIGHT),
+      view: cameraView(camera, RENDER_WIDTH, RENDER_HEIGHT),
     }
   } finally {
-    hidden.forEach((object) => (object.visible = true))
+    restore()
     // Size first: setPixelRatio resizes the buffer with the current size.
     gl.setSize(size.x, size.y, false)
     gl.setPixelRatio(pixelRatio)
-    gl.render(scene, camera)
+    gl.render(scene, planCamera)
   }
 }
 

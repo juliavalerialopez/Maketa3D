@@ -1155,8 +1155,8 @@ canvas {
   background: var(--border-strong);
 }
 
-/* Plan: 3D scene with the frame guide on top. A size container, so the frame
-   can fit itself with container units. */
+/* Plan: 3D scene with the camera preview and buttons on top. A size
+   container, so the preview can size itself with container units. */
 .scene-pane {
   position: relative;
   width: 100%;
@@ -1169,32 +1169,27 @@ canvas {
   background: var(--bg);
 }
 
-.frame-guide {
+/* Outline of the placeable camera's live preview (I.14). The image itself is
+   drawn in the canvas by scene/CameraPreview.jsx at the same place:
+   PREVIEW_SHARE (30%) of the width but at most PREVIEW_MAX_HEIGHT_SHARE (40%)
+   of the height, 16:9, PREVIEW_MARGIN (12px) from the right and bottom. */
+.camera-preview {
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  right: 12px;
+  bottom: 12px;
+  width: min(30cqw, 40cqh * 16 / 9);
+  aspect-ratio: 16 / 9;
+  box-shadow: 0 0 0 2px var(--accent);
   pointer-events: none;
 }
 
-/* 16:9, fits the height, or the width when the scene is narrower than 16:9.
-   The huge shadow dims everything outside the frame. */
-.frame-guide-box {
-  width: min(100cqw, 100cqh * 16 / 9);
-  aspect-ratio: 16 / 9;
-  box-sizing: border-box;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.3);
-}
-
-.frame-toggle {
+.preview-toggle {
   position: absolute;
   top: 8px;
   right: 8px;
 }
 
-.frame-toggle .ui-button {
+.preview-toggle .ui-button {
   margin-bottom: 0;
 }
 

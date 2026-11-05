@@ -2,6 +2,7 @@ import { DEFAULT_ROOM, ROOM_LIMITS, useRoomStore } from './roomStore.js'
 import { useObjectsStore } from './objectsStore.js'
 import { useModeStore } from './modeStore.js'
 import { useHistoryStore } from './historyStore.js'
+import { CAMERA_LIMITS, DEFAULT_CAMERA, clampCameraPosition, useCameraStore } from './cameraStore.js'
 import { clampPosition, normalizeDegrees, toDegrees, toRadians } from './roomBounds.js'
 import { OBJECT_TYPES } from '../components/objects/catalog.js'
 import { saveBlob } from '../services/download.js'
@@ -12,20 +13,31 @@ import { saveBlob } from '../services/download.js'
 // saved (size comes from the catalog, or from screenInches for a TV stand).
 // A hidden object (H.6.2) has "hidden": true; shown objects have no flag, so
 // files from before the Hide switch still import.
+// The placeable camera (I.14) is saved as "camera": { x, y, z, pan, tilt, fov }
+// (y is its height; pan, tilt and fov in degrees). Files without it open with
+// the default camera.
 export const LAYOUT_VERSION = 1
 export const LAYOUT_FILE_NAME = 'maketa-layout.json'
 
 // Millimetres are enough; this hides float noise like 1.2000000000000002.
 const roundMeters = (meters) => Math.round(meters * 1000) / 1000
 const wholeDegrees = (radians) => normalizeDegrees(Math.round(toDegrees(radians)))
+// Camera angles keep a tenth of a degree.
+const tenthDegrees = (radians) => Math.round(toDegrees(radians) * 10) / 10
 
-// The current room and objects, in the file format.
+function cameraData({ position, pan, tilt, fov }) {
+  const [x, y, z] = position.map(roundMeters)
+  return { x, y, z, pan: normalizeDegrees(tenthDegrees(pan)), tilt: tenthDegrees(tilt), fov: Math.round(fov * 10) / 10 }
+}
+
+// The current room, objects and camera, in the file format.
 export function layoutData() {
   const { room } = useRoomStore.getState()
   const { objects } = useObjectsStore.getState()
   return {
     version: LAYOUT_VERSION,
     room: { width: room.width, depth: room.depth, height: room.height },
+    camera: cameraData(useCameraStore.getState().camera),
     objects: objects.map((object) => ({
       type: object.type,
       number: object.number,
@@ -47,10 +59,12 @@ export function exportLayout(fileName = LAYOUT_FILE_NAME) {
 }
 
 // A new project: the default room, no objects, numbering from 1 again, the
-// Plan camera back at its starting view, and no undo history (I.11).
+// placeable camera and the Plan camera back at their starting views, and no
+// undo history (I.11).
 export function newLayout() {
   useRoomStore.getState().setRoomSize({ ...DEFAULT_ROOM })
   useObjectsStore.getState().replaceObjects([], {})
+  useCameraStore.getState().setCamera(DEFAULT_CAMERA)
   useModeStore.getState().resetPlanView()
   useHistoryStore.getState().clear()
 }
@@ -83,6 +97,32 @@ function isValidObject(item) {
   )
 }
 
+const inRange = (value, [min, max]) => isNumber(value) && value >= min && value <= max
+
+// The camera is optional (files from before I.14 have none).
+function isValidCamera(camera) {
+  if (camera === undefined) return true
+  return (
+    isRecord(camera) &&
+    inRange(camera.x, CAMERA_LIMITS.x) &&
+    inRange(camera.y, CAMERA_LIMITS.height) &&
+    inRange(camera.z, CAMERA_LIMITS.z) &&
+    isNumber(camera.pan) &&
+    inRange(camera.tilt, CAMERA_LIMITS.tilt) &&
+    inRange(camera.fov, CAMERA_LIMITS.fov)
+  )
+}
+
+function cameraFromFile(camera) {
+  if (!camera) return DEFAULT_CAMERA
+  return {
+    position: clampCameraPosition([camera.x, camera.y, camera.z]),
+    pan: toRadians(normalizeDegrees(camera.pan)),
+    tilt: toRadians(camera.tilt),
+    fov: camera.fov,
+  }
+}
+
 // The file's content as a layout, or null if it is not a valid layout file.
 function parseLayout(text) {
   let data
@@ -95,6 +135,7 @@ function parseLayout(text) {
     isRecord(data) &&
     data.version === LAYOUT_VERSION &&
     isValidRoom(data.room) &&
+    isValidCamera(data.camera) &&
     Array.isArray(data.objects) &&
     data.objects.every(isValidObject)
   return valid ? data : null
@@ -134,6 +175,7 @@ export function importLayout(text) {
 
   useRoomStore.getState().setRoomSize(room)
   useObjectsStore.getState().replaceObjects(objects, lastNumbers)
+  useCameraStore.getState().setCamera(cameraFromFile(layout.camera))
   // An opened project starts without undo history (I.11).
   useHistoryStore.getState().clear()
   return true

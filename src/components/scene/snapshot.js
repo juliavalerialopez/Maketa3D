@@ -1,5 +1,5 @@
-// Room render ("snapshot") of the Plan scene: what the 16:9 frame guide shows,
-// always 1920 x 1080 (I.13). SnapshotBridge (inside the Canvas) puts the
+// Room render ("snapshot") of the Plan scene: what the placeable camera sees
+// (I.14), always 1920 x 1080 (I.13). SnapshotBridge (inside the Canvas) puts the
 // capture function here, so code outside the Canvas (the mode switch) can
 // call it while the Canvas is alive.
 export const snapshotBridge = { capture: null }

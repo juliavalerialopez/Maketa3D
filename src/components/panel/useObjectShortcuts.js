@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useObjectsStore } from '../../store/objectsStore'
 import { useModeStore } from '../../store/modeStore'
 import { useHistoryStore } from '../../store/historyStore'
+import { CAMERA_ID } from '../../store/cameraStore'
 
 // Ctrl+Z undoes; Ctrl+Shift+Z and Ctrl+Y redo (Cmd on Mac). I.11.
 function historyAction(event) {
@@ -40,7 +41,8 @@ export default function useObjectShortcuts() {
       if (!selectedId) return
 
       if (event.key === 'Escape') selectObject(null)
-      if (event.key === 'Delete' || event.key === 'Backspace') {
+      // The camera (I.14) cannot be deleted.
+      if ((event.key === 'Delete' || event.key === 'Backspace') && selectedId !== CAMERA_ID) {
         event.preventDefault()
         removeObject(selectedId)
       }

@@ -1,10 +1,11 @@
 import { create } from 'zustand'
 import { useRoomStore } from './roomStore.js'
 import { useObjectsStore } from './objectsStore.js'
+import { CAMERA_ID, useCameraStore } from './cameraStore.js'
 
-// Undo and redo (I.11) for the room size and the objects. A step is a
-// snapshot { room, objects } of how things were before a change. Selection,
-// mode and camera are not part of it. Object numbers are never reused, so an
+// Undo and redo (I.11) for the room size, the objects and the placeable
+// camera (I.14). A step is a snapshot { room, objects, camera } of how things
+// were before a change. Selection, mode and the Plan view are not part of it. Object numbers are never reused, so an
 // undone Add does not give its number back. Memory only.
 const MAX_STEPS = 50
 
@@ -18,10 +19,13 @@ let openGestures = 0
 // True while undo or redo writes the stores, so that is not recorded.
 let restoring = false
 
-const current = () => ({ room: useRoomStore.getState().room, objects: useObjectsStore.getState().objects })
-const sameSnapshot = (a, b) =>
-  (a.room === b.room || JSON.stringify(a.room) === JSON.stringify(b.room)) &&
-  (a.objects === b.objects || JSON.stringify(a.objects) === JSON.stringify(b.objects))
+const current = () => ({
+  room: useRoomStore.getState().room,
+  objects: useObjectsStore.getState().objects,
+  camera: useCameraStore.getState().camera,
+})
+const same = (a, b) => a === b || JSON.stringify(a) === JSON.stringify(b)
+const sameSnapshot = (a, b) => same(a.room, b.room) && same(a.objects, b.objects) && same(a.camera, b.camera)
 
 // Writes a snapshot to the stores. The selection is cleared if the selected
 // object is not in it.
@@ -29,9 +33,14 @@ function apply(snapshot) {
   restoring = true
   try {
     useRoomStore.setState({ room: snapshot.room })
+    useCameraStore.setState({ camera: snapshot.camera })
     useObjectsStore.setState((state) => ({
       objects: snapshot.objects,
-      selectedId: snapshot.objects.some((object) => object.id === state.selectedId) ? state.selectedId : null,
+      // The camera (I.14) is always there, so it stays selected.
+      selectedId:
+        state.selectedId === CAMERA_ID || snapshot.objects.some((object) => object.id === state.selectedId)
+          ? state.selectedId
+          : null,
     }))
   } finally {
     restoring = false
@@ -104,9 +113,13 @@ export const selectCanRedo = (state) => state.future.length > 0
 // each: the state before the change is recorded.
 useRoomStore.subscribe((state, previous) => {
   if (restoring || gestureStart || state.room === previous.room) return
-  useHistoryStore.getState().record({ room: previous.room, objects: useObjectsStore.getState().objects })
+  useHistoryStore.getState().record({ ...current(), room: previous.room })
 })
 useObjectsStore.subscribe((state, previous) => {
   if (restoring || gestureStart || state.objects === previous.objects) return
-  useHistoryStore.getState().record({ room: useRoomStore.getState().room, objects: previous.objects })
+  useHistoryStore.getState().record({ ...current(), objects: previous.objects })
+})
+useCameraStore.subscribe((state, previous) => {
+  if (restoring || gestureStart || state.camera === previous.camera) return
+  useHistoryStore.getState().record({ ...current(), camera: previous.camera })
 })

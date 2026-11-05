@@ -3,21 +3,14 @@ import { BoxGeometry, EdgesGeometry } from 'three'
 import { selectSelectedObject, useObjectsStore } from '../../store/objectsStore'
 import { objectTransform } from '../../store/roomBounds'
 import { useUiStore } from '../../store/uiStore'
+import { themeColor } from './themeColor'
 
 const PADDING = 0.02
-
-// The --selection color of a theme (src/index.css), read once per theme.
-// data-theme is already set when the store's theme changes.
-const colors = {}
-function selectionColor(theme) {
-  colors[theme] ??= getComputedStyle(document.documentElement).getPropertyValue('--selection').trim()
-  return colors[theme]
-}
 
 // Wireframe box around the selected object, following its size, position and rotation.
 export default function SelectionBox() {
   const selected = useObjectsStore(selectSelectedObject)
-  const color = selectionColor(useUiStore((state) => state.theme))
+  const color = themeColor('--selection', useUiStore((state) => state.theme))
 
   const width = selected?.size.width
   const depth = selected?.size.depth

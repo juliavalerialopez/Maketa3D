@@ -137,7 +137,7 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - ✅ I.12 Room render data in one place (`roomRender`, projection in `services/frame.js`).
 - ✅ I.13 Fixed 1920 × 1080 Room render.
   - ✅ I.13.1 Render into the Plan canvas drawn at 1920 × 1080 for that one render (then set back to its own size and drawn again in the same step), instead of an off-screen target, so the colors stay exactly as on screen (added 2026-11-04)
-- ⬜ I.14 Placeable camera.
+- ✅ I.14 Placeable camera.
 - ⬜ I.15 Wall shades test for rooms with several pieces.
   - ⬜ I.15.1 Make the shaded renders, run T3 and T11, record the results and the decision (Julia) (added 2026-11-04)
 - ⬜ I.16 Docs (`CLAUDE.md` Structure, including `shared/` and local imports in `api/` from I.8, `docs/SPEC.md` roadmap, layout, data model and part table), `npm run build`, deploy, check on the live site.

@@ -4,10 +4,12 @@ import { importLayout, layoutData, newLayout } from '../src/store/layoutFile.js'
 import { useObjectsStore } from '../src/store/objectsStore.js'
 import { useRoomStore } from '../src/store/roomStore.js'
 import { tvStandSize } from '../src/components/objects/tvStandSize.js'
+import { DEFAULT_CAMERA, useCameraStore } from '../src/store/cameraStore.js'
 
 const layout = {
   version: 1,
   room: { width: 4, depth: 3.5, height: 2.6 },
+  camera: { x: -1.5, y: 1.4, z: 1.2, pan: 135, tilt: -10.5, fov: 45 },
   objects: [
     { type: 'sofa', number: 2, x: 0.5, z: -0.3, rotation: 90, color: '#112233', hidden: true },
     { type: 'tvStand', number: 5, x: 0, z: 1, rotation: 0, color: '#d9d2bf', screenInches: 55 },
@@ -42,6 +44,35 @@ test('save then open restores the room and the objects', () => {
   assert.equal(openedTv.screenInches, 40)
   assert.deepEqual(openedTv.size, tvStandSize(40))
   assert.equal(openedTv.hidden, undefined)
+})
+
+test('a file without a camera (saved before Part I) opens with the default camera', () => {
+  const { camera: _camera, ...older } = layout
+  useCameraStore.getState().updateCamera({ fov: 30 })
+  assert.equal(importLayout(text(older)), true)
+  assert.deepEqual(useCameraStore.getState().camera, DEFAULT_CAMERA)
+})
+
+test('the camera is saved and opened again', () => {
+  importLayout(text(layout))
+  const camera = useCameraStore.getState().camera
+  assert.deepEqual(camera.position, [-1.5, 1.4, 1.2])
+  close(camera.pan, (135 * Math.PI) / 180)
+  close(camera.tilt, (-10.5 * Math.PI) / 180)
+  assert.equal(camera.fov, 45)
+  assert.deepEqual(layoutData().camera, layout.camera)
+})
+
+test('a camera outside its limits makes the file invalid', () => {
+  for (const camera of [{ ...layout.camera, tilt: 120 }, { ...layout.camera, fov: 5 }, { ...layout.camera, y: 'high' }]) {
+    assert.equal(importLayout(text({ ...layout, camera })), false)
+  }
+})
+
+test('New Project puts the camera back at its start', () => {
+  importLayout(text(layout))
+  newLayout()
+  assert.deepEqual(useCameraStore.getState().camera, DEFAULT_CAMERA)
 })
 
 test('rotations are saved as whole degrees from 0 to 359', () => {

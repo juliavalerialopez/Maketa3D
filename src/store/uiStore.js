@@ -34,13 +34,14 @@ export const useUiStore = create((set) => ({
   personalizePercent: null,
   // Open or closed per Section id; a missing id means open (the default).
   openSections: {},
-  frameVisible: true,
+  // The placeable camera's live preview in Plan (I.14).
+  previewVisible: true,
 
   setPlanPercent: (planPercent) => set({ planPercent }),
   setPersonalizePercent: (personalizePercent) => set({ personalizePercent }),
   setSectionOpen: (id, open) =>
     set((state) => ({ openSections: { ...state.openSections, [id]: open } })),
-  toggleFrame: () => set((state) => ({ frameVisible: !state.frameVisible })),
+  togglePreview: () => set((state) => ({ previewVisible: !state.previewVisible })),
 }))
 
 // Without a manual choice, follow the system setting when it changes.

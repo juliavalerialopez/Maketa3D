@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useRoomStore } from '../../store/roomStore'
+import { showWallFor } from './wallVisibility'
 
 const THICKNESS = 0.05
 // Light ivory from the soft UI palette. The same in both themes, so the Room
@@ -19,20 +20,11 @@ export default function Walls() {
     { position: [(width + THICKNESS) / 2, height / 2, 0], size: [THICKNESS, height, depth], normal: [1, 0, 0] },
   ]
 
-  // Hide a wall when the camera is on its outer side, so the interior stays visible.
-  // Visibility is set on the mesh directly, never through React state.
+  // Hide a wall when the Plan camera is on its outer side, so the interior
+  // stays visible. Visibility is set on the mesh directly, never through
+  // React state.
   useFrame(({ camera }) => {
-    walls.forEach((wall, index) => {
-      const mesh = wallRefs.current[index]
-      if (!mesh) return
-      const [px, py, pz] = wall.position
-      const [nx, ny, nz] = wall.normal
-      const facing =
-        (camera.position.x - px) * nx +
-        (camera.position.y - py) * ny +
-        (camera.position.z - pz) * nz
-      mesh.visible = facing <= 0
-    })
+    wallRefs.current.forEach((mesh) => mesh && showWallFor(mesh, camera))
   })
 
   return walls.map((wall, index) => (
@@ -40,6 +32,7 @@ export default function Walls() {
       key={index}
       ref={(mesh) => (wallRefs.current[index] = mesh)}
       position={wall.position}
+      userData={{ wallNormal: wall.normal }}
       castShadow
       receiveShadow
     >
