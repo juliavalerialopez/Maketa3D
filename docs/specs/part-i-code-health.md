@@ -114,6 +114,30 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - The frame guide is replaced by a small 16:9 live preview of the camera's view in a corner of the scene.
 - The camera is saved in the layout file as an optional `camera` field. Files without it still open, with the camera at the default Plan view.
 - The camera model and its marker are helpers: never in the Room render.
+- (added 2026-11-07) Replaced by camera slots, I.14.1 to I.14.3: Julia did not like the placed camera.
+
+### I.14.1 to I.14.3 Camera slots (added 2026-11-07)
+They replace the placeable camera of I.14.
+
+**I.14.1 Camera slots in Plan**
+- Removed: the camera model, the "Camera" row in the Objects list, its details fields, the live preview and the Preview toggle. The frame guide and its Frame toggle come back (Part E), since a camera slot keeps what the frame guide shows.
+- A row of **3 camera slots** along the bottom of the Plan scene, centered over the canvas. Each slot is a small 16:9 tile named "Camera 1" to "Camera 3".
+- **Empty slot:** a big plus in the middle. Clicking it saves the current Plan view into it.
+- **Filled slot:** a thumbnail of its view (what the frame guide showed, drawn like the Room render). Clicking it moves the Plan view to that camera. A small **update** icon at its top left replaces it with the current Plan view. A small round **X** at its top right, shown on hover or focus (like the version thumbnails), empties it, with no confirmation.
+- A slot's camera is the I.13 frame camera at the moment it was saved (place, target and field of view), so its Room render shows exactly what the frame guide showed then, whatever the window size later.
+- The slot last saved, updated or jumped to is the **active** one, shown highlighted.
+- Camera slots are not part of undo and redo (the I.14 camera is taken out of the history again).
+
+**I.14.2 Camera slots in Personalize**
+- Switching to Personalize: if all slots are empty, the current Plan view goes into slot 1 and becomes active. Then a Room render is taken for every filled slot, while the Plan canvas is still there.
+- A **Camera** menu (shared `MenuButton`) at the top left of the Room render lists the filled slots. It starts on the active slot. Choosing one shows its Room render; the reference cards, the "Hidden" and "Not in the Room render" lines and Generate use that render.
+- Versions are kept (H.2): each version keeps the render and the camera it was made from. Choosing another camera deselects the version, so the AI image is black until the next Generate or a thumbnail click. Clicking a thumbnail shows that version and switches the menu to its camera, so the two top images always match.
+- Leaving Personalize works as before (H.2).
+
+**I.14.3 Camera slots in the layout file**
+- Save writes `"cameras"`: three entries, each `null` (empty) or `{ "x", "y", "z", "targetX", "targetY", "targetZ", "fov" }` (meters, and the field of view in degrees). It replaces the I.14 `camera` field.
+- Open restores the slots. Thumbnails are not saved: they are drawn again when the Plan scene shows. A file without `cameras` (including one with the I.14 `camera` field) opens with all slots empty.
+- New Project empties the slots.
 
 ### I.15 Wall shades test (rooms with several pieces)
 - Prompt and model work only, no UI. Goal: T3 (the room corner stays in place) and T11 (a reference's chaise is kept) pass with several pieces.
@@ -139,6 +163,9 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - ✅ I.13 Fixed 1920 × 1080 Room render.
   - ✅ I.13.1 Render into the Plan canvas drawn at 1920 × 1080 for that one render (then set back to its own size and drawn again in the same step), instead of an off-screen target, so the colors stay exactly as on screen (added 2026-11-04)
 - ✅ I.14 Placeable camera.
+  - ⬜ I.14.1 Camera slots in Plan: three slots under the scene (plus, thumbnail, update, X, jump to view, active slot); the placed camera and its preview removed, the frame guide back (added 2026-11-07)
+  - ⬜ I.14.2 Camera slots in Personalize: a Room render per filled slot, the Camera menu, cards and Generate follow it, versions keep their camera (added 2026-11-07)
+  - ⬜ I.14.3 Camera slots in the layout file, Open and New Project (added 2026-11-07)
 - ✅ I.15 Wall shades test for rooms with several pieces.
   - ⬜ I.15.1 Make the shaded renders, run T3 and T11, record the results and the decision (Julia) (added 2026-11-04)
 - ⬜ I.16 Docs (`CLAUDE.md` Structure, including `shared/` and local imports in `api/` from I.8, `docs/SPEC.md` roadmap, layout, data model and part table), `npm run build`, deploy, check on the live site.
@@ -157,7 +184,10 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - [ ] I.11: a sofa dragged across the room comes back in one Ctrl+Z and goes again with one Ctrl+Shift+Z; an undone Delete brings back "Sofa 2" with its photo; a typed room width and its clamp undo in one step; a new change after an undo disables Redo; nothing happens in Personalize or while typing.
 - [ ] I.12: Plan and Personalize behave as before.
 - [ ] I.13: the Room render is 1920 × 1080 with a narrow and with a wide window, and shows what the frame guide showed; cards are the same in both windows.
-- [ ] I.14: the Room render comes from the placed camera; the preview matches it; the camera survives Save and Open; an older file opens with the default camera.
+- [ ] I.14: the Room render comes from the placed camera; the preview matches it; the camera survives Save and Open; an older file opens with the default camera. (replaced by I.14.1 to I.14.3)
+- [ ] I.14.1: clicking an empty slot fills it with the current view; clicking it later from another view moves the Plan view back; the update icon replaces it; the X empties it; the active slot is highlighted; the frame guide is back.
+- [ ] I.14.2: with no cameras, switching to Personalize fills slot 1; with two cameras, the Camera menu lists both and each shows its own Room render and cards; a version made with Camera 2 shows Camera 2's render when clicked.
+- [ ] I.14.3: two cameras survive Save and Open (thumbnails drawn again); an older file opens with empty slots; New Project empties them.
 - [ ] I.15: T3 and T11 results (3 runs each) are in `docs/prompts/restyle.md`, with the decision.
 - [ ] No console errors.
 - [ ] `npm run build`, `npm run lint` and `npm test` succeed.
@@ -179,3 +209,4 @@ Status: **In progress**. Builds on Part H (versions, a reference per object, Hid
 - 2026-11-04: Spec approved, Part I started (In progress).
 - 2026-11-04: Open questions answered (Julia): I.11 adds redo (moved from the Backlog); I.14 confirmed as proposed; I.15 split, the run is I.15.1. I.3 to I.15 run in batch mode with one subagent per task; Julia reviews everything before I.16.
 - 2026-11-04: I.13.1: the fixed render is drawn into the Plan canvas resized to 1920 × 1080 for one render, not into an off-screen target: an off-screen target skips the screen's color conversion, so the image would come out darker without extra color handling.
+- 2026-11-07: Julia did not like the placed camera (I.14). Three camera slots replace it (I.14.1 to I.14.3). Answered: switching to Personalize fills slot 1 only when all slots are empty; clicking a filled slot moves the Plan view to it; the X on hover empties a slot; changing the camera in Personalize keeps the versions.
