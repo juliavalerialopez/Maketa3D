@@ -180,7 +180,7 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - ✅ I.15 Wall shades test for rooms with several pieces.
   - ⬜ I.15.1 Make the shaded renders, run T3 and T11, record the results and the decision (Julia) (added 2026-11-04)
 - ✅ I.17 Save writes into the opened or last saved file; Save As and a new project's first Save ask in the system window; the project name next to the logo ("New Project" until saved) (added 2026-11-09)
-- ⬜ I.16 Docs (`CLAUDE.md` Structure, including `shared/` and local imports in `api/` from I.8, `docs/SPEC.md` roadmap, layout, data model and part table), `npm run build`, deploy, check on the live site.
+- ⬜ I.16 Docs (`CLAUDE.md` Structure, including `shared/` and local imports in `api/` from I.8, `docs/SPEC.md` roadmap, layout, data model and part table, `README.md` features), `npm run build`, deploy, check on the live site.
 
 ## Acceptance criteria
 - [x] I.1: a sofa against the right wall, room width typed from 10 to 3: the sofa does not move while typing and sits inside the new wall after blur. The same with the minus button and with a drag on the field.

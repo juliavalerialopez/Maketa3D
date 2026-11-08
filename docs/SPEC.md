@@ -14,10 +14,12 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 5. AI restyle: upload one reference photo in Personalize, and Generate restyles the Room render to match it while keeping the room shape, camera and sofa placement (Part F)
 6. Soft UI restyle (light and dark theme), five new objects (coffee table, armchair, TV stand with TV, bookshelf, floor lamp), a Project menu to start, open and save the layout as a JSON file (Part G)
 7. AI versions and references: up to 6 generated versions with thumbnails and download, a Reference | Creative card per object and for the room, limits from environment variables (Part H)
+8. Code health and backlog: bug fixes, tests and lint, an error screen, drag and drop upload, undo and redo, a fixed 1920 × 1080 Room render, three camera slots with a Camera menu in Personalize, Save into the opened project file with its name in the top bar, and a wall-shades prompt test (Part I)
 
 ## Layout
 - Top bar (52 px): the Maketa logo on the left, a centered "Plan | Personalize" switch, the light/dark theme switch on the right. Plan is the mode on page load.
-- Clicking the logo opens the **Project** menu: New Project (asks first, then resets room, objects, Plan camera and camera slots), Open Project, Save, Save As (asks for a file name). New and Open are disabled in Personalize. Save writes into the opened or last saved file without asking; Save As, and a new project's first Save, ask for the name and folder (I.17; Chrome and Edge, other browsers download). The project name shows right of the logo, "New Project" until saved.
+- Clicking the logo opens the **Project** menu: New Project (asks first, then resets room, objects, Plan camera and camera slots, and clears the undo history and the project's file), Open Project, Save, Save As. New and Open are disabled in Personalize. Save writes into the opened or last saved file without asking; Save As, and a new project's first Save, ask for the name and folder in the system window (I.17, Chrome and Edge). Other browsers download: Save under the project's name, Save As after asking for a file name in a dialog. The project name shows right of the logo, "New Project" until saved.
+- If the 3D scene or a mode fails (an error, or the WebGL context is lost), an error screen replaces it with a short message, Save layout and Reload (Part I, I.3).
 - Theme: Moss System soft UI, light and dark. Follows the system setting until switched by hand; the manual choice is saved in `localStorage`. The scene's floor and walls and the Room render look the same in both themes.
 - **Plan:** left control panel (20% by default, divider draggable 15–50%), right: 3D scene filling the rest, resizes with the window, with a centered 16:9 frame guide (toggle at its top right, visible by default). Undo and Redo at its top left (Part I, I.11). Three camera slots along its bottom (I.14.1): an empty slot shows a big plus and saves the current view when clicked; a filled one shows its thumbnail, moves the Plan view to it when clicked, and has an update icon (top left) and an X (top right, on hover or focus).
 - **Personalize:** same split layout, split top and bottom with a draggable divider (panel 15–50% of the height). Until dragged, the top part is exactly as tall as the images. Top: "Room render" and the "AI image" slot side by side, both 16:9, edge to edge, captions over the images. A Camera menu at the top left of the Room render chooses which camera slot's render is shown and used (I.14.2). Bottom: control panel.
@@ -50,6 +52,7 @@ renderSlot: number | null                   // the camera chosen in Personalize;
 planView: { position: [x, y, z], target: [x, y, z] }  // Plan orbit camera, restored when Plan mounts again
 slots: [{ view: { position, target, fov }, thumbnail } | null] × 3  // cameraSlotsStore (I.14.1): saved 16:9 frame cameras, fov in degrees; thumbnail is null until drawn after Open (I.14.3)
 activeSlot: number | null                   // the slot last saved, updated or jumped to
+past, future: [{ room, objects }]           // historyStore (I.11), memory only: undo steps (oldest first, at most 50) and redo steps; cleared by New and Open Project
 theme: 'light' | 'dark'                     // uiStore; manual choice saved in localStorage
 name: string | null, handle: FileSystemFileHandle | null  // projectStore (I.17), memory only: the project's file name without .json ("New Project" when null) and the file Save writes into
 
@@ -104,7 +107,7 @@ Save writes the layout as JSON into the project's file (the one opened or last s
 | F | specs/part-f-restyle.md | Reference photo, Generate/Regenerate via serverless AI, daily limits | Done |
 | G | specs/part-g-style-objects-layout.md | Soft UI and dark theme, five new objects, Project menu (new, open, save) | Done |
 | H | specs/part-h-references-versions.md | Version history, download, a reference image per object and for the room, Hide switch, limits from env vars | Done |
-| I | specs/part-i-code-health.md | Bug fixes, code health and tests; drag and drop upload, undo, fixed 1920 × 1080 render, camera slots, wall-shade test | In progress |
+| I | specs/part-i-code-health.md | Bug fixes, code health and tests; drag and drop upload, undo, fixed 1920 × 1080 render, camera slots, save into the opened file, wall-shade test | In progress |
 
 ## How we work
 - Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.

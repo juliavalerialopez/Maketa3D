@@ -8,10 +8,10 @@ Maketa is a practice project: a prototype built with spec-driven development and
 
 ## What it does
 
-- **Plan mode.** Enter the room dimensions in meters, add objects (sofa, coffee table, armchair, TV stand with an adjustable screen size, bookshelf, floor lamp), then select, drag, rotate, tilt, recolor and delete them in the 3D scene. A 16:9 frame guide shows what the render will capture.
-- **Personalize mode.** Switching modes captures a clean render of the room from the Plan camera. Add a reference photo per object, or choose Creative, and generate an AI version of the room. The room shape, camera angle and object positions stay the same.
-- **Versions.** Up to 6 generated images are kept as thumbnails, each remembering its own room render, and can be downloaded.
-- **Projects.** Save the layout to a JSON file and open it again from the Project menu (click the logo).
+- **Plan mode.** Enter the room dimensions in meters, add objects (sofa, coffee table, armchair, TV stand with an adjustable screen size, bookshelf, floor lamp), then select, drag, rotate, tilt, recolor and delete them in the 3D scene, with undo and redo. A 16:9 frame guide shows what the render will capture, and up to three camera slots under the scene save views to render from.
+- **Personalize mode.** Switching modes captures a clean 1920 × 1080 render from each camera slot (the current view if none is saved). Pick a camera, add a reference photo per object (drag and drop works too), or choose Creative, and generate an AI version of the room. The room shape, camera angle and object positions stay the same.
+- **Versions.** Up to 6 generated images are kept as thumbnails, each remembering its own room render and camera, and can be downloaded.
+- **Projects.** Save the layout, with its cameras, to a JSON file and open it again from the Project menu (click the logo). In Chrome and Edge, Save writes back into the opened file; the project's name shows next to the logo.
 - **Light and dark theme.** A soft UI style called Moss System.
 
 ## Stack
@@ -68,6 +68,7 @@ The project follows spec-driven development. The specs are the source of truth, 
 src/components/   modes, layout, panels, 3D scene, objects, shared UI controls
 src/store/        Zustand stores and pure helpers (room bounds, project file)
 src/services/     browser code that talks to the server or prepares data
+shared/           limits used by both the browser and the server
 api/              Vercel functions (restyle, limits, prompt)
 tests/            unit tests
 docs/             specs, decisions, prompts, design mocks

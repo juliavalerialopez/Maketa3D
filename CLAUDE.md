@@ -15,8 +15,9 @@
 
 Exception (added 2026-10-28, Part F): the AI restyle needs a server, so the
 app also has Vercel serverless functions in `api/` (Node, no npm packages:
-`fetch` and `node:crypto` only) and Upstash Redis for the daily limits, called
-over its REST API with `fetch`. No other server code or services.
+`fetch` and `node:crypto` only, plus local imports of `api/_*.js` and
+`shared/`) and Upstash Redis for the daily limits, called over its REST API
+with `fetch`. No other server code or services.
 
 React is pinned to `19.2.8` (not a caret range) because `@react-three/fiber@9.7.0`
 peer-depends on `react >=19 <19.3`. When bumping React, re-check that peer range
@@ -27,25 +28,35 @@ first.
   - `modes/`: one component per top-level mode (`PlanMode`,
     `PersonalizeMode`). `App.jsx` renders only the top bar and exactly one
     mode. Modes hold no state: everything that must survive a mode switch
-    (room, objects, selection, mode, camera, snapshot, divider positions,
-    open sections, frame toggle) lives in `src/store/`.
+    (room, objects, selection, mode, Plan camera, camera slots, Room
+    renders, undo history, divider positions, open sections, frame toggle)
+    lives in `src/store/`.
   - `layout/`: page layout (top bar with the logo's Project menu
-    (`ProjectMenu`: new, open, save, save as) and the theme switch,
-    `SplitLayout` with a draggable divider, side by side in Plan, stacked
-    top and bottom in Personalize)
+    (`ProjectMenu`: new, open, save, save as, and the project name),
+    Generate and the theme switch, `SplitLayout` with a draggable divider,
+    side by side in Plan, stacked top and bottom in Personalize), plus
+    `ErrorBoundary` and its `ErrorScreen` (Save layout, Reload) and
+    `useFileDropGuard` (a file dropped outside the cards is not opened by
+    the browser)
   - `panel/`: HTML in the control panels (Plan and Personalize), built from
     `Section` and `ui/`
   - `scene/`: R3F room and rendering (floor, walls, objects renderer), the
-    frame guide, Plan camera restore and the snapshot. Scene helpers
-    (selection box, future grids) set `userData.helper` so the snapshot
-    hides them.
+    frame guide, the camera slots (`CameraSlots`), Undo and Redo
+    (`HistoryButtons`), Plan camera restore, `ContextLossGuard` and the
+    snapshot (`SnapshotBridge` and `snapshot.js`: the Room render and the
+    slot thumbnails; `roomRenderView.js` prepares the scene for them,
+    `wallVisibility.js` hides the walls facing a camera, `themeColor.js`
+    reads theme colors for the scene). Scene helpers (selection box, future
+    grids) set `userData.helper` so the snapshot hides them. `Walls.jsx` has
+    a dev-only `?wallShades` switch for the I.15 prompt test.
   - `objects/`: one 3D model component per placeable type, plus `catalog.js`
     and `models.js`. Models are built from primitives with `Parts.jsx`, origin in the middle
     of the base, filling their size box.
   - `ui/`: shared controls (`NumberField`, `ColorField`, `Button`,
-    `ListItem`, `FieldGroup`, `SegmentedSwitch`, `Toggle`, `MenuButton`,
-    `Dialog`). Every number input, color input, action button, list row,
-    menu and dialog uses these; change their look or behavior only here.
+    `IconButton`, `ListItem`, `FieldGroup`, `SegmentedSwitch`, `Toggle`,
+    `MenuButton`, `Dialog`, `Thumbnail`). Every number input, color input,
+    action button, icon button, list row, menu, dialog and thumbnail uses
+    these; change their look or behavior only here.
 - `src/components/objects/catalog.js`: the single definition of each object type
   (label, default size, color), plain data with no React, so stores and tests
   can import it. `models.js` maps each type to its model component; only
@@ -54,21 +65,33 @@ first.
   types anywhere else. The Objects section shows one button per entry. A type with a screen size (TV
   stand) also has `screenInches` limits and `sizeFor`; its formula lives in
   `tvStandSize.js`.
-- `src/store/`: Zustand stores, plus plain helpers: `roomBounds.js` (wall
-  clamping, rotated footprint) and `layoutFile.js` (project file: save, open,
-  validate, new project).
+- `src/store/`: Zustand stores (room, objects, mode, ui, restyle,
+  `historyStore` for undo and redo, `cameraSlotsStore`, `projectStore` for
+  the project's file and name), plus plain helpers: `roomBounds.js` (wall
+  clamping, rotated footprint, angle helpers) and `layoutFile.js` (project
+  file: save, open, validate, new project).
 - `src/index.css`: all styles. Colors are CSS variables per theme on
   `:root[data-theme="light"]` and `:root[data-theme="dark"]`; components use
   the role variables (`--accent`, `--on-accent`, `--soft`, ...), never a
   palette color by name.
 - `src/services/`: browser code that talks to the server or prepares data for
   it (e.g. `restyle.js`: image resizing, `/api/restyle` requests, error
-  messages; `frame.js`: whether an object shows in the Room render, using
-  the camera stored with it; `zip.js`: the ZIP of all AI versions). Requests go through stores; components may import constants
-  and message helpers only.
+  messages; `frame.js`: the 1920 × 1080 Room render size, the frame camera
+  and the projection onto it, and whether an object shows in the Room
+  render, using the camera stored with it; `zip.js`: the ZIP of all AI
+  versions; `download.js`: saving files and data URL helpers;
+  `projectFile.js`: the browser's Open and Save as windows for the project
+  file). Requests go through stores; components may import constants and
+  message helpers only. Exception: the scene's render code
+  (`scene/SnapshotBridge.jsx`) uses the `frame.js` camera math directly.
+- `shared/`: plain JS with no imports, used by both the browser and `api/`
+  (`restyle.js`: photo, object and body limits), so each limit is defined
+  once.
 - `api/`: Vercel functions. Files starting with `_` are helpers, not routes
   (`_gemini.js`, `_limits.js`, `_restyle-prompt.js`). API keys and secrets
   exist only here, as env vars, never in `src/`.
+- `tests/`: `node:test` tests of the plain logic (stores, helpers, `api/`),
+  run with `npm test`. Files they import use full `.js` extensions.
 - `scripts/`: Node scripts run by hand (e.g. `try-restyle.mjs`, the prompt
   test: it sends a request saved from the app, or a test case with image
   paths, to Gemini with the live prompt), not part of the app build
