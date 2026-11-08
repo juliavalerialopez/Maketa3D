@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import Button from '../ui/Button'
 import { limitMessage, MESSAGES } from '../../services/restyle'
-import { useModeStore } from '../../store/modeStore'
+import { selectRoomRender, useModeStore } from '../../store/modeStore'
 import {
   MAX_VERSIONS,
   selectPhotoCount,
@@ -16,8 +16,8 @@ import {
 // version is shown in the AI image. Blocked at MAX_VERSIONS until one is
 // deleted, and until at least one card has a photo.
 export default function GenerateButton() {
-  const snapshot = useModeStore((state) => state.roomRender?.image)
-  // Which cards are sent depends on the objects and the Room render's camera.
+  const snapshot = useModeStore((state) => selectRoomRender(state)?.image)
+  // Which cards are sent depends on the objects and the chosen camera.
   const referenceObjects = useReferenceObjects()
   const hasPhoto = useRestyleStore((state) => selectPhotoCount(state, referenceObjects) > 0)
   const status = useRestyleStore((state) => state.status)

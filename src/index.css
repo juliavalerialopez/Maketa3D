@@ -223,6 +223,13 @@ canvas {
   right: 8px;
 }
 
+/* The Camera menu over the Room render (I.14.2). */
+.render-slot .render-slot-camera {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
+
 /* One image with what sits under it: the versions strip (AI image) or an
    empty space of the same height (Room render), so both images line up. */
 .render-column {

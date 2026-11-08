@@ -1,6 +1,6 @@
 import IconButton from '../ui/IconButton'
 import Thumbnail from '../ui/Thumbnail'
-import { currentView, takeThumbnail } from './snapshot'
+import { captureSlot } from './snapshot'
 import { slotName, useCameraSlotsStore } from '../../store/cameraSlotsStore'
 import { useModeStore } from '../../store/modeStore'
 
@@ -19,9 +19,8 @@ const Plus = (
 // Saves what the frame guide shows now into a slot, with its thumbnail.
 // Nothing happens if the Plan scene cannot render (e.g. context lost).
 function saveCurrentView(index) {
-  const view = currentView()
-  const thumbnail = view && takeThumbnail(view)
-  if (thumbnail) useCameraSlotsStore.getState().saveSlot(index, { view, thumbnail })
+  const slot = captureSlot()
+  if (slot) useCameraSlotsStore.getState().saveSlot(index, slot)
 }
 
 function jumpTo(index) {

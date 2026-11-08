@@ -20,7 +20,7 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 - Clicking the logo opens the **Project** menu: New Project (asks first, then resets room, objects and Plan camera), Open Project, Save, Save As (asks for a file name). New and Open are disabled in Personalize.
 - Theme: Moss System soft UI, light and dark. Follows the system setting until switched by hand; the manual choice is saved in `localStorage`. The scene's floor and walls and the Room render look the same in both themes.
 - **Plan:** left control panel (20% by default, divider draggable 15–50%), right: 3D scene filling the rest, resizes with the window, with a centered 16:9 frame guide (toggle at its top right, visible by default). Undo and Redo at its top left (Part I, I.11). Three camera slots along its bottom (I.14.1): an empty slot shows a big plus and saves the current view when clicked; a filled one shows its thumbnail, moves the Plan view to it when clicked, and has an update icon (top left) and an X (top right, on hover or focus).
-- **Personalize:** same split layout, split top and bottom with a draggable divider (panel 15–50% of the height). Until dragged, the top part is exactly as tall as the images. Top: "Room render" and the "AI image" slot side by side, both 16:9, edge to edge, captions over the images. Bottom: control panel.
+- **Personalize:** same split layout, split top and bottom with a draggable divider (panel 15–50% of the height). Until dragged, the top part is exactly as tall as the images. Top: "Room render" and the "AI image" slot side by side, both 16:9, edge to edge, captions over the images. A Camera menu at the top left of the Room render chooses which camera slot's render is shown and used (I.14.2). Bottom: control panel.
 
 ## Control panel: collapsible sections
 1. **Room configuration** (open by default)
@@ -42,10 +42,11 @@ objects: [{ id, type, number, position: [x, y, z], rotation: [x, y, z], size: { 
 lastNumbers: { [type]: number }             // highest number handed out per type
 selectedId: string | null
 mode: 'plan' | 'personalize'
-roomRender: { image, objects, view } | null  // the last Room render, memory only (Part I, I.12):
+roomRenders: [{ image, objects, view } | null]  // one Room render per camera slot (empty until the first switch), taken on switching to Personalize, memory only (I.12, I.14.2):
 //   image: PNG data URL
 //   objects: [{ id, x, y }], each object's centre in the render, percent (sent to the AI)
 //   view: { projection, view, width, height }, the camera that took it (in-frame checks)
+renderSlot: number | null                   // the camera chosen in Personalize; its render is shown, carded and sent
 planView: { position: [x, y, z], target: [x, y, z] }  // Plan orbit camera, restored when Plan mounts again
 slots: [{ view: { position, target, fov }, thumbnail } | null] × 3  // cameraSlotsStore (I.14.1): saved 16:9 frame cameras, fov in degrees
 activeSlot: number | null                   // the slot last saved, updated or jumped to
@@ -56,7 +57,7 @@ references: { [objectId | 'room']: { mode: 'reference' | 'creative', photo: { da
 notice: string | null                       // after Generate switched objects to Creative for the 8-photo limit
 status: 'idle' | 'loading'
 error: string | null
-versions: [{ id, number, image, roomRender, createdAt }]  // at most 6, oldest first; image and roomRender are data URLs
+versions: [{ id, number, image, roomRender, slot, createdAt }]  // at most 6, oldest first; image and roomRender are data URLs; slot: the camera it was made from (I.14.2)
 selectedVersionId: string | null            // the version shown in the AI image
 lastVersionNumber: number                   // version numbers count up per session (download names)
 remaining: number | null                    // generations this visitor can still make today, from the server

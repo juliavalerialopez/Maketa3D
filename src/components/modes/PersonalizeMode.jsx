@@ -3,7 +3,8 @@ import SplitLayout from '../layout/SplitLayout'
 import PersonalizePanel from '../panel/PersonalizePanel'
 import Thumbnail from '../ui/Thumbnail'
 import MenuButton from '../ui/MenuButton'
-import { useModeStore } from '../../store/modeStore'
+import { selectRoomRender, useModeStore } from '../../store/modeStore'
+import { slotName } from '../../store/cameraSlotsStore'
 import { selectSelectedVersion, useRestyleStore } from '../../store/restyleStore'
 import { useUiStore } from '../../store/uiStore'
 
@@ -74,8 +75,30 @@ function AiImage({ version }) {
   )
 }
 
+// The Camera menu at the top left of the Room render (I.14.2): the camera
+// slots that have a Room render. Choosing one shows its render and cards.
+function CameraMenu() {
+  const roomRenders = useModeStore((state) => state.roomRenders)
+  const renderSlot = useModeStore((state) => state.renderSlot)
+  const chooseCamera = useRestyleStore((state) => state.chooseCamera)
+
+  if (renderSlot === null) return null
+  const items = roomRenders.flatMap((render, index) =>
+    render ? [{ label: slotName(index), onSelect: () => chooseCamera(index) }] : [],
+  )
+  return (
+    <MenuButton
+      label={slotName(renderSlot)}
+      title="Camera"
+      align="start"
+      className="render-slot-camera"
+      items={items}
+    />
+  )
+}
+
 // Thumbnails of the versions, oldest first, under the AI image. Click one to
-// show it; its X deletes it.
+// show it and its camera; its X deletes it.
 function VersionStrip() {
   const versions = useRestyleStore((state) => state.versions)
   const selectedVersionId = useRestyleStore((state) => state.selectedVersionId)
@@ -104,8 +127,8 @@ function VersionStrip() {
 // is dragged, the top part follows the window so it fits exactly; a dragged
 // position is kept in uiStore.
 export default function PersonalizeMode() {
-  // The current Room render's image (modeStore.roomRender is an object).
-  const snapshot = useModeStore((state) => state.roomRender?.image ?? null)
+  // The chosen camera's Room render image (a render is an object).
+  const snapshot = useModeStore((state) => selectRoomRender(state)?.image ?? null)
   const version = useRestyleStore(selectSelectedVersion)
   // The top two images always match: a version shows its own Room render.
   const roomRender = version ? version.roomRender : snapshot
@@ -140,6 +163,7 @@ export default function PersonalizeMode() {
             <div className="render-column">
               <RenderSlot caption="Room render">
                 {roomRender ? <img src={roomRender} alt="Room render" /> : 'No render'}
+                <CameraMenu />
               </RenderSlot>
               {/* Same height as the strip, so both images stay aligned. */}
               <div className="version-strip-spacer" />

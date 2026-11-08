@@ -74,8 +74,8 @@ export default function SnapshotBridge() {
       return frameView(camera, target, size.x, size.y)
     }
     snapshotBridge.currentView = currentView
-    snapshotBridge.capture = () =>
-      renderView(gl, scene, camera, currentView(), (canvas, renderCamera) => ({
+    snapshotBridge.capture = (view) =>
+      renderView(gl, scene, camera, view, (canvas, renderCamera) => ({
         image: canvasToPng(canvas),
         objects: objectPositions(scene, renderCamera, RENDER_WIDTH, RENDER_HEIGHT),
         view: cameraView(renderCamera, RENDER_WIDTH, RENDER_HEIGHT),

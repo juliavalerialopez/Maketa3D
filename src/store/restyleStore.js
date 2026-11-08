@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { create } from 'zustand'
 import { fetchRemaining, loadPhoto, requestRestyle } from '../services/restyle.js'
 import { MAX_PHOTOS } from '../../shared/restyle.js'
-import { useModeStore } from './modeStore.js'
+import { selectRoomRender, useModeStore } from './modeStore.js'
 import { useObjectsStore } from './objectsStore.js'
 import { useHistoryStore } from './historyStore.js'
 import { objectLabel } from '../components/objects/catalog.js'
@@ -43,10 +43,19 @@ function referenceKeyExists(key) {
   return key === ROOM_REFERENCE || useObjectsStore.getState().objects.some((object) => object.id === key)
 }
 
+// The chosen camera's Room render (selectRoomRender), or null.
+const currentRoomRender = () => selectRoomRender(useModeStore.getState())
+
 // Where an object's centre shows in the current Room render ({ x, y }, in
 // percent, clamped to the frame), or undefined if the render has no position for it.
 function framePositionOf(id) {
-  return useModeStore.getState().roomRender?.objects.find((item) => item.id === id)
+  return currentRoomRender()?.objects.find((item) => item.id === id)
+}
+
+// Shows `version`'s camera in the Camera menu, so the two top images and the
+// cards always match (I.14.2). Nothing changes for no version.
+function showCameraOf(version) {
+  if (version) useModeStore.getState().setRenderSlot(version.slot)
 }
 
 // The cards that are sent, in panel order: the room, then `referenceObjects`,
@@ -58,7 +67,7 @@ function sentKeys(referenceObjects) {
 // The objects with a card right now, read from both stores. For actions;
 // components use useReferenceObjects, which re-renders when either changes.
 function currentReferenceObjects() {
-  return selectReferenceObjects(useObjectsStore.getState().objects, useModeStore.getState().roomRender?.view ?? null)
+  return selectReferenceObjects(useObjectsStore.getState().objects, currentRoomRender()?.view ?? null)
 }
 
 const hasPhoto = (reference) => reference?.mode === 'reference' && Boolean(reference.photo)
@@ -124,10 +133,11 @@ export const useRestyleStore = create((set, get) => ({
   status: 'idle', // 'idle' | 'loading'
   error: null,
   // Generated images, oldest first, at most MAX_VERSIONS:
-  // { id, number, image, roomRender, createdAt }. image and roomRender are
-  // data URLs (roomRender is the image of the Room render it was made from,
-  // not the { image, objects, view } object in modeStore); number counts
-  // up per session and is never reused (download names).
+  // { id, number, image, roomRender, slot, createdAt }. image and roomRender
+  // are data URLs (roomRender is the image of the Room render it was made
+  // from, not the { image, objects, view } object in modeStore); slot is the
+  // camera slot of that render (I.14.2); number counts up per session and is
+  // never reused (download names).
   versions: [],
   selectedVersionId: null,
   lastVersionNumber: 0,
@@ -169,7 +179,21 @@ export const useRestyleStore = create((set, get) => ({
 
   loadRemaining: async () => set(countUpdate(await fetchRemaining())),
 
-  selectVersion: (id) => set({ selectedVersionId: id }),
+  // Shows a version, and its camera in the Camera menu.
+  selectVersion: (id) => {
+    set({ selectedVersionId: id })
+    showCameraOf(selectSelectedVersion(get()))
+  },
+
+  // The Camera menu (I.14.2): another camera shows its own Room render and
+  // cards, so no version is shown (the AI image is black) until the next
+  // Generate or a thumbnail click. The versions stay.
+  chooseCamera: (index) => {
+    const { renderSlot, roomRenders, setRenderSlot } = useModeStore.getState()
+    if (index === renderSlot || !roomRenders[index]) return
+    setRenderSlot(index)
+    set({ selectedVersionId: null })
+  },
 
   // Download menu (H.4): one version as an image, or every version in one ZIP.
   downloadVersion: (id) => {
@@ -180,15 +204,17 @@ export const useRestyleStore = create((set, get) => ({
 
   // Deletes one version, no confirmation. If it was the selected one, the
   // next is selected (or the previous one if it was last); none left: black.
-  deleteVersion: (id) =>
-    set((state) => {
-      const index = state.versions.findIndex((version) => version.id === id)
-      if (index === -1) return {}
-      const versions = state.versions.filter((version) => version.id !== id)
-      if (state.selectedVersionId !== id) return { versions }
-      const neighbor = versions[index] ?? versions[index - 1]
-      return { versions, selectedVersionId: neighbor?.id ?? null }
-    }),
+  // The newly shown version's camera is shown too.
+  deleteVersion: (id) => {
+    const state = get()
+    const index = state.versions.findIndex((version) => version.id === id)
+    if (index === -1) return
+    const versions = state.versions.filter((version) => version.id !== id)
+    if (state.selectedVersionId !== id) return set({ versions })
+    const neighbor = versions[index] ?? versions[index - 1]
+    set({ versions, selectedVersionId: neighbor?.id ?? null })
+    showCameraOf(neighbor)
+  },
 
   // Leaving Personalize (after the confirmation) or a new Room render: all
   // versions go, the AI image is black again, and a running request is
@@ -200,7 +226,8 @@ export const useRestyleStore = create((set, get) => ({
 
   generate: async () => {
     const { status, remaining, versions } = get()
-    const snapshot = useModeStore.getState().roomRender?.image
+    const snapshot = currentRoomRender()?.image
+    const slot = useModeStore.getState().renderSlot
     // At least one photo, on a card that is sent (H.6.1).
     if (selectPhotoCount(get(), currentReferenceObjects()) === 0 || !snapshot || status === 'loading' || remaining === 0) return
     if (versions.length >= MAX_VERSIONS) return
@@ -214,23 +241,24 @@ export const useRestyleStore = create((set, get) => ({
       const { image, count } = await requestRestyle({ snapshot, ...requestContent(references) })
       // The versions were cleared meanwhile: drop the image, keep the count.
       if (request !== latestRequest) return set(countUpdate(count))
-      // The new version goes at the end and is shown.
-      set((state) => {
-        const version = {
-          id: crypto.randomUUID(),
-          number: state.lastVersionNumber + 1,
-          image,
-          roomRender: snapshot,
-          createdAt: Date.now(),
-        }
-        return {
-          status: 'idle',
-          versions: [...state.versions, version],
-          selectedVersionId: version.id,
-          lastVersionNumber: version.number,
-          ...countUpdate(count),
-        }
-      })
+      // The new version goes at the end and is shown, with the camera it was
+      // made from (also if another camera was chosen meanwhile).
+      const version = {
+        id: crypto.randomUUID(),
+        number: get().lastVersionNumber + 1,
+        image,
+        roomRender: snapshot,
+        slot,
+        createdAt: Date.now(),
+      }
+      set((state) => ({
+        status: 'idle',
+        versions: [...state.versions, version],
+        selectedVersionId: version.id,
+        lastVersionNumber: version.number,
+        ...countUpdate(count),
+      }))
+      showCameraOf(version)
     } catch (error) {
       if (request !== latestRequest) return set(countUpdate(error.count))
       // The versions stay as they were.
@@ -250,15 +278,15 @@ export const selectPhotoCount = (state, referenceObjects) =>
 
 // The objects that get a reference card (H.6.2): not hidden, and with some
 // part inside the Room render, checked with `view`, the camera that took it
-// (roomRender.view). The request is built from this (H.7.1).
+// (the chosen camera's roomRender.view). The request is built from this (H.7.1).
 export const selectReferenceObjects = (objects, view) =>
   objects.filter((object) => !object.hidden && isInFrame(object, view))
 
 // The objects with a reference card, for components (I.7): re-renders when
-// the objects or the Room render's camera change.
+// the objects or the Room render's camera change (also from the Camera menu).
 export function useReferenceObjects() {
   const objects = useObjectsStore((state) => state.objects)
-  const view = useModeStore((state) => state.roomRender?.view ?? null)
+  const view = useModeStore((state) => selectRoomRender(state)?.view ?? null)
   return useMemo(() => selectReferenceObjects(objects, view), [objects, view])
 }
 

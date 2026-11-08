@@ -7,21 +7,35 @@ import GenerateButton from './GenerateButton'
 import { useModeStore } from '../../store/modeStore'
 import { useUiStore } from '../../store/uiStore'
 import { useRestyleStore } from '../../store/restyleStore'
-import { takeSnapshot } from '../scene/snapshot'
+import { useCameraSlotsStore } from '../../store/cameraSlotsStore'
+import { captureSlot, takeSnapshot } from '../scene/snapshot'
 
 const MODES = [
   { value: 'plan', label: 'Plan' },
   { value: 'personalize', label: 'Personalize' },
 ]
 
-// Switching to Personalize unmounts the Plan canvas, so the Room render is
-// taken first, while the canvas is still there. Null if it fails. A new
-// render starts with no versions, so the two images always match.
+// The Room render of every filled camera slot (I.14.2). With all slots empty,
+// the current Plan view goes into slot 1 first (and becomes active).
+function takeRoomRenders() {
+  const cameraSlots = useCameraSlotsStore.getState()
+  if (cameraSlots.slots.every((slot) => !slot)) {
+    const slot = captureSlot()
+    if (slot) cameraSlots.saveSlot(0, slot)
+  }
+  const { slots, activeSlot } = useCameraSlotsStore.getState()
+  const renders = slots.map((slot) => (slot ? takeSnapshot(slot.view) : null))
+  useModeStore.getState().setRoomRenders(renders, activeSlot)
+}
+
+// Switching to Personalize unmounts the Plan canvas, so the Room renders are
+// taken first, while the canvas is still there (null for a render that
+// fails). New renders start with no versions, so the two images always match.
 function switchMode(next) {
-  const { mode, setMode, setRoomRender } = useModeStore.getState()
+  const { mode, setMode } = useModeStore.getState()
   if (next === mode) return
   if (next === 'personalize') {
-    setRoomRender(takeSnapshot())
+    takeRoomRenders()
     useRestyleStore.getState().clearVersions()
   }
   setMode(next)
