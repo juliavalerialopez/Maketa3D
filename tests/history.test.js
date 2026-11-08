@@ -5,7 +5,6 @@ import { useObjectsStore } from '../src/store/objectsStore.js'
 import { useRoomStore } from '../src/store/roomStore.js'
 import { beginGesture, endGesture, useHistoryStore } from '../src/store/historyStore.js'
 import { useRestyleStore } from '../src/store/restyleStore.js'
-import { DEFAULT_CAMERA, useCameraStore } from '../src/store/cameraStore.js'
 
 const objects = () => useObjectsStore.getState().objects
 const history = () => useHistoryStore.getState()
@@ -146,27 +145,6 @@ test('an extra endGesture does nothing', () => {
   endGesture()
   endGesture()
   assert.equal(history().past.length, 1)
-})
-
-test('a camera change is one step and undoes', () => {
-  beginGesture()
-  useCameraStore.getState().updateCamera({ position: [1, 1.5, 2] })
-  useCameraStore.getState().updateCamera({ fov: 35 })
-  endGesture()
-  assert.equal(history().past.length, 1)
-  history().undo()
-  assert.deepEqual(useCameraStore.getState().camera, DEFAULT_CAMERA)
-  history().redo()
-  assert.equal(useCameraStore.getState().camera.fov, 35)
-})
-
-test('the camera stays selected through undo and redo', () => {
-  useObjectsStore.getState().selectObject('camera')
-  useCameraStore.getState().updateCamera({ fov: 35 })
-  history().undo()
-  assert.equal(useObjectsStore.getState().selectedId, 'camera')
-  history().redo()
-  assert.equal(useObjectsStore.getState().selectedId, 'camera')
 })
 
 test('at most 50 steps are kept', () => {

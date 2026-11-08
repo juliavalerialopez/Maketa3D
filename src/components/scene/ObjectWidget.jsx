@@ -6,8 +6,6 @@ import { useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import { clampPosition, normalizeRadians, objectTransform } from '../../store/roomBounds'
-import { CAMERA_ID, clampCameraPosition, useCameraStore } from '../../store/cameraStore'
-import { CAMERA_ROTATION_ORDER } from '../../services/frame'
 import { widgetControls } from './widgetState'
 
 const ROTATION_STEP = Math.PI / 12 // 15°
@@ -33,22 +31,8 @@ function apply(group, object, partial) {
   group.rotation.set(...rotation)
 }
 
-// The same for the placeable camera (I.14): the widget moves it on the floor
-// plane (its height stays) and turns it (pan); the position stays within the
-// camera limits.
-function applyCamera(group, partial) {
-  const { camera, updateCamera } = useCameraStore.getState()
-  const next = { ...camera, ...partial }
-  next.position = clampCameraPosition(next.position)
-  updateCamera({ position: next.position, pan: next.pan })
-  const { position, pan, tilt } = useCameraStore.getState().camera
-  group.position.set(...position)
-  group.rotation.set(tilt, pan, 0, CAMERA_ROTATION_ORDER)
-}
-
 // Move arrows (X, Z) and a rotate ring (vertical axis), shown together on the
-// selected object or the camera. Two TransformControls, since one can show
-// only one mode.
+// selected object. Two TransformControls, since one can show only one mode.
 export default function ObjectWidget() {
   const selectedId = useObjectsStore((state) => state.selectedId)
   const scene = useThree((state) => state.scene)
@@ -116,32 +100,18 @@ export default function ObjectWidget() {
 
   if (!selectedId) return null
 
-  const isCamera = selectedId === CAMERA_ID
-
   function handleMove() {
     const group = target.current
-    if (!group) return
-    if (isCamera) {
-      const [, height] = useCameraStore.getState().camera.position
-      applyCamera(group, { position: [group.position.x, height, group.position.z] })
-      return
-    }
     const object = getObject(selectedId)
-    if (!object) return
+    if (!group || !object) return
     apply(group, object, { position: [group.position.x, 0, group.position.z] })
   }
 
   function handleRotateStart() {
     startDrag()
     const group = target.current
-    if (!group) return
-    if (isCamera) {
-      const { pan, tilt } = useCameraStore.getState().camera
-      rotateStartRef.current = { quaternion: group.quaternion.clone(), rotation: [tilt, pan, 0] }
-      return
-    }
     const object = getObject(selectedId)
-    if (!object) return
+    if (!group || !object) return
     rotateStartRef.current = { quaternion: group.quaternion.clone(), rotation: object.rotation }
   }
 
@@ -151,15 +121,10 @@ export default function ObjectWidget() {
   function handleRotate() {
     const start = rotateStartRef.current
     const group = target.current
-    if (!start || !group) return
+    const object = getObject(selectedId)
+    if (!start || !group || !object) return
     delta.copy(group.quaternion).multiply(start.quaternion.clone().invert())
     const angle = 2 * Math.atan2(delta.y, delta.w)
-    if (isCamera) {
-      applyCamera(group, { pan: start.rotation[1] + angle })
-      return
-    }
-    const object = getObject(selectedId)
-    if (!object) return
     const [x, y, z] = start.rotation
     apply(group, object, { rotation: [x, normalizeRadians(y + angle), z] })
   }

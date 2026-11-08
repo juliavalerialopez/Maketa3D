@@ -2,13 +2,12 @@ import { widgetControls } from './widgetState'
 import { showWallsFor } from './wallVisibility'
 import { useObjectsStore } from '../../store/objectsStore'
 
-// Prepares the scene to be drawn as the Room render from `camera` (the
-// placeable camera, I.14): hides helpers (objects with userData.helper, such
-// as the selection box and the camera model), the widget and hidden objects
-// (H.6.2), and hides the walls facing that camera. Returns a function that
-// puts everything back for the Plan view's `planCamera`. Used by the
-// snapshot and by the live preview; both draw and restore in one call, so
-// the page never shows the scene prepared this way.
+// Prepares the scene to be drawn as the Room render (or a camera slot's
+// thumbnail) from `camera`: hides helpers (objects with userData.helper, such
+// as the selection box), the widget and hidden objects (H.6.2), and hides the
+// walls facing that camera. Returns a function that puts everything back for
+// the Plan view's `planCamera`. The capture draws and restores in one call,
+// so the page never shows the scene prepared this way.
 export function prepareRoomRender(scene, camera, planCamera) {
   const hidden = []
   const hide = (object) => {

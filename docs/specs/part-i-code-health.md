@@ -163,7 +163,7 @@ They replace the placeable camera of I.14.
 - ✅ I.13 Fixed 1920 × 1080 Room render.
   - ✅ I.13.1 Render into the Plan canvas drawn at 1920 × 1080 for that one render (then set back to its own size and drawn again in the same step), instead of an off-screen target, so the colors stay exactly as on screen (added 2026-11-04)
 - ✅ I.14 Placeable camera.
-  - ⬜ I.14.1 Camera slots in Plan: three slots under the scene (plus, thumbnail, update, X, jump to view, active slot); the placed camera and its preview removed, the frame guide back (added 2026-11-07)
+  - ✅ I.14.1 Camera slots in Plan: three slots under the scene (plus, thumbnail, update, X, jump to view, active slot); the placed camera and its preview removed, the frame guide back (added 2026-11-07)
   - ⬜ I.14.2 Camera slots in Personalize: a Room render per filled slot, the Camera menu, cards and Generate follow it, versions keep their camera (added 2026-11-07)
   - ⬜ I.14.3 Camera slots in the layout file, Open and New Project (added 2026-11-07)
 - ✅ I.15 Wall shades test for rooms with several pieces.

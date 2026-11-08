@@ -1,17 +1,16 @@
-// The Room render's frame. The Room render is what the placeable camera sees
-// (I.14), always at RENDER_WIDTH x RENDER_HEIGHT (I.13). Is an object in it?
-// (H.6.2) Yes when any part of its box shows inside the frame, so a partly
-// visible object counts.
+// The Room render's frame. The Room render shows exactly the 16:9 frame guide
+// of the Plan view, always at RENDER_WIDTH x RENDER_HEIGHT (I.13). Is an
+// object in it? (H.6.2) Yes when any part of its box shows inside the frame,
+// so a partly visible object counts.
 import { Euler, Matrix4, PerspectiveCamera, Vector3 } from 'three'
-import { objectTransform } from '../store/roomBounds.js'
+import { objectTransform, toDegrees, toRadians } from '../store/roomBounds.js'
 
 // The Room render's fixed size, whatever the window size (I.13).
 export const RENDER_WIDTH = 1920
 export const RENDER_HEIGHT = 1080
 
 // The 16:9 frame inside a width x height area: fits the height, or the width
-// when the area is narrower than 16:9, centered. For the Room render size it
-// is the whole image.
+// when the area is narrower than 16:9, centered. Same rule as .frame-guide-box.
 export function frameRect(width, height) {
   const frameWidth = Math.min(width, (height * 16) / 9)
   const frameHeight = (frameWidth * 9) / 16
@@ -23,21 +22,36 @@ export function frameRect(width, height) {
   }
 }
 
-// Rotation order of the placeable camera: pan around the vertical axis, then
-// tilt up or down.
-export const CAMERA_ROTATION_ORDER = 'YXZ'
+// The vertical field of view (degrees) of a 16:9 camera that sees exactly
+// the frame guide of a `width` x `height` canvas whose camera has vertical
+// field of view `fov`. The same when the frame fits the height; narrower when
+// the canvas is taller than 16:9 and the frame is a band across its middle.
+export function frameFov(fov, width, height) {
+  const share = frameRect(width, height).height / height
+  return 2 * toDegrees(Math.atan(Math.tan(toRadians(fov / 2)) * share))
+}
 
-// A three.js camera for the placeable camera (I.14, the camera store's
-// { position, pan, tilt, fov }) at the Room render's 16:9 shape. Pass
-// `camera` to update an existing one instead of making a new one.
-export function renderCamera({ position, pan, tilt, fov }, camera = new PerspectiveCamera()) {
+// A camera slot's view (I.14.1): what the frame guide shows right now, as
+// plain numbers { position, target, fov }. `camera` is the Plan camera,
+// `target` the point it orbits, `width` x `height` the canvas size.
+export function frameView(camera, target, width, height) {
+  return {
+    position: camera.position.toArray(),
+    target: target.toArray(),
+    fov: frameFov(camera.fov, width, height),
+  }
+}
+
+// A 16:9 three.js camera for a camera slot's view (frameView). Pass `camera`
+// to update an existing one instead of making a new one.
+export function viewCamera({ position, target, fov }, camera = new PerspectiveCamera()) {
   camera.fov = fov
   camera.aspect = RENDER_WIDTH / RENDER_HEIGHT
-  camera.near = 0.05
-  camera.far = 100
+  camera.near = 0.1
+  camera.far = 1000
   camera.updateProjectionMatrix()
   camera.position.set(...position)
-  camera.rotation.set(tilt, pan, 0, CAMERA_ROTATION_ORDER)
+  camera.lookAt(...target)
   camera.updateMatrixWorld()
   return camera
 }

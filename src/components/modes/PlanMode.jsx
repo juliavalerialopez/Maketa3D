@@ -3,10 +3,10 @@ import { OrbitControls } from '@react-three/drei'
 import Scene from '../scene/Scene'
 import PlanCamera from '../scene/PlanCamera'
 import SnapshotBridge from '../scene/SnapshotBridge'
-import CameraPreview from '../scene/CameraPreview'
-import PreviewFrame from '../scene/PreviewFrame'
+import FrameGuide from '../scene/FrameGuide'
 import ContextLossGuard from '../scene/ContextLossGuard'
 import HistoryButtons from '../scene/HistoryButtons'
+import CameraSlots from '../scene/CameraSlots'
 import SplitLayout from '../layout/SplitLayout'
 import ErrorBoundary from '../layout/ErrorBoundary'
 import ControlPanel from '../panel/ControlPanel'
@@ -50,10 +50,10 @@ export default function PlanMode() {
               <PlanCamera />
               <SnapshotBridge />
               <ContextLossGuard />
-              <CameraPreview />
             </Canvas>
-            <PreviewFrame />
+            <FrameGuide />
             <HistoryButtons />
+            <CameraSlots />
           </ErrorBoundary>
         </div>
       }

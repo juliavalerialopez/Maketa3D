@@ -3,7 +3,6 @@ import Walls from './Walls'
 import Objects from './Objects'
 import SelectionBox from './SelectionBox'
 import ObjectWidget from './ObjectWidget'
-import PlaceableCamera from './PlaceableCamera'
 
 export default function Scene() {
   return (
@@ -13,7 +12,6 @@ export default function Scene() {
       <Floor />
       <Walls />
       <Objects />
-      <PlaceableCamera />
       <SelectionBox />
       <ObjectWidget />
     </>

@@ -1,6 +1,5 @@
 import { useShallow } from 'zustand/react/shallow'
 import { useObjectsStore } from '../../store/objectsStore'
-import { CAMERA_ID } from '../../store/cameraStore'
 import { objectLabel } from '../objects/catalog'
 import ListItem from '../ui/ListItem'
 import HideButton from './HideButton'
@@ -14,23 +13,12 @@ export default function ObjectList() {
   const selectedId = useObjectsStore((state) => state.selectedId)
   const selectObject = useObjectsStore((state) => state.selectObject)
 
-  // The placeable camera (I.14) is always first; it has no Hide switch.
-  const cameraRow = (
-    <ListItem
-      label="Camera"
-      selected={selectedId === CAMERA_ID}
-      onClick={() => selectObject(selectedId === CAMERA_ID ? null : CAMERA_ID)}
-    />
-  )
+  if (ids.length === 0) {
+    return <p className="panel-placeholder">No objects yet.</p>
+  }
 
   return (
     <ul className="ui-list">
-      {cameraRow}
-      {ids.length === 0 && (
-        <li>
-          <p className="panel-placeholder">No objects yet.</p>
-        </li>
-      )}
       {ids.map((id, index) => (
         <ListItem
           key={id}

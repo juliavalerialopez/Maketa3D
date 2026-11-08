@@ -12,7 +12,8 @@ function applyPlanView(camera, controls) {
 
 // Keeps the Plan orbit camera across mode switches: applies the saved view
 // once the orbit controls exist, and saves the view when the Canvas unmounts.
-// Also applies a reset (resetPlanView, e.g. New Project) while mounted.
+// Also applies a reset (resetPlanView, e.g. New Project) or a jump to a camera
+// slot (goToPlanView) while mounted.
 // Must sit after <OrbitControls makeDefault> in the Canvas.
 export default function PlanCamera() {
   const camera = useThree((state) => state.camera)
