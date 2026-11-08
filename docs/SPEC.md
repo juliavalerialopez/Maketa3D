@@ -17,7 +17,7 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 
 ## Layout
 - Top bar (52 px): the Maketa logo on the left, a centered "Plan | Personalize" switch, the light/dark theme switch on the right. Plan is the mode on page load.
-- Clicking the logo opens the **Project** menu: New Project (asks first, then resets room, objects, Plan camera and camera slots), Open Project, Save, Save As (asks for a file name). New and Open are disabled in Personalize.
+- Clicking the logo opens the **Project** menu: New Project (asks first, then resets room, objects, Plan camera and camera slots), Open Project, Save, Save As (asks for a file name). New and Open are disabled in Personalize. Save writes into the opened or last saved file without asking; Save As, and a new project's first Save, ask for the name and folder (I.17; Chrome and Edge, other browsers download). The project name shows right of the logo, "New Project" until saved.
 - Theme: Moss System soft UI, light and dark. Follows the system setting until switched by hand; the manual choice is saved in `localStorage`. The scene's floor and walls and the Room render look the same in both themes.
 - **Plan:** left control panel (20% by default, divider draggable 15–50%), right: 3D scene filling the rest, resizes with the window, with a centered 16:9 frame guide (toggle at its top right, visible by default). Undo and Redo at its top left (Part I, I.11). Three camera slots along its bottom (I.14.1): an empty slot shows a big plus and saves the current view when clicked; a filled one shows its thumbnail, moves the Plan view to it when clicked, and has an update icon (top left) and an X (top right, on hover or focus).
 - **Personalize:** same split layout, split top and bottom with a draggable divider (panel 15–50% of the height). Until dragged, the top part is exactly as tall as the images. Top: "Room render" and the "AI image" slot side by side, both 16:9, edge to edge, captions over the images. A Camera menu at the top left of the Room render chooses which camera slot's render is shown and used (I.14.2). Bottom: control panel.
@@ -51,6 +51,7 @@ planView: { position: [x, y, z], target: [x, y, z] }  // Plan orbit camera, rest
 slots: [{ view: { position, target, fov }, thumbnail } | null] × 3  // cameraSlotsStore (I.14.1): saved 16:9 frame cameras, fov in degrees; thumbnail is null until drawn after Open (I.14.3)
 activeSlot: number | null                   // the slot last saved, updated or jumped to
 theme: 'light' | 'dark'                     // uiStore; manual choice saved in localStorage
+name: string | null, handle: FileSystemFileHandle | null  // projectStore (I.17), memory only: the project's file name without .json ("New Project" when null) and the file Save writes into
 
 // AI restyle (restyleStore), memory only: kept across mode switches, lost on reload
 references: { [objectId | 'room']: { mode: 'reference' | 'creative', photo: { dataUrl, name } | null, photoError } }
@@ -70,7 +71,7 @@ Daily limit counts live on the server (Upstash Redis), not in the stores.
 Objects are always a list, even with one type.
 
 ## Project file
-Save writes the layout as JSON (`maketa-layout.json`, or the Save As name); Open reads it back. Full rules and checks: Part G spec, "Export and import".
+Save writes the layout as JSON into the project's file (the one opened or last saved, I.17), or downloads it (`maketa-layout.json`, or the project's name) where the browser has no file access; Open reads it back. Full rules and checks: Part G spec, "Export and import".
 
 ```json
 {

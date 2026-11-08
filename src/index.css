@@ -138,6 +138,18 @@ canvas {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* The project's name right of the logo (I.17); a long name is cut with "…". */
+.project-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .top-bar-error {

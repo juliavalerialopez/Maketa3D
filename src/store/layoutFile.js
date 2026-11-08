@@ -3,9 +3,13 @@ import { useObjectsStore } from './objectsStore.js'
 import { useModeStore } from './modeStore.js'
 import { useHistoryStore } from './historyStore.js'
 import { SLOT_COUNT, useCameraSlotsStore } from './cameraSlotsStore.js'
+import { useProjectStore } from './projectStore.js'
 import { clampPosition, normalizeDegrees, toDegrees, toRadians } from './roomBounds.js'
 import { OBJECT_TYPES } from '../components/objects/catalog.js'
 import { saveBlob } from '../services/download.js'
+import { canPickFiles, pickFileToOpen, pickFileToSave, writeFile } from '../services/projectFile.js'
+
+export { canPickFiles }
 
 // The layout file: room size and objects, saved as JSON and read back
 // (see the Part G spec).
@@ -54,22 +58,107 @@ export function layoutData() {
   }
 }
 
+const layoutJson = () => JSON.stringify(layoutData(), null, 2)
+
 // Downloads the current layout as a JSON file, maketa-layout.json unless a
 // file name is given. No server involved.
 export function exportLayout(fileName = LAYOUT_FILE_NAME) {
-  const json = JSON.stringify(layoutData(), null, 2)
-  saveBlob(new Blob([json], { type: 'application/json' }), fileName)
+  saveBlob(new Blob([layoutJson()], { type: 'application/json' }), fileName)
+}
+
+// The project's file name to start the Save as window on (or to download as).
+function projectFileName() {
+  const { name } = useProjectStore.getState()
+  return name ? `${name}.json` : LAYOUT_FILE_NAME
+}
+
+// Open, Save and Save As (I.17) answer 'done', 'cancelled' (a system window
+// closed with Cancel), 'invalid' (Open: not a valid layout file, nothing
+// changed) or 'failed' (Save: the file could not be written; the project's
+// file stays as it was).
+
+// Writes the layout into `handle`'s file, which becomes the project's file.
+async function writeInto(handle) {
+  try {
+    await writeFile(handle, layoutJson())
+  } catch {
+    return 'failed'
+  }
+  useProjectStore.getState().setFile(handle.name, handle)
+  return 'done'
+}
+
+// Opens a layout file from the system Open window (canPickFiles only), so
+// Save can write back into it.
+export async function openProject() {
+  let handle
+  try {
+    handle = await pickFileToOpen()
+  } catch {
+    return 'invalid'
+  }
+  if (!handle) return 'cancelled'
+  return openFrom(() => handle.getFile(), handle.name, handle)
+}
+
+// Opens a layout file chosen in a file input (browsers without file access).
+// Save then downloads under its name.
+export function openProjectFile(file) {
+  return openFrom(() => file, file.name, null)
+}
+
+// Imports the file that `getFile` gives; on success it is the project's file.
+// A file that cannot be read counts as invalid.
+async function openFrom(getFile, fileName, handle) {
+  let ok = false
+  try {
+    ok = importLayout(await (await getFile()).text())
+  } catch {
+    // Unreadable file: treated as invalid.
+  }
+  if (!ok) return 'invalid'
+  useProjectStore.getState().setFile(fileName, handle)
+  return 'done'
+}
+
+// Save: into the project's file without asking. With no file yet (a new
+// project) it works like Save As; without file access it downloads.
+export async function saveProject() {
+  const { handle } = useProjectStore.getState()
+  if (handle) return writeInto(handle)
+  if (canPickFiles()) return saveProjectAs()
+  exportLayout(projectFileName())
+  return 'done'
+}
+
+// Save As: the system Save as window, then the chosen file is the project's
+// file. Without file access, `fileName` comes from the Maketa name dialog and
+// the layout is downloaded under it.
+export async function saveProjectAs(fileName) {
+  if (!canPickFiles()) {
+    exportLayout(fileName)
+    useProjectStore.getState().setFile(fileName)
+    return 'done'
+  }
+  let handle
+  try {
+    handle = await pickFileToSave(projectFileName())
+  } catch {
+    return 'failed'
+  }
+  return handle ? writeInto(handle) : 'cancelled'
 }
 
 // A new project: the default room, no objects, numbering from 1 again, the
-// Plan camera back at its starting view, empty camera slots (I.14.3), and no
-// undo history (I.11).
+// Plan camera back at its starting view, empty camera slots (I.14.3), no
+// undo history (I.11), and no file yet (I.17: the next Save asks).
 export function newLayout() {
   useRoomStore.getState().setRoomSize({ ...DEFAULT_ROOM })
   useObjectsStore.getState().replaceObjects([], {})
   useModeStore.getState().resetPlanView()
   useCameraSlotsStore.getState().clearSlots()
   useHistoryStore.getState().clear()
+  useProjectStore.getState().clearFile()
 }
 
 const isNumber = (value) => typeof value === 'number' && Number.isFinite(value)

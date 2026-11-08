@@ -2,9 +2,21 @@ import { useEffect, useRef, useState } from 'react'
 import MenuButton from '../ui/MenuButton'
 import Dialog from '../ui/Dialog'
 import { useModeStore } from '../../store/modeStore'
-import { LAYOUT_FILE_NAME, exportLayout, importLayout, newLayout } from '../../store/layoutFile'
+import { selectProjectName, useProjectStore } from '../../store/projectStore'
+import {
+  LAYOUT_FILE_NAME,
+  canPickFiles,
+  newLayout,
+  openProject,
+  openProjectFile,
+  saveProject,
+  saveProjectAs,
+} from '../../store/layoutFile'
 
-const ERROR_MESSAGE = 'Not a valid layout file.'
+const MESSAGES = {
+  invalid: 'Not a valid layout file.',
+  failed: 'Could not save the file.',
+}
 const ERROR_SECONDS = 5
 const DEFAULT_NAME = LAYOUT_FILE_NAME.replace(/\.json$/, '')
 
@@ -17,14 +29,19 @@ function toFileName(text) {
   return name ? `${name}.json` : null
 }
 
-// The Maketa logo in the top bar, which opens the Project menu: New Project,
-// Open Project (reads a layout file), Save (downloads maketa-layout.json)
-// and Save As (asks for a file name first). New Project and Save As use a
-// Dialog. New and Open only work in Plan:
-// in Personalize they would leave the Room render out of date.
-// An invalid file shows a short message for a few seconds and changes nothing.
+// The Maketa logo in the top bar, which opens the Project menu, and the
+// project's name next to it ("New Project" until saved under a name, I.17).
+// - New Project asks first (Dialog).
+// - Open Project and Save As use the system Open and Save as windows where
+//   the browser has them; Save then writes into that file without asking
+//   (I.17). Elsewhere, Open uses a file input, Save downloads, and Save As
+//   asks for a file name in a Dialog.
+// New and Open only work in Plan: in Personalize they would leave the Room
+// render out of date. An invalid file or a failed save shows a short message
+// for a few seconds.
 export default function ProjectMenu() {
   const mode = useModeStore((state) => state.mode)
+  const projectName = useProjectStore(selectProjectName)
   const inputRef = useRef(null)
   const [error, setError] = useState(null)
   // The open dialog: null, 'newProject' or 'saveAs'.
@@ -36,19 +53,29 @@ export default function ProjectMenu() {
     return () => clearTimeout(timer)
   }, [error])
 
-  async function handleFile(event) {
+  // Shows the message for an Open, Save or Save As result (none when done
+  // or cancelled).
+  async function report(action) {
+    const result = await action
+    setError(MESSAGES[result] ?? null)
+  }
+
+  function handleFile(event) {
     const input = event.target
     const file = input.files[0]
     // Cleared so choosing the same file again still fires a change.
     input.value = ''
-    if (!file) return
-    let ok = false
-    try {
-      ok = importLayout(await file.text())
-    } catch {
-      // Unreadable file: treated as invalid.
-    }
-    setError(ok ? null : ERROR_MESSAGE)
+    if (file) report(openProjectFile(file))
+  }
+
+  function open() {
+    if (canPickFiles()) report(openProject())
+    else inputRef.current.click()
+  }
+
+  function saveAs() {
+    if (canPickFiles()) report(saveProjectAs())
+    else setDialog('saveAs')
   }
 
   function confirmNewProject() {
@@ -61,15 +88,15 @@ export default function ProjectMenu() {
     const fileName = toFileName(text)
     if (!fileName) return
     setDialog(null)
-    exportLayout(fileName)
+    report(saveProjectAs(fileName))
   }
 
   const inPlan = mode === 'plan'
   const items = [
     { label: 'New Project', onSelect: () => setDialog('newProject'), disabled: !inPlan },
-    { label: 'Open Project', onSelect: () => inputRef.current.click(), disabled: !inPlan },
-    { label: 'Save', onSelect: () => exportLayout() },
-    { label: 'Save As', onSelect: () => setDialog('saveAs') },
+    { label: 'Open Project', onSelect: open, disabled: !inPlan },
+    { label: 'Save', onSelect: () => report(saveProject()) },
+    { label: 'Save As', onSelect: saveAs },
   ]
 
   return (
@@ -77,6 +104,9 @@ export default function ProjectMenu() {
       <h1 className="top-bar-title">
         <MenuButton label="Maketa" title="Project" items={items} variant="plain" align="start" />
       </h1>
+      <span className="project-name" title={projectName}>
+        {projectName}
+      </span>
       {error && (
         <span className="top-bar-error" role="alert">
           {error}

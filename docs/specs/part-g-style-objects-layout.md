@@ -59,11 +59,11 @@ Status: **Done**. Builds on Part F (Plan and Personalize, Room render, AI restyl
 - Clicking the **Maketa logo** in the top bar opens the **Project** menu (changed by G.11.1; was Export and Import buttons):
   - **New Project**: asks "Start a new project?" in a dialog (New Project / Cancel); on confirm, the room goes back to the default size (6 × 5 × 2.6 m), all objects are removed, numbering starts again at 1, and the Plan camera goes back to its starting view (G.11.3).
   - **Open Project**: import (below).
-  - **Save**: export (below), downloaded as `maketa-layout.json`.
-  - **Save As**: asks for a file name in a dialog (default `maketa-layout`), then exports under that name with `.json` added. Cancel does nothing; an empty name keeps the dialog open.
+  - **Save**: export (below), downloaded as `maketa-layout.json`. (changed in Part I, I.17: writes into the opened or last saved file where the browser allows it)
+  - **Save As**: asks for a file name in a dialog (default `maketa-layout`), then exports under that name with `.json` added. Cancel does nothing; an empty name keeps the dialog open. (changed in Part I, I.17: the system "Save as" window where the browser has one)
 - Both questions use a styled modal dialog (`ui/Dialog`, a raised card over a dimmed page), not the browser's pop-ups (G.11.2). Escape, Cancel or a click outside closes it; the object shortcuts (Delete, Escape) are ignored while it is open.
 - The menu works in both modes, but New Project and Open Project are disabled in Personalize: they would leave the Room render out of date. Save and Save As work in both.
-- File name: `maketa-layout.json` (Save As: the chosen name). Content:
+- File name: `maketa-layout.json` (Save As: the chosen name). (changed in Part I, I.17: Save keeps the project's file name) Content:
 
 ```json
 {
@@ -78,7 +78,7 @@ Status: **Done**. Builds on Part F (Plan and Personalize, Room render, AI restyl
 
 - `rotation` is the Y rotation in whole degrees, 0–359. Tilt (rotation X and Z) is **not** exported; imported objects have X and Z rotation 0.
 - Size is not exported. It comes from the catalog (TV stand: from `screenInches`).
-- Export downloads the file straight away. No server. Export is enabled with no objects too (an empty room is a valid layout).
+- Export downloads the file straight away (changed in Part I, I.17: it writes into the project's file where the browser allows it). No server. Export is enabled with no objects too (an empty room is a valid layout).
 - Import reads a chosen `.json` file and replaces the current room and objects, without asking first (Delete has no confirmation either).
 - Invalid file: show a short message, change nothing. Invalid means any of:
   - not JSON, or `version` is not 1
