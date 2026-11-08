@@ -149,3 +149,15 @@ For each task, in order:
 Stop and report instead of continuing if: a check still fails after two fix
 attempts, the spec is unclear, or a task needs a change outside its scope.
 Never push. At the end, list each commit and what to check in `npm run dev`.
+
+## Running commands
+Run commands one at a time and plain: `npm test`, `npm run build`, `git diff --stat`.
+No pipes, no `&&` or `;` chains, no output redirection, no `git -C` or `cd`
+(you are already in the project folder). Plain commands match the
+allowed list in `.claude/settings.local.json` and do not ask me for approval.
+Never edit source files with `sed -i` to test something, and never run
+`git checkout --` on a file with uncommitted changes. Ask me first.
+
+## Commit messages
+Keep them simple: one short imperative line. Never add "Co-Authored-By", a
+session link, "Generated with", or any other trailer or attribution line.
