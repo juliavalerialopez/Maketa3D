@@ -17,7 +17,7 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 
 ## Layout
 - Top bar (52 px): the Maketa logo on the left, a centered "Plan | Personalize" switch, the light/dark theme switch on the right. Plan is the mode on page load.
-- Clicking the logo opens the **Project** menu: New Project (asks first, then resets room, objects and Plan camera), Open Project, Save, Save As (asks for a file name). New and Open are disabled in Personalize.
+- Clicking the logo opens the **Project** menu: New Project (asks first, then resets room, objects, Plan camera and camera slots), Open Project, Save, Save As (asks for a file name). New and Open are disabled in Personalize.
 - Theme: Moss System soft UI, light and dark. Follows the system setting until switched by hand; the manual choice is saved in `localStorage`. The scene's floor and walls and the Room render look the same in both themes.
 - **Plan:** left control panel (20% by default, divider draggable 15–50%), right: 3D scene filling the rest, resizes with the window, with a centered 16:9 frame guide (toggle at its top right, visible by default). Undo and Redo at its top left (Part I, I.11). Three camera slots along its bottom (I.14.1): an empty slot shows a big plus and saves the current view when clicked; a filled one shows its thumbnail, moves the Plan view to it when clicked, and has an update icon (top left) and an X (top right, on hover or focus).
 - **Personalize:** same split layout, split top and bottom with a draggable divider (panel 15–50% of the height). Until dragged, the top part is exactly as tall as the images. Top: "Room render" and the "AI image" slot side by side, both 16:9, edge to edge, captions over the images. A Camera menu at the top left of the Room render chooses which camera slot's render is shown and used (I.14.2). Bottom: control panel.
@@ -48,7 +48,7 @@ roomRenders: [{ image, objects, view } | null]  // one Room render per camera sl
 //   view: { projection, view, width, height }, the camera that took it (in-frame checks)
 renderSlot: number | null                   // the camera chosen in Personalize; its render is shown, carded and sent
 planView: { position: [x, y, z], target: [x, y, z] }  // Plan orbit camera, restored when Plan mounts again
-slots: [{ view: { position, target, fov }, thumbnail } | null] × 3  // cameraSlotsStore (I.14.1): saved 16:9 frame cameras, fov in degrees
+slots: [{ view: { position, target, fov }, thumbnail } | null] × 3  // cameraSlotsStore (I.14.1): saved 16:9 frame cameras, fov in degrees; thumbnail is null until drawn after Open (I.14.3)
 activeSlot: number | null                   // the slot last saved, updated or jumped to
 theme: 'light' | 'dark'                     // uiStore; manual choice saved in localStorage
 
@@ -78,13 +78,19 @@ Save writes the layout as JSON (`maketa-layout.json`, or the Save As name); Open
   "room": { "width": 4.0, "depth": 3.5, "height": 2.6 },
   "objects": [
     { "type": "tvStand", "number": 1, "x": 2.0, "z": 0.3, "rotation": 0, "color": "#d9d2bf", "screenInches": 55 }
+  ],
+  "cameras": [
+    { "x": 4, "y": 4, "z": 4, "targetX": 0, "targetY": 0, "targetZ": 0, "fov": 50 },
+    null,
+    null
   ]
 }
 ```
 
 - `rotation` is the Y rotation in whole degrees (0–359); tilt and size are not saved.
 - `"hidden": true` is saved only for hidden objects. Files without it import with every object shown.
-- Open replaces the room and objects, clamps positions inside the walls, clears the selection and continues numbering after the highest number per type. An invalid file shows a short message and changes nothing.
+- `cameras` (I.14.3): one entry per camera slot, `null` (empty) or the slot's camera in meters and its field of view in degrees. Thumbnails are not saved; the Plan scene draws them again after Open. Files without it (including those with the I.14 `camera` field) open with all slots empty and none active. When present, it must have exactly 3 entries, each `null` or seven numbers with a field of view above 0 and below 180 and a target away from the camera; otherwise the file is invalid.
+- Open replaces the room, objects and camera slots, clamps positions inside the walls, clears the selection and continues numbering after the highest number per type. An invalid file shows a short message and changes nothing.
 
 ## Part specs
 | Part | File | Scope | Status |

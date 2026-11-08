@@ -138,6 +138,7 @@ They replace the placeable camera of I.14.
 - Save writes `"cameras"`: three entries, each `null` (empty) or `{ "x", "y", "z", "targetX", "targetY", "targetZ", "fov" }` (meters, and the field of view in degrees). It replaces the I.14 `camera` field.
 - Open restores the slots. Thumbnails are not saved: they are drawn again when the Plan scene shows. A file without `cameras` (including one with the I.14 `camera` field) opens with all slots empty.
 - New Project empties the slots.
+- (added 2026-11-08) A `cameras` field that is there but wrong (not exactly 3 entries, a value that is not a number, a field of view outside 0 to 180, or a target at the camera's place) makes the file invalid, like the other Part G checks. After Open, no slot is active.
 
 ### I.15 Wall shades test (rooms with several pieces)
 - Prompt and model work only, no UI. Goal: T3 (the room corner stays in place) and T11 (a reference's chaise is kept) pass with several pieces.
@@ -165,7 +166,7 @@ They replace the placeable camera of I.14.
 - ✅ I.14 Placeable camera.
   - ✅ I.14.1 Camera slots in Plan: three slots under the scene (plus, thumbnail, update, X, jump to view, active slot); the placed camera and its preview removed, the frame guide back (added 2026-11-07)
   - ✅ I.14.2 Camera slots in Personalize: a Room render per filled slot, the Camera menu, cards and Generate follow it, versions keep their camera (added 2026-11-07)
-  - ⬜ I.14.3 Camera slots in the layout file, Open and New Project (added 2026-11-07)
+  - ✅ I.14.3 Camera slots in the layout file, Open and New Project (added 2026-11-07)
 - ✅ I.15 Wall shades test for rooms with several pieces.
   - ⬜ I.15.1 Make the shaded renders, run T3 and T11, record the results and the decision (Julia) (added 2026-11-04)
 - ⬜ I.16 Docs (`CLAUDE.md` Structure, including `shared/` and local imports in `api/` from I.8, `docs/SPEC.md` roadmap, layout, data model and part table), `npm run build`, deploy, check on the live site.

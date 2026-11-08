@@ -12,6 +12,7 @@ import {
   viewCamera,
 } from '../../services/frame'
 import { useObjectsStore } from '../../store/objectsStore'
+import { useCameraSlotsStore } from '../../store/cameraSlotsStore'
 
 const box = new Box3()
 const centre = new Vector3()
@@ -58,12 +59,29 @@ function renderView(gl, scene, planCamera, view, read) {
 }
 
 // Inside the Plan Canvas: makes the captures available to the mode switch and
-// the camera slots while the Canvas is mounted (see snapshot.js).
+// the camera slots while the Canvas is mounted (see snapshot.js), and draws
+// the thumbnails of camera slots that have none (after Open Project, I.14.3).
 export default function SnapshotBridge() {
   const gl = useThree((state) => state.gl)
   const scene = useThree((state) => state.scene)
   const camera = useThree((state) => state.camera)
   const controls = useThree((state) => state.controls)
+  const slots = useCameraSlotsStore((state) => state.slots)
+
+  // Runs after the scene has the opened room and objects: Open changes them
+  // and the slots in one step, so this commit of the Canvas has them all. A
+  // thumbnail that fails (e.g. context lost) stays empty.
+  useEffect(() => {
+    slots.forEach((slot, index) => {
+      if (!slot || slot.thumbnail) return
+      try {
+        const thumbnail = renderView(gl, scene, camera, slot.view, canvasToThumbnail)
+        if (thumbnail) useCameraSlotsStore.getState().setThumbnail(index, thumbnail)
+      } catch {
+        // Left empty, like a failed capture (snapshot.js).
+      }
+    })
+  }, [slots, gl, scene, camera])
 
   useEffect(() => {
     // The frame guide's view now: the Plan camera and the point it orbits

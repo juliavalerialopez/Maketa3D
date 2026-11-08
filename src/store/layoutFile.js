@@ -2,6 +2,7 @@ import { DEFAULT_ROOM, ROOM_LIMITS, useRoomStore } from './roomStore.js'
 import { useObjectsStore } from './objectsStore.js'
 import { useModeStore } from './modeStore.js'
 import { useHistoryStore } from './historyStore.js'
+import { SLOT_COUNT, useCameraSlotsStore } from './cameraSlotsStore.js'
 import { clampPosition, normalizeDegrees, toDegrees, toRadians } from './roomBounds.js'
 import { OBJECT_TYPES } from '../components/objects/catalog.js'
 import { saveBlob } from '../services/download.js'
@@ -12,17 +13,30 @@ import { saveBlob } from '../services/download.js'
 // saved (size comes from the catalog, or from screenInches for a TV stand).
 // A hidden object (H.6.2) has "hidden": true; shown objects have no flag, so
 // files from before the Hide switch still import.
+// "cameras" (I.14.3) has one entry per camera slot: null (empty) or
+// { x, y, z, targetX, targetY, targetZ, fov } (meters, fov in degrees).
+// Thumbnails are not saved. Files without it open with all slots empty.
 export const LAYOUT_VERSION = 1
 export const LAYOUT_FILE_NAME = 'maketa-layout.json'
 
 // Millimetres are enough; this hides float noise like 1.2000000000000002.
 const roundMeters = (meters) => Math.round(meters * 1000) / 1000
 const wholeDegrees = (radians) => normalizeDegrees(Math.round(toDegrees(radians)))
+// A hundredth of a degree is enough for a camera's field of view.
+const roundFov = (degrees) => Math.round(degrees * 100) / 100
 
-// The current room and objects, in the file format.
+// A camera slot's view ({ position, target, fov }) in the file format.
+function cameraData({ position, target, fov }) {
+  const [x, y, z] = position.map(roundMeters)
+  const [targetX, targetY, targetZ] = target.map(roundMeters)
+  return { x, y, z, targetX, targetY, targetZ, fov: roundFov(fov) }
+}
+
+// The current room, objects and camera slots, in the file format.
 export function layoutData() {
   const { room } = useRoomStore.getState()
   const { objects } = useObjectsStore.getState()
+  const { slots } = useCameraSlotsStore.getState()
   return {
     version: LAYOUT_VERSION,
     room: { width: room.width, depth: room.depth, height: room.height },
@@ -36,6 +50,7 @@ export function layoutData() {
       ...(object.screenInches !== undefined && { screenInches: object.screenInches }),
       ...(object.hidden && { hidden: true }),
     })),
+    cameras: slots.map((slot) => (slot ? cameraData(slot.view) : null)),
   }
 }
 
@@ -47,11 +62,13 @@ export function exportLayout(fileName = LAYOUT_FILE_NAME) {
 }
 
 // A new project: the default room, no objects, numbering from 1 again, the
-// Plan camera back at its starting view, and no undo history (I.11).
+// Plan camera back at its starting view, empty camera slots (I.14.3), and no
+// undo history (I.11).
 export function newLayout() {
   useRoomStore.getState().setRoomSize({ ...DEFAULT_ROOM })
   useObjectsStore.getState().replaceObjects([], {})
   useModeStore.getState().resetPlanView()
+  useCameraSlotsStore.getState().clearSlots()
   useHistoryStore.getState().clear()
 }
 
@@ -83,6 +100,23 @@ function isValidObject(item) {
   )
 }
 
+// A camera entry: null, or numbers for its place, target and field of view
+// (more than 0 and less than 180 degrees), looking somewhere (target not at
+// the camera's place).
+function isValidCamera(camera) {
+  if (camera === null) return true
+  if (!isRecord(camera)) return false
+  const keys = ['x', 'y', 'z', 'targetX', 'targetY', 'targetZ', 'fov']
+  if (!keys.every((key) => isNumber(camera[key]))) return false
+  const looksSomewhere = camera.x !== camera.targetX || camera.y !== camera.targetY || camera.z !== camera.targetZ
+  return camera.fov > 0 && camera.fov < 180 && looksSomewhere
+}
+
+// "cameras" is optional (older files); when there, one valid entry per slot.
+function isValidCameras(cameras) {
+  return cameras === undefined || (Array.isArray(cameras) && cameras.length === SLOT_COUNT && cameras.every(isValidCamera))
+}
+
 // The file's content as a layout, or null if it is not a valid layout file.
 function parseLayout(text) {
   let data
@@ -96,14 +130,27 @@ function parseLayout(text) {
     data.version === LAYOUT_VERSION &&
     isValidRoom(data.room) &&
     Array.isArray(data.objects) &&
-    data.objects.every(isValidObject)
+    data.objects.every(isValidObject) &&
+    isValidCameras(data.cameras)
   return valid ? data : null
 }
 
-// Replaces the room and objects with the layout in `text` (a file's content).
-// Returns false and changes nothing if the file is not a valid layout.
-// Positions are clamped inside the walls, tilt is 0, the selection is
-// cleared, and numbers continue after the highest imported one per type.
+// A file camera entry as a camera slot's view, or null.
+function slotView(camera) {
+  if (!camera) return null
+  return {
+    position: [camera.x, camera.y, camera.z],
+    target: [camera.targetX, camera.targetY, camera.targetZ],
+    fov: camera.fov,
+  }
+}
+
+// Replaces the room, objects and camera slots with the layout in `text` (a
+// file's content). Returns false and changes nothing if the file is not a
+// valid layout. Positions are clamped inside the walls, tilt is 0, the
+// selection is cleared, and numbers continue after the highest imported one
+// per type. Camera slots come back without thumbnails; the Plan scene draws
+// them (SnapshotBridge).
 export function importLayout(text) {
   const layout = parseLayout(text)
   if (!layout) return false
@@ -134,6 +181,8 @@ export function importLayout(text) {
 
   useRoomStore.getState().setRoomSize(room)
   useObjectsStore.getState().replaceObjects(objects, lastNumbers)
+  const cameras = layout.cameras ?? Array.from({ length: SLOT_COUNT }, () => null)
+  useCameraSlotsStore.getState().restoreSlots(cameras.map(slotView))
   // An opened project starts without undo history (I.11).
   useHistoryStore.getState().clear()
   return true
