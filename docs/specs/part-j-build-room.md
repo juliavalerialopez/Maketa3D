@@ -27,7 +27,7 @@ Status: **In progress**. Builds on Part A (room), Part D (arrange), Part G (save
 ## Requirements
 
 ### J0: Fixes
-- **Panel minimum width.** The left panel has a minimum width at which every number in Room configuration and Object details is fully visible (about the width in my second screenshot; Claude Code measures the smallest width that works). The divider cannot go below it.
+- **Panel minimum width.** The left panel has a minimum width at which every number in Room configuration and Object details is fully visible (about the width in my second screenshot; Claude Code measures the smallest width that works). The divider cannot go below it. (changed 2026-11-10) The minimum is **276 px**, measured by Julia.
 - **Drag moves by default.** Pressing an object and moving the mouse moves it on the floor. It rotates only when I grab the rotate widget.
 - **Move readout.** While I drag an object, a small label next to it shows its new position, X and Z in meters, the same numbers as Location in Object details (from the origin corner once J.2 is in). (changed 2026-11-10: the new position, not the distance moved.)
 - **Distance to walls.** While an object is selected in Plan, a thin line with a number (meters) goes from each of its four sides to the nearest wall in that direction. For a rotated object the four sides are the extremes of its footprint along the room axes. The numbers update while dragging.
@@ -104,7 +104,7 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 ## Tasks
 Order: fixes first, then the room data, then what I see. Each one follows the checkpoint workflow.
 
-- ⬜ J0.1 Panel minimum width.
+- ✅ J0.1 Panel minimum width.
 - ⬜ J0.2 Drag moves by default, rotate only from the widget.
 - ⬜ J0.3 Move readout while dragging.
 - ⬜ J0.4 Distances to the four walls for the selected object.

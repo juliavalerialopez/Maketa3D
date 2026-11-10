@@ -344,6 +344,13 @@ canvas {
   height: 100%;
 }
 
+/* The panel beside the scene is never narrower than 276 px, the width at which
+   every number in Room configuration and Object details still shows in full
+   (J0.1, measured by Julia). SplitLayout stops the divider there too. */
+.split-layout:not(.vertical) > .split-pane-first {
+  min-width: 276px;
+}
+
 .split-pane-second {
   flex: 1 1 auto;
   min-width: 0;
