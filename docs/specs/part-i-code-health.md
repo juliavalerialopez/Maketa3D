@@ -157,6 +157,7 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - Run after I.13 and I.14, so the test uses the final Room render.
 - Split (added 2026-11-04): I.15 prepares the test (a local-only switch for the shaded walls, the v4 prompt line as an option in `scripts/try-restyle.mjs`, the steps written in `docs/prompts/restyle.md`). Julia makes the renders and runs it (I.15.1), because it needs the browser and paid Gemini calls.
 - (added 2026-11-05) The switch is `?wallShades` on the dev server only; the prompt line is the `--shades` option, named v6 instead of v4, because v4 and v5 are taken by the H.8 tries. The steps compare plain and shaded walls of the same saved room and camera, and also check T1, T2 and T7 to T10.
+- (added 2026-11-10) I.15.2: Julia saw no difference with `?wallShades`. The first shades were close beiges, and the back wall's shade was the normal wall color, so most views looked the same. The four walls now get light tints that differ clearly from each other and from the normal wall (sand, blue, sage, clay). The test steps now save the view in Camera 1 before Save As.
 
 ## Tasks
 - ✅ I.1 Objects stay inside a smaller room: `NumberField` `onCommit`, `objectsStore.fitToRoom`, the room fields clamp on commit.
@@ -179,6 +180,7 @@ Changes the Part G Save and Save As rules. Done before I.16.
   - ✅ I.14.3 Camera slots in the layout file, Open and New Project (added 2026-11-07)
 - ✅ I.15 Wall shades test for rooms with several pieces.
   - ⬜ I.15.1 Make the shaded renders, run T3 and T11, record the results and the decision (Julia) (added 2026-11-04)
+  - ✅ I.15.2 Clearly different wall tints for `?wallShades`, none equal to the normal wall; the steps save the view in Camera 1 (added 2026-11-10)
 - ✅ I.17 Save writes into the opened or last saved file; Save As and a new project's first Save ask in the system window; the project name next to the logo ("New Project" until saved) (added 2026-11-09)
 - ⬜ I.16 Docs (`CLAUDE.md` Structure, including `shared/` and local imports in `api/` from I.8, `docs/SPEC.md` roadmap, layout, data model and part table, `README.md` features), `npm run build`, deploy, check on the live site.
 

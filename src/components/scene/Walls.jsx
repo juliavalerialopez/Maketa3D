@@ -10,10 +10,11 @@ const WALL_COLOR = '#ece7da'
 
 // I.15 wall-shades test, local only: with ?wallShades in the address of the
 // dev server (npm run dev or npx vercel dev, never the live site), each wall
-// gets its own clearly different light shade (back, front, left, right), so
-// the corners show in the Room render. Same in both themes. See
-// docs/prompts/restyle.md, "Wall shades test".
-const WALL_SHADES = ['#ece7da', '#d4ccba', '#bdb4a0', '#f8f5ee']
+// gets its own light tint (back sand, front blue, left sage, right clay),
+// each clearly different from the others and from WALL_COLOR, so any two
+// walls that meet show their corner in the Room render (I.15.2). Same in
+// both themes. See docs/prompts/restyle.md, "Wall shades test".
+const WALL_SHADES = ['#e8d9b5', '#cfdde8', '#d3e3cc', '#ecd0c8']
 const showWallShades = import.meta.env.DEV && new URLSearchParams(window.location.search).has('wallShades')
 
 export default function Walls() {
