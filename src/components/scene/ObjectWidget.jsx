@@ -4,6 +4,7 @@ import { TransformControls } from '@react-three/drei'
 import { Quaternion } from 'three'
 import { useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
+import { useUiStore } from '../../store/uiStore'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import { clampPosition, normalizeRadians, objectTransform } from '../../store/roomBounds'
 import { updateRing, widgetControls } from './widgetState'
@@ -54,6 +55,17 @@ export default function ObjectWidget() {
     endGesture()
   }
 
+  // The move arrows show the position label while dragging (J0.3).
+  function handleMoveStart() {
+    startDrag()
+    useUiStore.getState().setMovingId(selectedId)
+  }
+
+  function handleMoveEnd() {
+    endDrag()
+    useUiStore.getState().setMovingId(null)
+  }
+
   // The selected object's group, looked up when read, not during render: on a
   // fresh Plan mount the group joins the scene only at commit. TransformControls
   // reads object.current in a layout effect (after commit), and the handlers
@@ -86,6 +98,7 @@ export default function ObjectWidget() {
       if (!draggingRef.current) return
       draggingRef.current = false
       endGesture()
+      useUiStore.getState().setMovingId(null)
     }
     window.addEventListener('pointercancel', cancelDrag)
     return () => {
@@ -141,8 +154,8 @@ export default function ObjectWidget() {
         object={target}
         mode="translate"
         showY={false}
-        onMouseDown={startDrag}
-        onMouseUp={endDrag}
+        onMouseDown={handleMoveStart}
+        onMouseUp={handleMoveEnd}
         onObjectChange={handleMove}
       />
       <TransformControls

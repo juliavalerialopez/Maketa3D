@@ -1255,6 +1255,19 @@ canvas {
   margin-bottom: 0;
 }
 
+/* The position of an object while it is moved, floating above it (J0.3). */
+.move-readout {
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: var(--surface);
+  box-shadow: var(--shadow-out-small);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+}
+
 /* Undo and Redo at the top left of the scene (I.11). */
 .history-buttons {
   position: absolute;

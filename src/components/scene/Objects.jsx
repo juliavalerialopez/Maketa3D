@@ -4,6 +4,7 @@ import { Plane, Vector3 } from 'three'
 import { useShallow } from 'zustand/react/shallow'
 import { useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
+import { useUiStore } from '../../store/uiStore'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import { clampPosition, objectTransform } from '../../store/roomBounds'
 import { OBJECT_MODELS } from '../objects/models'
@@ -15,6 +16,11 @@ const CLICK_TOLERANCE = 2
 
 const UP = new Vector3(0, 1, 0)
 const hit = new Vector3()
+
+// Hides the position label (J0.3) if it belongs to `id`.
+function stopMoving(id) {
+  if (useUiStore.getState().movingId === id) useUiStore.getState().setMovingId(null)
+}
 
 // One object in the scene. Subscribes to its own entry only, so changing
 // one object re-renders that object and not the others.
@@ -37,6 +43,7 @@ function SceneObject({ id }) {
       if (!dragRef.current) return
       dragRef.current = null
       endGesture()
+      stopMoving(id)
       const { controls } = getThree()
       if (controls) controls.enabled = true
     },
@@ -75,6 +82,8 @@ function SceneObject({ id }) {
     const { room } = useRoomStore.getState()
     const position = clampPosition(current, room, hit.x + drag.offsetX, hit.z + drag.offsetZ)
     useObjectsStore.getState().updateObject(id, { position })
+    // The position label shows from the first move, not on a plain click.
+    if (useUiStore.getState().movingId !== id) useUiStore.getState().setMovingId(id)
   }
 
   function handlePointerUp(event) {
@@ -82,6 +91,7 @@ function SceneObject({ id }) {
     if (!drag || drag.pointerId !== event.pointerId) return
     dragRef.current = null
     endGesture()
+    stopMoving(id)
     event.target.releasePointerCapture(event.pointerId)
     const { controls } = getThree()
     if (controls) controls.enabled = true

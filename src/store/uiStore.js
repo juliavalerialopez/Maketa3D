@@ -35,7 +35,11 @@ export const useUiStore = create((set) => ({
   // Open or closed per Section id; a missing id means open (the default).
   openSections: {},
   frameVisible: true,
+  // Plan: the object being moved right now (floor drag or move arrows), for
+  // the position label next to it (J0.3); null when none.
+  movingId: null,
 
+  setMovingId: (movingId) => set({ movingId }),
   setPlanPercent: (planPercent) => set({ planPercent }),
   setPersonalizePercent: (personalizePercent) => set({ personalizePercent }),
   setSectionOpen: (id, open) =>
