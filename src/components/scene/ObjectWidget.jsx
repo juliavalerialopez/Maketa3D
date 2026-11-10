@@ -55,15 +55,16 @@ export default function ObjectWidget() {
     endGesture()
   }
 
-  // The move arrows show the position label while dragging (J0.3).
+  // The move arrows show the moved-distance label while dragging (J0.3.1).
   function handleMoveStart() {
     startDrag()
-    useUiStore.getState().setMovingId(selectedId)
+    const object = getObject(selectedId)
+    if (object) useUiStore.getState().setMoving({ id: selectedId, start: [object.position[0], object.position[2]] })
   }
 
   function handleMoveEnd() {
     endDrag()
-    useUiStore.getState().setMovingId(null)
+    useUiStore.getState().setMoving(null)
   }
 
   // The selected object's group, looked up when read, not during render: on a
@@ -98,7 +99,7 @@ export default function ObjectWidget() {
       if (!draggingRef.current) return
       draggingRef.current = false
       endGesture()
-      useUiStore.getState().setMovingId(null)
+      useUiStore.getState().setMoving(null)
     }
     window.addEventListener('pointercancel', cancelDrag)
     return () => {

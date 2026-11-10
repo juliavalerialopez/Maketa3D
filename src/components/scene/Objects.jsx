@@ -17,9 +17,9 @@ const CLICK_TOLERANCE = 2
 const UP = new Vector3(0, 1, 0)
 const hit = new Vector3()
 
-// Hides the position label (J0.3) if it belongs to `id`.
+// Hides the moved-distance label (J0.3.1) if it belongs to `id`.
 function stopMoving(id) {
-  if (useUiStore.getState().movingId === id) useUiStore.getState().setMovingId(null)
+  if (useUiStore.getState().moving?.id === id) useUiStore.getState().setMoving(null)
 }
 
 // One object in the scene. Subscribes to its own entry only, so changing
@@ -31,7 +31,7 @@ function SceneObject({ id }) {
   const object = useObjectsStore((state) => state.objects.find((item) => item.id === id))
   // Read when needed: the default controls (orbit) are paused while dragging.
   const getThree = useThree((state) => state.get)
-  // Active drag: { pointerId, plane, offsetX, offsetZ }.
+  // Active drag: { pointerId, plane, offsetX, offsetZ, start: [x, z] }.
   const dragRef = useRef(null)
 
   // Removed in the middle of a drag (e.g. Delete): no pointer up comes, so
@@ -64,7 +64,7 @@ function SceneObject({ id }) {
     const plane = new Plane(UP, -event.point.y)
     if (!event.ray.intersectPlane(plane, hit)) return
     const [x, , z] = object.position
-    dragRef.current = { pointerId: event.pointerId, plane, offsetX: x - hit.x, offsetZ: z - hit.z }
+    dragRef.current = { pointerId: event.pointerId, plane, offsetX: x - hit.x, offsetZ: z - hit.z, start: [x, z] }
     // The whole drag is one undo step (I.11).
     beginGesture()
     event.target.setPointerCapture(event.pointerId)
@@ -82,8 +82,8 @@ function SceneObject({ id }) {
     const { room } = useRoomStore.getState()
     const position = clampPosition(current, room, hit.x + drag.offsetX, hit.z + drag.offsetZ)
     useObjectsStore.getState().updateObject(id, { position })
-    // The position label shows from the first move, not on a plain click.
-    if (useUiStore.getState().movingId !== id) useUiStore.getState().setMovingId(id)
+    // The moved-distance label shows from the first move, not on a plain click.
+    if (useUiStore.getState().moving?.id !== id) useUiStore.getState().setMoving({ id, start: drag.start })
   }
 
   function handlePointerUp(event) {

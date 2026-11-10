@@ -30,6 +30,7 @@ Status: **In progress**. Builds on Part A (room), Part D (arrange), Part G (save
 - **Panel minimum width.** The left panel has a minimum width at which every number in Room configuration and Object details is fully visible (about the width in my second screenshot; Claude Code measures the smallest width that works). The divider cannot go below it. (changed 2026-11-10) The minimum is **276 px**, measured by Julia.
 - **Drag moves by default.** Pressing an object and moving the mouse moves it on the floor. It rotates only when I grab the rotate widget.
 - **Move readout.** While I drag an object, a small label next to it shows its new position, X and Z in meters, the same numbers as Location in Object details (from the origin corner once J.2 is in). (changed 2026-11-10: the new position, not the distance moved.)
+  - (added 2026-11-10) J0.3.1: after trying it, Julia wants the distance moved instead: one number per direction the object moved along the room's axes, each with an arrow showing which way it went on screen (→ ↗ ↑ ↖ ← ↙ ↓ ↘), e.g. "→ 30 cm" for a straight move and "→ 30 cm  ↑ 1.2 m" for a diagonal one. Under 1 m in centimeters, from 1 m in meters.
 - **Distance to walls.** While an object is selected in Plan, a thin line with a number (meters) goes from each of its four sides to the nearest wall in that direction. For a rotated object the four sides are the extremes of its footprint along the room axes. The numbers update while dragging.
 - **Duplicate.** Ctrl+D (and a Duplicate button in Object details) makes a copy 0.3 m to the side, with its own number, and selects it. Clamped inside the walls.
 
@@ -107,6 +108,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - ✅ J0.1 Panel minimum width.
 - ✅ J0.2 Drag moves by default, rotate only from the widget.
 - ✅ J0.3 Move readout while dragging.
+  - ✅ J0.3.1 The readout shows the distance moved per direction, with arrows (added 2026-11-10)
 - ✅ J0.4 Distances to the four walls for the selected object.
 - ⬜ J0.5 Shortcuts: Ctrl+S, Ctrl+O, arrow nudge, R, and the focus guard.
 - ⬜ J0.6 Duplicate and Ctrl+D.
@@ -124,7 +126,8 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 ## Acceptance criteria
 - [ ] J0.1: with the divider dragged fully left, at 1280 px and at a wide window, every number in Room configuration and Object details is fully visible.
 - [ ] J0.2: pressing on a sofa and moving the mouse moves it, also zoomed out; it turns only when I grab the rotate ring.
-- [ ] J0.3: while dragging, the label shows the same X and Z as Object details shows after the drop.
+- [ ] J0.3: while dragging, the label shows the same X and Z as Object details shows after the drop. (replaced by J0.3.1)
+- [ ] J0.3.1: a sofa dragged 30 cm straight shows one number, "30 cm", with an arrow the way it moved on screen; a diagonal drag shows two; 1 m and more shows in meters.
 - [ ] J0.4: a selected sofa shows four lines with distances that add up to the room size minus its footprint, for a turned sofa too, and they update while dragging.
 - [ ] J0.5: Ctrl+S saves in all modes; Ctrl+O opens in Plan and Build; arrows nudge 10 cm (Shift 1 cm) and one Ctrl+Z undoes a burst; R switches the widget; Backspace with the color field or a button focused does not delete.
 - [ ] J0.6: Ctrl+D and the Duplicate button make "Sofa 2" next to "Sofa 1", selected, inside the walls; one Ctrl+Z removes it.
