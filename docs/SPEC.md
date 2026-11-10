@@ -107,7 +107,7 @@ Save writes the layout as JSON into the project's file (the one opened or last s
 | F | specs/part-f-restyle.md | Reference photo, Generate/Regenerate via serverless AI, daily limits | Done |
 | G | specs/part-g-style-objects-layout.md | Soft UI and dark theme, five new objects, Project menu (new, open, save) | Done |
 | H | specs/part-h-references-versions.md | Version history, download, a reference image per object and for the room, Hide switch, limits from env vars | Done |
-| I | specs/part-i-code-health.md | Bug fixes, code health and tests; drag and drop upload, undo, fixed 1920 × 1080 render, camera slots, save into the opened file, wall-shade test | In progress |
+| I | specs/part-i-code-health.md | Bug fixes, code health and tests; drag and drop upload, undo, fixed 1920 × 1080 render, camera slots, save into the opened file, wall-shade test, prompt v9 (room photo sets the walls, pieces keep their facing) | Done |
 
 ## How we work
 - Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.

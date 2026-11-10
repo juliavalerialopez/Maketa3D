@@ -1,6 +1,6 @@
 # Part I: Code health and backlog
 
-Status: **In progress**. Builds on Part H (versions, a reference per object, Hide switch).
+Status: **Done**. Builds on Part H (versions, a reference per object, Hide switch).
 
 ## Goal
 1. Fix the known bugs and risks: objects left outside a smaller room, downloads that can fail, a crash that blanks the page, and a limit counter that can briefly refuse an allowed request.
@@ -202,7 +202,7 @@ Changes the Part G Save and Save As rules. Done before I.16.
   - ✅ I.18.3 v8 plain-walls line: tested with 6 runs on `simple-corner.json`, live (added 2026-11-10)
 - ✅ I.19 Each object's facing side in the request and the prompt, tested on `simple-corner.json` (added 2026-11-10)
 - ✅ I.17 Save writes into the opened or last saved file; Save As and a new project's first Save ask in the system window; the project name next to the logo ("New Project" until saved) (added 2026-11-09)
-- ⬜ I.16 Docs (`CLAUDE.md` Structure, including `shared/` and local imports in `api/` from I.8, `docs/SPEC.md` roadmap, layout, data model and part table, `README.md` features), `npm run build`, deploy, check on the live site.
+- ✅ I.16 Docs (`CLAUDE.md` Structure, including `shared/` and local imports in `api/` from I.8, `docs/SPEC.md` roadmap, layout, data model and part table, `README.md` features), `npm run build`, deploy, check on the live site.
 
 ## Acceptance criteria
 - [x] I.1: a sofa against the right wall, room width typed from 10 to 3: the sofa does not move while typing and sits inside the new wall after blur. The same with the minus button and with a drag on the field.
@@ -257,3 +257,4 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - 2026-11-10: I.18.3 and I.19 added (Julia): the live "simple corner" result still took the sofa photo's wainscoting (v7 misses 1 in 6), and the TV stand turned toward the sofa (4 of 6). Walls first, then the facing side per object. I.16 waits for both.
 - 2026-11-10: I.18.3: v8 kept the plain walls in 6 of 6 runs (v7: 5 of 6), so v8 is live.
 - 2026-11-10: I.19: each piece with a front sends which way it faces; v9 says it per piece. TV screen toward the camera 5 of 6 (v8: 2 of 6), so v9 is live. The I.18.3 TV scores were against Julia's intent, not the render (the TV was turned round); corrected in `docs/prompts/restyle.md`. Backlog: show a piece's front in the render.
+- 2026-11-10: I.16 done: docs updated, deployed, and checked on the live site by Julia (camera slots, Camera menu, Save after Open, a Generate with v9). Part I is Done.
