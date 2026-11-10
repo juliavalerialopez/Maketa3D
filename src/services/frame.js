@@ -4,6 +4,8 @@
 // so a partly visible object counts.
 import { Euler, Matrix4, PerspectiveCamera, Vector3 } from 'three'
 import { objectTransform, toDegrees, toRadians } from '../store/roomBounds.js'
+import { OBJECT_TYPES } from '../components/objects/catalog.js'
+import { FACINGS } from '../../shared/restyle.js'
 
 // The Room render's fixed size, whatever the window size (I.13).
 export const RENDER_WIDTH = 1920
@@ -82,6 +84,26 @@ export function cameraView(camera, width, height) {
     width,
     height,
   }
+}
+
+// Which way the object's front faces in the picture `camera` takes (I.19):
+// one of FACINGS, or null for a type without a front. Seen from above: the
+// angle between the object's front and the line from the object to the
+// camera, turned to the right or left of the image. Each of the eight
+// directions covers 45°, so 'front' is within 22.5° of facing the camera.
+export function facingOf(object, camera) {
+  if (!OBJECT_TYPES[object.type]?.front) return null
+  const { position, rotation } = objectTransform(object)
+  const front = new Vector3(0, 0, 1).applyEuler(euler.set(...rotation))
+  const toCamera = new Vector3(camera.position.x - position[0], 0, camera.position.z - position[2]).normalize()
+  // The image's right, on the floor, square to the line to the camera.
+  const cameraRight = new Vector3(1, 0, 0).applyQuaternion(camera.quaternion)
+  const right = new Vector3(toCamera.z, 0, -toCamera.x)
+  if (right.dot(cameraRight) < 0) right.negate()
+  const angle = toDegrees(Math.atan2(front.dot(right), front.dot(toCamera)))
+  // 0° front, 90° right, ±180° back, -90° left; FACINGS goes round clockwise.
+  const step = Math.round((((angle % 360) + 360) % 360) / 45) % 8
+  return FACINGS[step]
 }
 
 // Scratch objects, reused to avoid allocations per check.

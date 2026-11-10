@@ -16,8 +16,9 @@ export const useModeStore = create((set) => ({
   // (I.14.2); memory only. Each is { image, objects, view } or null (an empty
   // slot, or a render that failed):
   // - image: PNG data URL;
-  // - objects: where each object's centre shows in it (H.7), [{ id, x, y }],
-  //   x and y in percent from the left and top (sent to the AI);
+  // - objects: where each object's centre shows in it (H.7), [{ id, x, y,
+  //   facing }], x and y in percent from the left and top, facing which way
+  //   its front faces there (I.19, null without a front) (sent to the AI);
   // - view: the camera that took it (cameraView in services/frame.js), so
   //   in-frame checks use it and not the current Plan camera (H.6.2).
   // Not to be confused with a version's `roomRender` (restyleStore), which is

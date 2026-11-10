@@ -1,10 +1,11 @@
 // Live restyle prompt. Must match the latest version in docs/prompts/restyle.md.
-// v8 (I.18.3): v3 (H.8), built per request from the Reference Room card and
+// v9 (I.19): v3 (H.8), built per request from the Reference Room card and
 // the objects, plus the room-only line (v7) and the plain-walls line (v8) when
-// there is a room photo and an object photo. Images are sent in this order:
-// 1 = Room render, then the room photo (if the room is in Reference mode),
-// then the object photos in list order.
-export const PROMPT_VERSION = 'v8'
+// there is a room photo and an object photo, plus which way each piece with a
+// front faces (v9). Images are sent in this order: 1 = Room render, then the
+// room photo (if the room is in Reference mode), then the object photos in
+// list order.
+export const PROMPT_VERSION = 'v9'
 
 // The kind of item from its list name: "Coffee table 2" -> "coffee table".
 const kindOf = (name) => name.replace(/\s+\d+$/, '').toLowerCase()
@@ -20,9 +21,25 @@ export function promptImages({ render, room, objects }) {
   return [jpeg(render), ...photos]
 }
 
-// room: { mode, photo? }; objects: [{ name, mode, x, y, photo? }] (x and y in
-// percent of the image from the left and from the top). Returns the prompt
-// text; image numbers follow the order above.
+// v9 facing sentences (I.19): which way a piece's front faces in image 1, by
+// the request's `facing` (one of FACINGS in shared/restyle.js). The grey
+// shapes' front and back look alike, so without this the model guesses.
+const FACING_SENTENCES = {
+  front: 'Its front faces the camera.',
+  'front-right': 'Its front faces the camera, turned toward the right of the image.',
+  right: 'Its front faces the right of the image; the camera sees it from the side.',
+  'back-right': 'Its front faces away from the camera, toward the right of the image; the camera sees mostly its back.',
+  back: 'Its back faces the camera.',
+  'back-left': 'Its front faces away from the camera, toward the left of the image; the camera sees mostly its back.',
+  left: 'Its front faces the left of the image; the camera sees it from the side.',
+  'front-left': 'Its front faces the camera, turned toward the left of the image.',
+}
+
+export const facingSentence = (facing) => FACING_SENTENCES[facing] ?? null
+
+// room: { mode, photo? }; objects: [{ name, mode, x, y, facing?, photo? }] (x
+// and y in percent of the image from the left and from the top). Returns the
+// prompt text; image numbers follow the order above.
 export function buildPrompt({ room, objects }) {
   let nextImage = 2
   const roomImage = room.photo ? nextImage++ : null
@@ -37,7 +54,8 @@ export function buildPrompt({ room, objects }) {
 
   const objectLines = objects.map((object) => {
     const kind = kindOf(object.name)
-    const where = `${object.name} (${withArticle(kind)}): its grey shape is centered at ${object.x}% from the left and ${object.y}% from the top of image 1.`
+    const facing = facingSentence(object.facing)
+    const where = `${object.name} (${withArticle(kind)}): its grey shape is centered at ${object.x}% from the left and ${object.y}% from the top of image 1.${facing ? ` ${facing}` : ''}`
     if (object.photo) {
       const image = nextImage++
       return [

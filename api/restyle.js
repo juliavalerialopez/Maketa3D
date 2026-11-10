@@ -1,7 +1,8 @@
 // Restyle function (Part F, H.7): POST { render, room, objects } returns
 // { image, remaining } with the AI image as a data URL. render is a base64
 // JPEG; room is { mode, photo? }; objects is [{ id, type, name, mode, x, y,
-// photo? }] (see readInput); photos are base64 JPEG. GET returns
+// facing?, photo? }] (see readInput); photos are base64 JPEG; facing is one
+// of FACINGS, only for types with a front (I.19). GET returns
 // { remaining } without counting. When remaining is 0, `limit` says which
 // limit was reached ('total' | 'visitor'). Every answer also carries the
 // current limits, visitorLimit and totalLimit (H.1). Errors are { error: code }:
@@ -12,7 +13,7 @@ import { restyleImage } from './_gemini.js'
 import { limits, release, remaining, reserve } from './_limits.js'
 import { buildPrompt, promptImages } from './_restyle-prompt.js'
 // Limits shared with the browser (I.8).
-import { MAX_BODY, MAX_OBJECTS, MAX_PHOTOS } from '../shared/restyle.js'
+import { FACINGS, MAX_BODY, MAX_OBJECTS, MAX_PHOTOS } from '../shared/restyle.js'
 
 const MODES = ['reference', 'creative']
 const ID = /^[A-Za-z0-9-]{1,64}$/
@@ -51,7 +52,8 @@ function isValidObject(object) {
     TYPE.test(object.type ?? '') &&
     NAME.test(object.name ?? '') &&
     isPercent(object.x) &&
-    isPercent(object.y)
+    isPercent(object.y) &&
+    (object.facing === undefined || FACINGS.includes(object.facing))
   )
 }
 

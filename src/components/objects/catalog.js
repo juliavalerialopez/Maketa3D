@@ -7,11 +7,14 @@ import { tvStandSize } from './tvStandSize.js'
 // The Objects section shows one Add button per entry, in this order.
 // A type with `screenInches` has a Screen size field: the object stores
 // `screenInches` (whole inches, min to max) and its size is sizeFor(inches).
+// A type with `front: true` has a front (seat, shelves, screen) that faces
+// local +z in its model; the restyle request says which way it faces (I.19).
 export const OBJECT_TYPES = {
   sofa: {
     label: 'Sofa',
     size: { width: 2.0, depth: 0.9, height: 0.8 },
     color: '#b5654a',
+    front: true,
   },
   coffeeTable: {
     label: 'Coffee table',
@@ -22,11 +25,13 @@ export const OBJECT_TYPES = {
     label: 'Armchair',
     size: { width: 0.8, depth: 0.85, height: 0.85 },
     color: '#3d6e52',
+    front: true,
   },
   bookshelf: {
     label: 'Bookshelf',
     size: { width: 0.8, depth: 0.3, height: 1.8 },
     color: '#a0785a',
+    front: true,
   },
   floorLamp: {
     label: 'Floor lamp',
@@ -39,6 +44,7 @@ export const OBJECT_TYPES = {
     color: '#d9d2bf',
     screenInches: { min: 32, max: 85, default: 55 },
     sizeFor: tvStandSize,
+    front: true,
   },
 }
 

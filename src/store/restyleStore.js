@@ -47,7 +47,8 @@ function referenceKeyExists(key) {
 const currentRoomRender = () => selectRoomRender(useModeStore.getState())
 
 // Where an object's centre shows in the current Room render ({ x, y }, in
-// percent, clamped to the frame), or undefined if the render has no position for it.
+// percent, clamped to the frame) and which way it faces there (facing, I.19),
+// or undefined if the render has no position for it.
 function framePositionOf(id) {
   return currentRoomRender()?.objects.find((item) => item.id === id)
 }
@@ -113,8 +114,10 @@ function requestContent(references) {
     .getState()
     .objects.filter((object) => sent.has(object.id))
     .map((object) => {
-      const { x, y } = framePositionOf(object.id) ?? { x: 50, y: 50 }
-      return { id: object.id, type: object.type, name: objectLabel(object), x, y, ...card(object.id) }
+      const { x, y, facing } = framePositionOf(object.id) ?? { x: 50, y: 50 }
+      // Only types with a front have a facing (I.19).
+      const side = facing ? { facing } : {}
+      return { id: object.id, type: object.type, name: objectLabel(object), x, y, ...side, ...card(object.id) }
     })
   return { room: card(ROOM_REFERENCE), objects }
 }

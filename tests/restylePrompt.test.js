@@ -1,7 +1,9 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { FACINGS } from '../shared/restyle.js'
 import {
   buildPrompt,
+  facingSentence,
   PLAIN_WALLS_LINE,
   promptImages,
   roomOnlyLine,
@@ -40,6 +42,20 @@ test('the wall-shades line (I.15 test only) goes before the last line, and the l
   assert.equal(lines.at(-3), WALL_SHADES_LINE)
 })
 
+test('the facing sentence (v9) follows the position, only for pieces with a facing', () => {
+  const facing = [{ ...objects[0], facing: 'left' }, objects[1], { ...objects[2], facing: 'front-right' }]
+  assert.doesNotMatch(buildPrompt({ room: { mode: 'creative' }, objects }), /Its front|Its back/)
+  const prompt = buildPrompt({ room: { mode: 'creative' }, objects: facing })
+  assert.match(prompt, /top of image 1\. Its front faces the left of the image; the camera sees it from the side\.\n {2}Image 2/)
+  assert.match(prompt, /Coffee table 1[^\n]*top of image 1\.\n/)
+  assert.match(prompt, /top of image 1\. Its front faces the camera, turned toward the right of the image\.\n {2}Image 3/)
+})
+
+test('every facing has a sentence', () => {
+  for (const facing of FACINGS) assert.ok(facingSentence(facing), facing)
+  assert.equal(facingSentence('up'), null)
+})
+
 test('without a room photo the first object photo is image 2', () => {
   const prompt = buildPrompt({ room: { mode: 'creative' }, objects })
   assert.doesNotMatch(prompt, /room reference/)
@@ -47,7 +63,7 @@ test('without a room photo the first object photo is image 2', () => {
   assert.match(prompt, /Armchair 2[^\n]*\n {2}Image 3 is its reference/)
 })
 
-test('the live prompt (v8) has the room-only line, naming the object photos, then the plain-walls line, before the last line', () => {
+test('the live prompt has the room-only line (v7), naming the object photos, then the plain-walls line (v8), before the last line', () => {
   const input = { room: { mode: 'reference', photo: 'room' }, objects }
   const line = roomOnlyLine(input)
   assert.match(line, /^Only image 2 sets the walls, floor and light\. Images 3 and 4 are for the furniture only/)

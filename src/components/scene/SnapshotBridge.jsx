@@ -7,6 +7,7 @@ import {
   RENDER_HEIGHT,
   RENDER_WIDTH,
   cameraView,
+  facingOf,
   framePosition,
   frameView,
   viewCamera,
@@ -18,14 +19,16 @@ const box = new Box3()
 const centre = new Vector3()
 
 // Each object's centre (the middle of its 3D bounding box) as a position in
-// the Room render, so the AI can tell the grey shapes apart (H.7). The scene
-// names each object's group after its id (scene/Objects.jsx).
+// the Room render, so the AI can tell the grey shapes apart (H.7), and which
+// way its front faces there (I.19; null for a type without a front). The
+// scene names each object's group after its id (scene/Objects.jsx).
 function objectPositions(scene, camera, width, height) {
   return useObjectsStore.getState().objects.flatMap((object) => {
     const group = scene.getObjectByName(object.id)
     if (!group) return []
     box.setFromObject(group).getCenter(centre)
-    return [{ id: object.id, ...framePosition(centre, camera, width, height) }]
+    const facing = facingOf(object, camera)
+    return [{ id: object.id, ...framePosition(centre, camera, width, height), facing }]
   })
 }
 

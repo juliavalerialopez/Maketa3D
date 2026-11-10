@@ -46,7 +46,7 @@ selectedId: string | null
 mode: 'plan' | 'personalize'
 roomRenders: [{ image, objects, view } | null]  // one Room render per camera slot (empty until the first switch), taken on switching to Personalize, memory only (I.12, I.14.2):
 //   image: PNG data URL
-//   objects: [{ id, x, y }], each object's centre in the render, percent (sent to the AI)
+//   objects: [{ id, x, y, facing }], each object's centre in the render, percent, and which way its front faces there (one of eight, null without a front, I.19) (sent to the AI)
 //   view: { projection, view, width, height }, the camera that took it (in-frame checks)
 renderSlot: number | null                   // the camera chosen in Personalize; its render is shown, carded and sent
 planView: { position: [x, y, z], target: [x, y, z] }  // Plan orbit camera, restored when Plan mounts again

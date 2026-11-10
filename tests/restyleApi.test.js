@@ -20,8 +20,9 @@ const object = (index) => ({ id: `id-${index}`, type: 'sofa', name: `Sofa ${inde
 const post = (body) =>
   POST(new Request('http://localhost/api/restyle', { method: 'POST', body: typeof body === 'string' ? body : JSON.stringify(body) }))
 
-test('a valid request is answered with the image', async () => {
-  const response = await post({ render: jpeg, room: { mode: 'reference', photo: jpeg }, objects: [object(1)] })
+test('a valid request, with or without a facing, is answered with the image', async () => {
+  const objects = [object(1), { ...object(2), mode: 'creative', photo: undefined, facing: 'front-left' }]
+  const response = await post({ render: jpeg, room: { mode: 'reference', photo: jpeg }, objects })
   assert.equal(response.status, 200)
   const answer = await response.json()
   assert.equal(answer.image, `data:image/jpeg;base64,${jpeg}`)
@@ -32,6 +33,14 @@ test(`more than ${MAX_PHOTOS} photos are refused`, async () => {
   const response = await post({ render: jpeg, room: { mode: 'reference', photo: jpeg }, objects })
   assert.equal(response.status, 400)
   assert.equal((await response.json()).error, 'bad_input')
+})
+
+test('an unknown facing is refused', async () => {
+  for (const facing of ['up', '', null, 3]) {
+    const response = await post({ render: jpeg, room: { mode: 'creative' }, objects: [{ ...object(1), facing }] })
+    assert.equal(response.status, 400)
+    assert.equal((await response.json()).error, 'bad_input')
+  }
 })
 
 test('a body over the size limit is refused', async () => {

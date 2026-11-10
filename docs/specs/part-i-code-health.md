@@ -162,6 +162,8 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - Julia: in the "simple corner" room the TV stand faces the camera in the Room render, but the AI turns it toward the sofa (4 of 6 v7 runs). The prompt only says "do not turn any piece to face the camera"; it never says which way each piece faces.
 - The browser knows each object's rotation and the Room render's camera, so each object in the request gets the side of it the camera sees (for example front, front and left side, left side, back), worked out in `services/frame.js` with the camera stored with the Room render, and the prompt says it per piece (e.g. "the camera sees its front"). The server checks the new field like the others.
 - Prompt work like I.18: a candidate first, tested on `scratch/simple-corner.json` (saved again from the app, so it has the new field) with 6 runs; it goes live only if the TV stand keeps its direction in at least 5 of 6 and nothing else gets worse. Details (which way each model's front points, how many sides) are settled when I.19 starts.
+- (added 2026-11-10) Details: the sofa, armchair, bookshelf and TV stand have a front (`front: true` in the catalog; every model's front faces local +z); the coffee table and floor lamp have none and get no facing. Eight directions in image terms (`FACINGS` in `shared/restyle.js`: front, front-right, right, back-right, back, back-left, left, front-left), 45° each, measured from where the piece stands toward the camera (`facingOf` in `services/frame.js`). Stored with each object of the Room render and sent as an optional `facing`; the server refuses any other value. The v9 sentences were the `--facing` option of the script while they were a candidate.
+- (added 2026-11-10) Found while testing: in Julia's "simple corner" the TV stand was turned the wrong way (the app said `back-right`); both sides of the TV are black in the render, so it did not show. Julia turned it round and saved the request again. Result: TV screen toward the camera v8 2 of 6, v9 5 of 6; walls 6 of 6 in both. v9 is live, and the `--facing` option is removed again.
 
 ### I.15 Wall shades test (rooms with several pieces)
 - Prompt and model work only, no UI. Goal: T3 (the room corner stays in place) and T11 (a reference's chaise is kept) pass with several pieces.
@@ -198,7 +200,7 @@ Changes the Part G Save and Save As rules. Done before I.16.
   - ✅ I.18.1 Save the request, run T12 and the other tests with v3 and v7, record the results and the decision (Julia) (added 2026-11-10)
   - ✅ I.18.2 v7 live: `buildPrompt` adds the room-only line, `PROMPT_VERSION` 'v7', `--room-only` removed from the script; T12 with v7 recorded (added 2026-11-10)
   - ✅ I.18.3 v8 plain-walls line: tested with 6 runs on `simple-corner.json`, live (added 2026-11-10)
-- ⬜ I.19 Each object's facing side in the request and the prompt, tested on `simple-corner.json` (added 2026-11-10)
+- ✅ I.19 Each object's facing side in the request and the prompt, tested on `simple-corner.json` (added 2026-11-10)
 - ✅ I.17 Save writes into the opened or last saved file; Save As and a new project's first Save ask in the system window; the project name next to the logo ("New Project" until saved) (added 2026-11-09)
 - ⬜ I.16 Docs (`CLAUDE.md` Structure, including `shared/` and local imports in `api/` from I.8, `docs/SPEC.md` roadmap, layout, data model and part table, `README.md` features), `npm run build`, deploy, check on the live site.
 
@@ -224,7 +226,7 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - [ ] I.18: `npm test` covers the v7 line; T12 and the other results (3 runs each, v3 and v7) are in `docs/prompts/restyle.md`, with the decision; the live prompt changes only if v7 passes. (I.18.2 makes v7 live by Julia's choice)
 - [ ] I.18.2: `npm test` checks the room-only line in the live prompt and its absence without a room photo or an object photo; T12 with v7 passes 2 of 3 runs, recorded in `docs/prompts/restyle.md`.
 - [ ] I.18.3: the v8 line is tested in `npm test`; 6 runs of `simple-corner.json` with and without it are in `docs/prompts/restyle.md`, with the decision.
-- [ ] I.19: a TV stand that faces the camera in the Room render faces it in at least 5 of 6 results on `simple-corner.json`; a request without the new field, or with a wrong one, is refused; `npm test` covers the facing side.
+- [ ] I.19: a TV stand that faces the camera in the Room render faces it in at least 5 of 6 results on `simple-corner.json`; a request with a wrong facing is refused (the field is optional: types without a front have none); `npm test` covers the facing side.
 - [ ] I.15: T3 and T11 results (3 runs each) are in `docs/prompts/restyle.md`, with the decision.
 - [ ] No console errors.
 - [ ] `npm run build`, `npm run lint` and `npm test` succeed.
@@ -235,6 +237,7 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - Split three.js and drei into their own chunk, so a deploy doesn't make visitors download them again (measure first; 323 kB gzipped today).
 - Keep AI versions as Blobs with object URLs instead of data URLs (less memory with 6 versions).
 - Another image model for rooms with several pieces, if I.15 does not help (with a decision record).
+- (added 2026-11-10) Show a piece's front in the Plan view and the Room render, e.g. the TV's back in dark grey instead of black, so a piece turned the wrong way is easy to see (found in I.19).
 - Part J: "Save the Module": save the camera position together with the room styles. (from Part H)
 - Part J: doors and windows. (from Part H)
 
@@ -253,3 +256,4 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - 2026-11-10: I.18.2 added (Julia): v7 goes live anyway, since she has seen the problem in the app; checked with T12 on v7.
 - 2026-11-10: I.18.3 and I.19 added (Julia): the live "simple corner" result still took the sofa photo's wainscoting (v7 misses 1 in 6), and the TV stand turned toward the sofa (4 of 6). Walls first, then the facing side per object. I.16 waits for both.
 - 2026-11-10: I.18.3: v8 kept the plain walls in 6 of 6 runs (v7: 5 of 6), so v8 is live.
+- 2026-11-10: I.19: each piece with a front sends which way it faces; v9 says it per piece. TV screen toward the camera 5 of 6 (v8: 2 of 6), so v9 is live. The I.18.3 TV scores were against Julia's intent, not the render (the TV was turned round); corrected in `docs/prompts/restyle.md`. Backlog: show a piece's front in the render.

@@ -98,7 +98,8 @@ const input = {
       if (typeof object.name !== 'string' || typeof object.x !== 'number' || typeof object.y !== 'number') {
         usage('Each object needs a name, x and y.')
       }
-      return { name: object.name, x: object.x, y: object.y, ...(await loadCard(object, object.name)) }
+      const side = object.facing ? { facing: object.facing } : {}
+      return { name: object.name, x: object.x, y: object.y, ...side, ...(await loadCard(object, object.name)) }
     }),
   ),
 }

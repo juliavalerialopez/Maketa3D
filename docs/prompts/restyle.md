@@ -18,11 +18,16 @@ Output: 1K, 16:9.
 - v4 and v5 – 2026-11-03: tried in H.8 and not kept (see v3 Results).
 - v6 – candidate, not kept: the I.15 wall-shades line ("Wall shades test").
 - v7 – 2026-11-10 (I.18.2): v3 plus the I.18 room-only line before the last line, when there is a room photo and an object photo ("Room reference test").
-- v8 – 2026-11-10 (live, I.18.3): v7 plus the plain-walls line after the room-only line, under the same condition ("Room reference test").
+- v8 – 2026-11-10 (I.18.3): v7 plus the plain-walls line after the room-only line, under the same condition ("Room reference test").
+- v9 – 2026-11-10 (live, I.19): v8 plus a facing sentence per piece with a front ("Facing test").
 
-## v8 (2026-11-10, live)
+## v9 (2026-11-10, live)
 
-Built by `buildPrompt` in `api/_restyle-prompt.js`: the v3 text below, plus, when the request has a room photo and at least one object photo, two lines before the last line: the room-only line (`roomOnlyLine`, v7) and the plain-walls line (`PLAIN_WALLS_LINE`, v8). Both texts are in "Room reference test". Without a room photo or without an object photo, v8 is the same as v3.
+Built by `buildPrompt` in `api/_restyle-prompt.js`: the v3 text below, plus:
+- when the request has a room photo and at least one object photo, two lines before the last line: the room-only line (`roomOnlyLine`, v7) and the plain-walls line (`PLAIN_WALLS_LINE`, v8). Both texts are in "Room reference test";
+- for each piece whose request has a `facing` (types with a front: sofa, armchair, bookshelf, TV stand), one sentence right after its position (`facingSentence`, v9). The texts are in "Facing test".
+
+Without these, v9 is the same as v3.
 
 ## v3 (2026-11-03)
 
@@ -179,7 +184,7 @@ The walls of image 1 have different light shades only to show where the corners 
    - plain walls, live prompt: `node --env-file=.env.local scripts/try-restyle.mjs scratch/plain-several.json`
    - shaded walls, live prompt: `node --env-file=.env.local scripts/try-restyle.mjs scratch/shades-several.json`
    - shaded walls, live prompt plus the v6 line: `node --env-file=.env.local scripts/try-restyle.mjs scratch/shades-several.json --shades`
-   The results are in `scratch/restyle-runs/`. Written for v3; the script always uses the live prompt (v8 since I.18.3), so the names say `v8` (the v6 runs end in `-v8-shades`), and a request with a room photo and an object photo also gets the room-only and plain-walls lines.
+   The results are in `scratch/restyle-runs/`. Written for v3; the script always uses the live prompt (see Versions), so the names carry the live version (e.g. `-v9-shades` for the v6 runs), and a request with a room photo and an object photo also gets the room-only and plain-walls lines.
 6. Fill in the table below. T3 passes when the corner stays where it is in the render; T11 when the chaise is kept; the others as in the Part F and Part H specs. The pass rule is 2 of 3 runs.
 
 ### Results
@@ -203,7 +208,7 @@ Julia, 2026-11-10: when an object photo is strong (its own room has bold walls o
 Only image 2 sets the walls, floor and light. Images 3 and 4 are for the furniture only: take no wall color, wall finish, floor, rug or light from them, even when they show a strong room.
 ```
 
-**v8** (live since I.18.3): v7 plus this line after it, under the same condition (`PLAIN_WALLS_LINE`):
+**v8** (I.18.3, still in v9): v7 plus this line after it, under the same condition (`PLAIN_WALLS_LINE`):
 
 ```text
 If image 2 has plain walls, keep them plain: take no paneling, wainscoting or moldings from the other images.
@@ -217,7 +222,7 @@ If image 2 has plain walls, keep them plain: take no paneling, wainscoting or mo
    - T12, v3: done on 2026-11-10, before v7 went live (the script then still used v3).
    - T12, v7 (I.18.2): `node --env-file=.env.local scripts/try-restyle.mjs scratch/room-vs-object.json`
    - Optional, other tests with v7: `node --env-file=.env.local scripts/try-restyle.mjs scratch/plain-several.json` (the plain-walls request from the "Wall shades test" steps 2 and 3). This only adds the line if that request has a room photo and an object photo.
-   The v7 images are named `<time>-<case>-v7-<run>.png` (or `.jpg`) in `scratch/restyle-runs/`. Since I.18.3 these commands run v8, named `-v8-`.
+   The v7 images are named `<time>-<case>-v7-<run>.png` (or `.jpg`) in `scratch/restyle-runs/`. These commands now run the live prompt, named after it (e.g. `-v9-`).
 5. Fill in the table below. Pass rule: 2 of 3 runs.
 
 ### Results
@@ -244,7 +249,36 @@ Julia, 2026-11-10: on the live site (v7 just deployed; it may still have been v3
 
 Outside these: v8 runs 1 and 5 keep the white area above the walls (no ceiling), as in the render; v8 run 2 moves the coffee table to the right. The TV result may be chance; I.19 works on it directly.
 
+Correction (I.19): the TV row was scored as "the screen faces the camera", which is what Julia meant. But in this request's Room render the TV stand was turned the other way: the camera saw the TV's back (the app's facing for it was `back-right`; both sides are black in the render, so it did not show). Measured against the render, the TV row is v7 4/6 and v8 1/6. The request was saved again with the TV turned round for I.19.
+
 Decision (Julia, 2026-11-10, I.18.3): v8 goes live (the spec rule: 6 of 6 plain walls, nothing worse).
+
+## Facing test (Part I, I.19)
+The grey shapes in the Room render look the same from the front and the back (a TV is black on both sides), so the model guesses which way a piece faces, and often turns it toward the sofa or the camera. Since I.19 the browser works out which way each piece with a front (sofa, armchair, bookshelf, TV stand) faces in the Room render (`facingOf` in `src/services/frame.js`) and sends it as `facing`, one of eight values (`FACINGS` in `shared/restyle.js`). **v9** (live since I.19) adds one sentence per piece after its position:
+
+| facing | Sentence |
+|---|---|
+| front | Its front faces the camera. |
+| front-right | Its front faces the camera, turned toward the right of the image. |
+| right | Its front faces the right of the image; the camera sees it from the side. |
+| back-right | Its front faces away from the camera, toward the right of the image; the camera sees mostly its back. |
+| back | Its back faces the camera. |
+| back-left | Its front faces away from the camera, toward the left of the image; the camera sees mostly its back. |
+| left | Its front faces the left of the image; the camera sees it from the side. |
+| front-left | Its front faces the camera, turned toward the left of the image. |
+
+### Results
+2026-11-10, `scratch/simple-corner.json` saved again from the app with the TV stand turned round (facings: Sofa 1 `front-right`, Bookshelf 1 `front`, TV stand 1 `front-right`), 6 runs each, run and scored by Claude. v9 was the `--facing` option of the script while it was a candidate.
+
+| Check | v8 | v9 |
+|---|---|---|
+| TV stand: the screen faces the camera, as in the render (T1) | 2/6 (runs 2 to 5 show the TV's back) | 5/6 (run 4 shows the back) |
+| Walls and floor from the room photo (T12) | 6/6 | 6/6 |
+| Bookshelf and sofa from their photos (T7, T8) | 6/6 | 6/6 |
+
+Outside these: the sofa is sometimes straight instead of L-shaped (both versions); v9 run 1 adds a sloped ceiling on the right; v9 run 4 gives the Creative coffee table a glass top.
+
+Decision (Julia, 2026-11-10, I.19): v9 goes live (the spec rule: at least 5 of 6, nothing worse).
 
 ## Test cases
 See `docs/specs/part-f-restyle.md` (T1 to T6, pass rule: at least 2 of 3 runs on all three fixtures).

@@ -5,6 +5,7 @@ import {
   RENDER_HEIGHT,
   RENDER_WIDTH,
   cameraView,
+  facingOf,
   frameFov,
   framePosition,
   frameView,
@@ -79,4 +80,43 @@ test('a camera slot keeps the frame camera: its target is the middle of the Room
 
 test('without a Room render camera, every object counts', () => {
   assert.equal(isInFrame(sofaAt(100, 100), null), true)
+})
+
+// Facing (I.19): the camera at z = 5 looks toward -z, so +x is the right of
+// the image. An unturned model's front faces +z, toward the camera.
+const turned = (type, degrees, x = 0, z = 0) => ({
+  type,
+  size: { width: 1.5, depth: 0.4, height: 0.5 },
+  position: [x, 0, z],
+  rotation: [0, (degrees * Math.PI) / 180, 0],
+})
+
+test('an unturned piece faces the camera; turned, it faces the right, the back or the left', () => {
+  assert.equal(facingOf(turned('tvStand', 0), camera), 'front')
+  assert.equal(facingOf(turned('tvStand', 90), camera), 'right')
+  assert.equal(facingOf(turned('tvStand', 180), camera), 'back')
+  assert.equal(facingOf(turned('tvStand', -90), camera), 'left')
+  assert.equal(facingOf(turned('sofa', 270), camera), 'left')
+})
+
+test('the four in-between directions cover 45° each', () => {
+  assert.equal(facingOf(turned('sofa', 45), camera), 'front-right')
+  assert.equal(facingOf(turned('sofa', 135), camera), 'back-right')
+  assert.equal(facingOf(turned('sofa', -135), camera), 'back-left')
+  assert.equal(facingOf(turned('sofa', -45), camera), 'front-left')
+  assert.equal(facingOf(turned('sofa', 20), camera), 'front')
+  assert.equal(facingOf(turned('sofa', 25), camera), 'front-right')
+})
+
+test('the facing is measured toward the camera from where the piece stands', () => {
+  // At x = 3 the camera is to the left of the piece: turned to look at it is 'front'.
+  const towardCamera = (Math.atan2(-3, 5) * 180) / Math.PI
+  assert.equal(facingOf(turned('bookshelf', towardCamera, 3), camera), 'front')
+  // Unturned, it faces past the camera, toward the right of the image.
+  assert.equal(facingOf(turned('bookshelf', 0, 3), camera), 'front-right')
+})
+
+test('a type without a front has no facing', () => {
+  assert.equal(facingOf(turned('coffeeTable', 0), camera), null)
+  assert.equal(facingOf(turned('floorLamp', 90), camera), null)
 })
