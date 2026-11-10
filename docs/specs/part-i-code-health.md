@@ -156,6 +156,12 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - I.18 prepares the test: a v7 candidate line (only image 2 sets the walls, floor and light; the object photos are for the furniture only), added only when there is a room photo and an object photo, as the `--room-only` option of `scripts/try-restyle.mjs`; the steps and the results table in `docs/prompts/restyle.md`, "Room reference test".
 - I.18.1 (Julia): save one request with clearly disagreeing photos and run T12 with v3 and v7, plus v3 and v7 on `scratch/plain-several.json` for T1 to T3 and T7 to T11 (12 paid images). v7 goes live only if T12 passes and nothing else gets worse.
 - (added 2026-11-10) I.18.2: Julia chose v7 for the live prompt without the full test run: v3 passed T12, but she has seen a strong object photo override the room photo in the app. `buildPrompt` adds the room-only line itself (`PROMPT_VERSION` 'v7'), and the `--room-only` option is removed from the script. The check is T12 with v7 (3 runs, pass 2 of 3); if it fails or other results get worse, go back to v3.
+- (added 2026-11-10) I.18.3: on the live site, Julia's "simple corner" room (a plain room photo; a sofa photo with grey-blue wainscoting; a bookshelf photo with grey-green walls) still got the sofa photo's wainscoting. Saved as `scratch/simple-corner.json`, v7 kept the room photo's walls in 5 of 6 runs; the one miss copied the sofa photo's panels. Candidate **v8**: v7 plus one more line when there is a room photo and an object photo: if image 2 has plain walls, keep them plain, with no paneling, wainscoting or moldings from the other images. First as the `--plain-walls` option of `scripts/try-restyle.mjs`, 6 runs on `simple-corner.json` (a 1 in 6 miss needs more than 3 runs to show). v8 goes live if all 6 keep the plain walls and nothing else gets worse. Result: 6 of 6, so v8 is live (`PROMPT_VERSION` 'v8', the line added by `buildPrompt`, and the `--plain-walls` option removed again, like `--room-only`).
+
+### I.19 Each piece faces the same way as in the Room render (added 2026-11-10)
+- Julia: in the "simple corner" room the TV stand faces the camera in the Room render, but the AI turns it toward the sofa (4 of 6 v7 runs). The prompt only says "do not turn any piece to face the camera"; it never says which way each piece faces.
+- The browser knows each object's rotation and the Room render's camera, so each object in the request gets the side of it the camera sees (for example front, front and left side, left side, back), worked out in `services/frame.js` with the camera stored with the Room render, and the prompt says it per piece (e.g. "the camera sees its front"). The server checks the new field like the others.
+- Prompt work like I.18: a candidate first, tested on `scratch/simple-corner.json` (saved again from the app, so it has the new field) with 6 runs; it goes live only if the TV stand keeps its direction in at least 5 of 6 and nothing else gets worse. Details (which way each model's front points, how many sides) are settled when I.19 starts.
 
 ### I.15 Wall shades test (rooms with several pieces)
 - Prompt and model work only, no UI. Goal: T3 (the room corner stays in place) and T11 (a reference's chaise is kept) pass with several pieces.
@@ -191,6 +197,8 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - ✅ I.18 Room reference test: T12, the v7 room-only line as `--room-only` in `scripts/try-restyle.mjs`, the steps in `docs/prompts/restyle.md` (added 2026-11-10)
   - ✅ I.18.1 Save the request, run T12 and the other tests with v3 and v7, record the results and the decision (Julia) (added 2026-11-10)
   - ✅ I.18.2 v7 live: `buildPrompt` adds the room-only line, `PROMPT_VERSION` 'v7', `--room-only` removed from the script; T12 with v7 recorded (added 2026-11-10)
+  - ✅ I.18.3 v8 plain-walls line: tested with 6 runs on `simple-corner.json`, live (added 2026-11-10)
+- ⬜ I.19 Each object's facing side in the request and the prompt, tested on `simple-corner.json` (added 2026-11-10)
 - ✅ I.17 Save writes into the opened or last saved file; Save As and a new project's first Save ask in the system window; the project name next to the logo ("New Project" until saved) (added 2026-11-09)
 - ⬜ I.16 Docs (`CLAUDE.md` Structure, including `shared/` and local imports in `api/` from I.8, `docs/SPEC.md` roadmap, layout, data model and part table, `README.md` features), `npm run build`, deploy, check on the live site.
 
@@ -215,6 +223,8 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - [ ] I.17 (Chrome or Edge): open "My Project.json", change something, Save: no window, and opening the file again shows the change; the top bar says "My Project". Save As asks for name and folder, and later Saves go to the new file. New Project shows "New Project", and its first Save asks. Cancel in a system window changes nothing. In Firefox, Save still downloads a file.
 - [ ] I.18: `npm test` covers the v7 line; T12 and the other results (3 runs each, v3 and v7) are in `docs/prompts/restyle.md`, with the decision; the live prompt changes only if v7 passes. (I.18.2 makes v7 live by Julia's choice)
 - [ ] I.18.2: `npm test` checks the room-only line in the live prompt and its absence without a room photo or an object photo; T12 with v7 passes 2 of 3 runs, recorded in `docs/prompts/restyle.md`.
+- [ ] I.18.3: the v8 line is tested in `npm test`; 6 runs of `simple-corner.json` with and without it are in `docs/prompts/restyle.md`, with the decision.
+- [ ] I.19: a TV stand that faces the camera in the Room render faces it in at least 5 of 6 results on `simple-corner.json`; a request without the new field, or with a wrong one, is refused; `npm test` covers the facing side.
 - [ ] I.15: T3 and T11 results (3 runs each) are in `docs/prompts/restyle.md`, with the decision.
 - [ ] No console errors.
 - [ ] `npm run build`, `npm run lint` and `npm test` succeed.
@@ -241,3 +251,5 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - 2026-11-10: I.18 added (Julia): a strong object photo (its own room's walls and floor) overrides the Room reference. Prompt test first: T12 and a v7 candidate line as a script option; Julia runs it (I.18.1). The live prompt stays v3 until v7 passes.
 - 2026-11-10: I.15.1 and I.18.1 decided (Julia). Wall shades: no improvement seen, not kept; the scripted runs were not done; "another model" stays in the Backlog. Room reference: v3 passes T12 (3 of 3); only that run was done. Results in `docs/prompts/restyle.md`.
 - 2026-11-10: I.18.2 added (Julia): v7 goes live anyway, since she has seen the problem in the app; checked with T12 on v7.
+- 2026-11-10: I.18.3 and I.19 added (Julia): the live "simple corner" result still took the sofa photo's wainscoting (v7 misses 1 in 6), and the TV stand turned toward the sofa (4 of 6). Walls first, then the facing side per object. I.16 waits for both.
+- 2026-11-10: I.18.3: v8 kept the plain walls in 6 of 6 runs (v7: 5 of 6), so v8 is live.

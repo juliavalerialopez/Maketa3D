@@ -2,6 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   buildPrompt,
+  PLAIN_WALLS_LINE,
   promptImages,
   roomOnlyLine,
   WALL_SHADES_LINE,
@@ -46,13 +47,14 @@ test('without a room photo the first object photo is image 2', () => {
   assert.match(prompt, /Armchair 2[^\n]*\n {2}Image 3 is its reference/)
 })
 
-test('the live prompt (v7) has the room-only line, naming the object photos, before the last line', () => {
+test('the live prompt (v8) has the room-only line, naming the object photos, then the plain-walls line, before the last line', () => {
   const input = { room: { mode: 'reference', photo: 'room' }, objects }
   const line = roomOnlyLine(input)
   assert.match(line, /^Only image 2 sets the walls, floor and light\. Images 3 and 4 are for the furniture only/)
   const lines = buildPrompt(input).split('\n')
   assert.equal(lines.at(-1), 'Output one photorealistic 16:9 image.')
-  assert.equal(lines.at(-3), line)
+  assert.equal(lines.at(-3), PLAIN_WALLS_LINE)
+  assert.equal(lines.at(-5), line)
 })
 
 test('the room-only line uses one image in the singular', () => {
@@ -66,10 +68,15 @@ test('the room-only line lists three or more object photos with commas', () => {
   assert.match(line, /Images 3, 4 and 5 are for the furniture only/)
 })
 
-test('without a room photo or an object photo there is no room-only line', () => {
+test('without a room photo or an object photo there is no room-only or plain-walls line', () => {
   const room = { mode: 'reference', photo: 'room' }
   assert.equal(roomOnlyLine({ room: { mode: 'creative' }, objects }), null)
   assert.equal(roomOnlyLine({ room, objects: [objects[1]] }), null)
-  assert.doesNotMatch(buildPrompt({ room, objects: [objects[1]] }), /Only image 2 sets/)
-  assert.doesNotMatch(buildPrompt({ room: { mode: 'creative' }, objects }), /Only image 2 sets/)
+  for (const prompt of [
+    buildPrompt({ room, objects: [objects[1]] }),
+    buildPrompt({ room: { mode: 'creative' }, objects }),
+  ]) {
+    assert.doesNotMatch(prompt, /Only image 2 sets/)
+    assert.ok(!prompt.includes(PLAIN_WALLS_LINE))
+  }
 })

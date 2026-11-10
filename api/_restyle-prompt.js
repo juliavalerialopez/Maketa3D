@@ -1,10 +1,10 @@
 // Live restyle prompt. Must match the latest version in docs/prompts/restyle.md.
-// v7 (I.18.2): v3 (H.8), built per request from the Reference Room card and
-// the objects, plus the room-only line when there is a room photo and an
-// object photo. Images are sent in this order: 1 = Room render, then the room
-// photo (if the room is in Reference mode), then the object photos in list
-// order.
-export const PROMPT_VERSION = 'v7'
+// v8 (I.18.3): v3 (H.8), built per request from the Reference Room card and
+// the objects, plus the room-only line (v7) and the plain-walls line (v8) when
+// there is a room photo and an object photo. Images are sent in this order:
+// 1 = Room render, then the room photo (if the room is in Reference mode),
+// then the object photos in list order.
+export const PROMPT_VERSION = 'v8'
 
 // The kind of item from its list name: "Coffee table 2" -> "coffee table".
 const kindOf = (name) => name.replace(/\s+\d+$/, '').toLowerCase()
@@ -73,7 +73,7 @@ Do not add anything else: no plants, rugs, shelves, wall slats, beams, artwork, 
 Output one photorealistic 16:9 image.`
 
   const line = roomOnlyLine({ room, objects })
-  return line ? withLineBeforeLast(prompt, line) : prompt
+  return line ? withLineBeforeLast(withLineBeforeLast(prompt, line), PLAIN_WALLS_LINE) : prompt
 }
 
 // T6 experiment (Part F): optional line about the white area outside the
@@ -113,6 +113,12 @@ export function roomOnlyLine({ room, objects }) {
   const verb = count === 1 ? 'is' : 'are'
   return `Only image 2 sets the walls, floor and light. ${objectImages} ${verb} for the furniture only: take no wall color, wall finish, floor, rug or light from ${count === 1 ? 'it' : 'them'}, even when ${count === 1 ? 'it shows' : 'they show'} a strong room.`
 }
+
+// v8 plain-walls line (I.18.3): an object photo's paneling can still end up on
+// plain walls, so this says plain walls stay plain. Added after the room-only
+// line, so only with a room photo and an object photo.
+export const PLAIN_WALLS_LINE =
+  'If image 2 has plain walls, keep them plain: take no paneling, wainscoting or moldings from the other images.'
 
 function withLineBeforeLast(prompt, line) {
   const lines = prompt.split('\n')

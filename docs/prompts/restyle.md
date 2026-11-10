@@ -17,11 +17,12 @@ Output: 1K, 16:9.
 - v3 – 2026-11-03: v2 plus: the room photo restyles the walls and floor (paneling, moldings included); a reference's own form wins over the grey shape (T11); the camera line asks for a result that lines up with image 1.
 - v4 and v5 – 2026-11-03: tried in H.8 and not kept (see v3 Results).
 - v6 – candidate, not kept: the I.15 wall-shades line ("Wall shades test").
-- v7 – 2026-11-10 (live, I.18.2): v3 plus the I.18 room-only line before the last line, when there is a room photo and an object photo ("Room reference test").
+- v7 – 2026-11-10 (I.18.2): v3 plus the I.18 room-only line before the last line, when there is a room photo and an object photo ("Room reference test").
+- v8 – 2026-11-10 (live, I.18.3): v7 plus the plain-walls line after the room-only line, under the same condition ("Room reference test").
 
-## v7 (2026-11-10, live)
+## v8 (2026-11-10, live)
 
-Built by `buildPrompt` in `api/_restyle-prompt.js`: the v3 text below, plus, when the request has a room photo and at least one object photo, the room-only line before the last line (`roomOnlyLine`; the text is in "Room reference test"). Without a room photo or without an object photo, v7 is the same as v3.
+Built by `buildPrompt` in `api/_restyle-prompt.js`: the v3 text below, plus, when the request has a room photo and at least one object photo, two lines before the last line: the room-only line (`roomOnlyLine`, v7) and the plain-walls line (`PLAIN_WALLS_LINE`, v8). Both texts are in "Room reference test". Without a room photo or without an object photo, v8 is the same as v3.
 
 ## v3 (2026-11-03)
 
@@ -178,7 +179,7 @@ The walls of image 1 have different light shades only to show where the corners 
    - plain walls, live prompt: `node --env-file=.env.local scripts/try-restyle.mjs scratch/plain-several.json`
    - shaded walls, live prompt: `node --env-file=.env.local scripts/try-restyle.mjs scratch/shades-several.json`
    - shaded walls, live prompt plus the v6 line: `node --env-file=.env.local scripts/try-restyle.mjs scratch/shades-several.json --shades`
-   The results are in `scratch/restyle-runs/`. Written for v3; since I.18.2 the live prompt is v7, so the names say `v7` (the v6 runs end in `-v7-shades`), and a request with a room photo and an object photo also gets the room-only line.
+   The results are in `scratch/restyle-runs/`. Written for v3; the script always uses the live prompt (v8 since I.18.3), so the names say `v8` (the v6 runs end in `-v8-shades`), and a request with a room photo and an object photo also gets the room-only and plain-walls lines.
 6. Fill in the table below. T3 passes when the corner stays where it is in the render; T11 when the chaise is kept; the others as in the Part F and Part H specs. The pass rule is 2 of 3 runs.
 
 ### Results
@@ -196,10 +197,16 @@ Decision (Julia, 2026-11-10, I.15.1): not kept. With the shaded walls (I.15.2 ti
 ## Room reference test (Part I, I.18)
 Julia, 2026-11-10: when an object photo is strong (its own room has bold walls or floor), the result takes the walls and floor from that photo and ignores the room photo. v3 says once per object photo to ignore its walls and floor, but T10 was only tested with mild object photos. New test **T12**: with a room photo and an object photo whose background is a clearly different, strong room, the walls, floor and light follow the room photo, and the object still follows its own photo.
 
-**v7** (live since I.18.2): v3 plus this line before the last line (`roomOnlyLine` in `api/_restyle-prompt.js`). It is added only when there is a room photo and at least one object photo; the image numbers follow the request (here with two object photos):
+**v7** (I.18.2): v3 plus this line before the last line (`roomOnlyLine` in `api/_restyle-prompt.js`). It is added only when there is a room photo and at least one object photo; the image numbers follow the request (here with two object photos):
 
 ```text
 Only image 2 sets the walls, floor and light. Images 3 and 4 are for the furniture only: take no wall color, wall finish, floor, rug or light from them, even when they show a strong room.
+```
+
+**v8** (live since I.18.3): v7 plus this line after it, under the same condition (`PLAIN_WALLS_LINE`):
+
+```text
+If image 2 has plain walls, keep them plain: take no paneling, wainscoting or moldings from the other images.
 ```
 
 ### Steps (Julia, I.18.1)
@@ -210,7 +217,7 @@ Only image 2 sets the walls, floor and light. Images 3 and 4 are for the furnitu
    - T12, v3: done on 2026-11-10, before v7 went live (the script then still used v3).
    - T12, v7 (I.18.2): `node --env-file=.env.local scripts/try-restyle.mjs scratch/room-vs-object.json`
    - Optional, other tests with v7: `node --env-file=.env.local scripts/try-restyle.mjs scratch/plain-several.json` (the plain-walls request from the "Wall shades test" steps 2 and 3). This only adds the line if that request has a room photo and an object photo.
-   The v7 images are named `<time>-<case>-v7-<run>.png` (or `.jpg`) in `scratch/restyle-runs/`.
+   The v7 images are named `<time>-<case>-v7-<run>.png` (or `.jpg`) in `scratch/restyle-runs/`. Since I.18.3 these commands run v8, named `-v8-`.
 5. Fill in the table below. Pass rule: 2 of 3 runs.
 
 ### Results
@@ -225,6 +232,19 @@ Only image 2 sets the walls, floor and light. Images 3 and 4 are for the furnitu
 2026-11-10, v7 (I.18.2), same request, run by Claude and scored by Claude: all 3 runs have the light walls and the beige carpet, the floral sofa with its pillows facing the camera, a wooden coffee table, and nothing from the sofa photo's room (no burgundy, jute rug or gold decor). Outside T12: run 2 shows more of the left wall and adds a sunlight patch; the pillows vary a little between runs.
 
 Decision (Julia, 2026-11-10, I.18.1 and I.18.2): v7 goes live. v3 passed T12 here, but Julia has seen a strong object photo override the room photo in the app, and that case could not be repeated. The extra line repeats the v3 rule, so it should not hurt. Julia only ran T12 with v3; the other v3 and v7 runs were not done. The check for I.18.2, T12 with v7 (step 4), passed 3 of 3. If other results get worse later, go back to v3.
+
+### Simple corner (I.18.3)
+Julia, 2026-11-10: on the live site (v7 just deployed; it may still have been v3), the "simple corner" room took the sofa photo's grey-blue wainscoting and a wood floor. Saved from the app as `scratch/simple-corner.json`: room photo of an empty room (plain light walls, white baseboards, beige carpet); Sofa 1 photo of a light-blue tufted sectional in a room with grey-blue wainscoting, a green rug and art; Bookshelf 1 photo of a sage-green shelf against grey-green walls; Coffee table 1, Floor lamp 1 and TV stand 1 Creative. In the Room render the TV stand stands against the right wall and the TV faces the camera. Run by Claude with `--runs 6` (v8 as the `--plain-walls` option while it was a candidate), scored by Claude.
+
+| Check | v7 (6 runs) | v8 (6 runs) |
+|---|---|---|
+| T12 walls and floor from the room photo | 5/6 (one run copied the sofa photo's wainscoting; carpet 6/6) | 6/6 |
+| TV stand faces as in the render (T1) | 2/6 (turned toward the sofa or seen from the back) | 5/6 |
+| Bookshelf and sofa from their photos (T7, T8) | 6/6 | 6/6 |
+
+Outside these: v8 runs 1 and 5 keep the white area above the walls (no ceiling), as in the render; v8 run 2 moves the coffee table to the right. The TV result may be chance; I.19 works on it directly.
+
+Decision (Julia, 2026-11-10, I.18.3): v8 goes live (the spec rule: 6 of 6 plain walls, nothing worse).
 
 ## Test cases
 See `docs/specs/part-f-restyle.md` (T1 to T6, pass rule: at least 2 of 3 runs on all three fixtures).
