@@ -14,11 +14,16 @@ Output: 1K, 16:9.
 ## Versions
 - v1 – 2026-10-28: first version; decor rule allows the new sofa and its pillows.
 - v2 – 2026-11-03: built per request (H.7): a room part (reference photo or creative) and one line per object with its list name, its position in image 1 (percent from the left and top) and its reference image or creative rule. Tested in H.8: T10 and T3 failed.
-- v3 – 2026-11-03 (live): v2 plus: the room photo restyles the walls and floor (paneling, moldings included); a reference's own form wins over the grey shape (T11); the camera line asks for a result that lines up with image 1.
+- v3 – 2026-11-03: v2 plus: the room photo restyles the walls and floor (paneling, moldings included); a reference's own form wins over the grey shape (T11); the camera line asks for a result that lines up with image 1.
 - v4 and v5 – 2026-11-03: tried in H.8 and not kept (see v3 Results).
-- v6 and v7 – candidates, not live: v6 is the I.15 wall-shades line ("Wall shades test"), v7 the I.18 room-only line ("Room reference test").
+- v6 – candidate, not kept: the I.15 wall-shades line ("Wall shades test").
+- v7 – 2026-11-10 (live, I.18.2): v3 plus the I.18 room-only line before the last line, when there is a room photo and an object photo ("Room reference test").
 
-## v3 (2026-11-03, live)
+## v7 (2026-11-10, live)
+
+Built by `buildPrompt` in `api/_restyle-prompt.js`: the v3 text below, plus, when the request has a room photo and at least one object photo, the room-only line before the last line (`roomOnlyLine`; the text is in "Room reference test"). Without a room photo or without an object photo, v7 is the same as v3.
+
+## v3 (2026-11-03)
 
 Built by `buildPrompt` in `api/_restyle-prompt.js`. Parts in `<...>` are filled per request; image numbers count up from 2 in the order above.
 
@@ -158,7 +163,7 @@ The white area outside the room is empty background; keep it plain.
 Decision: not tested (F.1.3 skipped). v1 stays without the line unless a problem shows up.
 
 ## Wall shades test (Part I, I.15)
-Rooms with several pieces fail T3 (the room corner moves to between the pieces) and T11 (a reference's chaise is dropped); see the v3 Results. Idea: give each wall its own clearly different light shade in the Room render, so the corners are easy to see, and tell the model the shades only mark the corners. Candidate **v6** (v4 and v5 are taken by the H.8 tries): v3 plus this line before the last line (`WALL_SHADES_LINE` in `api/_restyle-prompt.js`, used only by the script):
+Rooms with several pieces fail T3 (the room corner moves to between the pieces) and T11 (a reference's chaise is dropped); see the v3 Results. Idea: give each wall its own clearly different light shade in the Room render, so the corners are easy to see, and tell the model the shades only mark the corners. Candidate **v6**, not kept (v4 and v5 are taken by the H.8 tries): v3 plus this line before the last line (`WALL_SHADES_LINE` in `api/_restyle-prompt.js`, used only by the script):
 
 ```text
 The walls of image 1 have different light shades only to show where the corners are. Keep every corner exactly where it is, and give all walls the same finish.
@@ -170,10 +175,10 @@ The walls of image 1 have different light shades only to show where the corners 
 3. Plain walls: switch to Personalize, add the reference photos and press Generate once. In DevTools, Network, open the restyle request, Payload, and save the request body as `scratch/plain-several.json`.
 4. Shaded walls: open the app with `?wallShades` at the end of the address (e.g. `http://localhost:3000/?wallShades`; it only works on the dev server, never on the live site), open the saved layout, and repeat step 3, saving `scratch/shades-several.json`. The walls you see now each have their own light tint (back sand, front blue, left sage, right clay; two show, the walls on the camera's side are hidden). If they still look like the normal ivory walls, the switch is off: check that `?wallShades` is in the address and that the page is the local dev server.
 5. Remove `RESTYLE_MOCK=1` again. Run each case 3 times (3 paid images per command, 9 in all). One request covers T3 and T11, and the same images are checked for the other tests:
-   - plain walls, v3: `node --env-file=.env.local scripts/try-restyle.mjs scratch/plain-several.json`
-   - shaded walls, v3: `node --env-file=.env.local scripts/try-restyle.mjs scratch/shades-several.json`
-   - shaded walls, v6 (v3 plus the line): `node --env-file=.env.local scripts/try-restyle.mjs scratch/shades-several.json --shades`
-   The results are in `scratch/restyle-runs/`; the v6 runs end in `-v3-shades`.
+   - plain walls, live prompt: `node --env-file=.env.local scripts/try-restyle.mjs scratch/plain-several.json`
+   - shaded walls, live prompt: `node --env-file=.env.local scripts/try-restyle.mjs scratch/shades-several.json`
+   - shaded walls, live prompt plus the v6 line: `node --env-file=.env.local scripts/try-restyle.mjs scratch/shades-several.json --shades`
+   The results are in `scratch/restyle-runs/`. Written for v3; since I.18.2 the live prompt is v7, so the names say `v7` (the v6 runs end in `-v7-shades`), and a request with a room photo and an object photo also gets the room-only line.
 6. Fill in the table below. T3 passes when the corner stays where it is in the render; T11 when the chaise is kept; the others as in the Part F and Part H specs. The pass rule is 2 of 3 runs.
 
 ### Results
@@ -186,12 +191,12 @@ The walls of image 1 have different light shades only to show where the corners 
 
 For reference, H.8 with the old render (before I.13 and I.14): T3 0/3, T11 1/3.
 
-Decision: open (I.15.1). Keep the shades (as the default wall colors) and v6 only if T3 or T11 improve without making T1, T2 or T7 to T10 worse. Otherwise nothing changes, and "another model" stays in the Part I Backlog.
+Decision (Julia, 2026-11-10, I.15.1): not kept. With the shaded walls (I.15.2 tints) Julia saw no improvement, so the scripted runs above were not done. The walls keep their one color, v6 is not used, and "another model" stays in the Part I Backlog. The `?wallShades` switch and `--shades` option stay, for a later try.
 
 ## Room reference test (Part I, I.18)
 Julia, 2026-11-10: when an object photo is strong (its own room has bold walls or floor), the result takes the walls and floor from that photo and ignores the room photo. v3 says once per object photo to ignore its walls and floor, but T10 was only tested with mild object photos. New test **T12**: with a room photo and an object photo whose background is a clearly different, strong room, the walls, floor and light follow the room photo, and the object still follows its own photo.
 
-Candidate **v7**: v3 plus this line before the last line (`roomOnlyLine` in `api/_restyle-prompt.js`, used only by the script). It is added only when there is a room photo and at least one object photo; the image numbers follow the request (here with two object photos):
+**v7** (live since I.18.2): v3 plus this line before the last line (`roomOnlyLine` in `api/_restyle-prompt.js`). It is added only when there is a room photo and at least one object photo; the image numbers follow the request (here with two object photos):
 
 ```text
 Only image 2 sets the walls, floor and light. Images 3 and 4 are for the furniture only: take no wall color, wall finish, floor, rug or light from them, even when they show a strong room.
@@ -201,22 +206,25 @@ Only image 2 sets the walls, floor and light. Images 3 and 4 are for the furnitu
 1. Choose two photos that clearly disagree: a room photo with light walls and a light floor (e.g. white walls, pale wood), and a sofa photo taken in a strong room (e.g. dark green or deep red walls, dark floor).
 2. Put `RESTYLE_MOCK=1` in `.env.local` and start the app with `npx vercel dev` (normal walls, no `?wallShades`). In Plan, add one sofa and one coffee table, move the view so both show, and click the plus on Camera 1 to save it.
 3. Switch to Personalize. Upload the sofa photo on the sofa's card and the room photo on the Room card, and leave the coffee table on Creative. Press Generate once, and in DevTools, Network, save the restyle request body as `scratch/room-vs-object.json`.
-4. Remove `RESTYLE_MOCK=1` again. Run 3 times each (12 paid images in all). `scratch/plain-several.json` is the plain-walls request from the "Wall shades test" steps 2 and 3 (already saved):
-   - T12, v3: `node --env-file=.env.local scripts/try-restyle.mjs scratch/room-vs-object.json`
-   - T12, v7: `node --env-file=.env.local scripts/try-restyle.mjs scratch/room-vs-object.json --room-only`
-   - Other tests, v3: `node --env-file=.env.local scripts/try-restyle.mjs scratch/plain-several.json`
-   - Other tests, v7: `node --env-file=.env.local scripts/try-restyle.mjs scratch/plain-several.json --room-only`
-   The v7 images are named `<time>-<case>-v3-room-only-<run>.png` in `scratch/restyle-runs/`. If the I.15.1 runs are not done yet, the `plain-several` v3 runs also count for its table (plain walls, v3); if they are, skip that command and reuse them.
+4. Remove `RESTYLE_MOCK=1` again. Each command makes 3 paid images:
+   - T12, v3: done on 2026-11-10, before v7 went live (the script then still used v3).
+   - T12, v7 (I.18.2): `node --env-file=.env.local scripts/try-restyle.mjs scratch/room-vs-object.json`
+   - Optional, other tests with v7: `node --env-file=.env.local scripts/try-restyle.mjs scratch/plain-several.json` (the plain-walls request from the "Wall shades test" steps 2 and 3). This only adds the line if that request has a room photo and an object photo.
+   The v7 images are named `<time>-<case>-v7-<run>.png` (or `.jpg`) in `scratch/restyle-runs/`.
 5. Fill in the table below. Pass rule: 2 of 3 runs.
 
 ### Results
-| Test | v3 | v7 (`--room-only`) |
+| Test | v3 | v7 |
 |---|---|---|
-| T12 room photo wins over a strong object photo | | |
-| T7 to T11 (Part H), several pieces | | |
-| T1, T2, T3 (Part F), several pieces | | |
+| T12 room photo wins over a strong object photo | 3/3 | 3/3 |
+| T7 to T11 (Part H), several pieces | not run | not run |
+| T1, T2, T3 (Part F), several pieces | not run | not run |
 
-Decision: open (I.18.1). v7 goes live (as v7 in `buildPrompt`) only if T12 passes and T1 to T3 and T7 to T11 are no worse than with v3 (T3 already fails with several pieces; it must not get worse). Otherwise v3 stays, and "another model" in the Part I Backlog covers this case too.
+2026-11-10, `scratch/room-vs-object.json`: room photo of an empty room (light greige walls, white baseboards, beige carpet); Sofa 1 photo of a floral sofa in a room with deep burgundy walls, a jute rug, gold tables and decor; Coffee table 1 Creative. Scored by Claude. v3: all 3 runs have the greige walls and the carpet, the floral sofa with its pillows, and nothing from the sofa photo's room. Outside T12: run 1 added a side wall on the left (T3), run 3 turned the sofa slightly (T1).
+
+2026-11-10, v7 (I.18.2), same request, run by Claude and scored by Claude: all 3 runs have the light walls and the beige carpet, the floral sofa with its pillows facing the camera, a wooden coffee table, and nothing from the sofa photo's room (no burgundy, jute rug or gold decor). Outside T12: run 2 shows more of the left wall and adds a sunlight patch; the pillows vary a little between runs.
+
+Decision (Julia, 2026-11-10, I.18.1 and I.18.2): v7 goes live. v3 passed T12 here, but Julia has seen a strong object photo override the room photo in the app, and that case could not be repeated. The extra line repeats the v3 rule, so it should not hurt. Julia only ran T12 with v3; the other v3 and v7 runs were not done. The check for I.18.2, T12 with v7 (step 4), passed 3 of 3. If other results get worse later, go back to v3.
 
 ## Test cases
 See `docs/specs/part-f-restyle.md` (T1 to T6, pass rule: at least 2 of 3 runs on all three fixtures).

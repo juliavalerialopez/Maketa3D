@@ -5,7 +5,6 @@ import {
   promptImages,
   roomOnlyLine,
   WALL_SHADES_LINE,
-  withRoomOnlyLine,
   withWallShadesLine,
 } from '../api/_restyle-prompt.js'
 
@@ -47,14 +46,12 @@ test('without a room photo the first object photo is image 2', () => {
   assert.match(prompt, /Armchair 2[^\n]*\n {2}Image 3 is its reference/)
 })
 
-test('the room-only line (I.18 test only) names the object photos and goes before the last line', () => {
+test('the live prompt (v7) has the room-only line, naming the object photos, before the last line', () => {
   const input = { room: { mode: 'reference', photo: 'room' }, objects }
-  const prompt = buildPrompt(input)
   const line = roomOnlyLine(input)
   assert.match(line, /^Only image 2 sets the walls, floor and light\. Images 3 and 4 are for the furniture only/)
-  assert.ok(!prompt.includes(line))
-  const lines = withRoomOnlyLine(prompt, input).split('\n')
-  assert.equal(lines.at(-1), prompt.split('\n').at(-1))
+  const lines = buildPrompt(input).split('\n')
+  assert.equal(lines.at(-1), 'Output one photorealistic 16:9 image.')
   assert.equal(lines.at(-3), line)
 })
 
@@ -73,6 +70,6 @@ test('without a room photo or an object photo there is no room-only line', () =>
   const room = { mode: 'reference', photo: 'room' }
   assert.equal(roomOnlyLine({ room: { mode: 'creative' }, objects }), null)
   assert.equal(roomOnlyLine({ room, objects: [objects[1]] }), null)
-  const prompt = buildPrompt({ room, objects: [objects[1]] })
-  assert.equal(withRoomOnlyLine(prompt, { room, objects: [objects[1]] }), prompt)
+  assert.doesNotMatch(buildPrompt({ room, objects: [objects[1]] }), /Only image 2 sets/)
+  assert.doesNotMatch(buildPrompt({ room: { mode: 'creative' }, objects }), /Only image 2 sets/)
 })

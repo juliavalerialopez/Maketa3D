@@ -155,6 +155,7 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - New test **T12**: with a room photo and an object photo whose background is a clearly different, strong room, the walls, floor and light follow the room photo, and the object still follows its own photo. Pass rule: 2 of 3 runs.
 - I.18 prepares the test: a v7 candidate line (only image 2 sets the walls, floor and light; the object photos are for the furniture only), added only when there is a room photo and an object photo, as the `--room-only` option of `scripts/try-restyle.mjs`; the steps and the results table in `docs/prompts/restyle.md`, "Room reference test".
 - I.18.1 (Julia): save one request with clearly disagreeing photos and run T12 with v3 and v7, plus v3 and v7 on `scratch/plain-several.json` for T1 to T3 and T7 to T11 (12 paid images). v7 goes live only if T12 passes and nothing else gets worse.
+- (added 2026-11-10) I.18.2: Julia chose v7 for the live prompt without the full test run: v3 passed T12, but she has seen a strong object photo override the room photo in the app. `buildPrompt` adds the room-only line itself (`PROMPT_VERSION` 'v7'), and the `--room-only` option is removed from the script. The check is T12 with v7 (3 runs, pass 2 of 3); if it fails or other results get worse, go back to v3.
 
 ### I.15 Wall shades test (rooms with several pieces)
 - Prompt and model work only, no UI. Goal: T3 (the room corner stays in place) and T11 (a reference's chaise is kept) pass with several pieces.
@@ -185,10 +186,11 @@ Changes the Part G Save and Save As rules. Done before I.16.
   - ✅ I.14.2 Camera slots in Personalize: a Room render per filled slot, the Camera menu, cards and Generate follow it, versions keep their camera (added 2026-11-07)
   - ✅ I.14.3 Camera slots in the layout file, Open and New Project (added 2026-11-07)
 - ✅ I.15 Wall shades test for rooms with several pieces.
-  - ⬜ I.15.1 Make the shaded renders, run T3 and T11, record the results and the decision (Julia) (added 2026-11-04)
+  - ✅ I.15.1 Make the shaded renders, run T3 and T11, record the results and the decision (Julia) (added 2026-11-04)
   - ✅ I.15.2 Clearly different wall tints for `?wallShades`, none equal to the normal wall; the steps save the view in Camera 1 (added 2026-11-10)
 - ✅ I.18 Room reference test: T12, the v7 room-only line as `--room-only` in `scripts/try-restyle.mjs`, the steps in `docs/prompts/restyle.md` (added 2026-11-10)
-  - ⬜ I.18.1 Save the request, run T12 and the other tests with v3 and v7, record the results and the decision (Julia) (added 2026-11-10)
+  - ✅ I.18.1 Save the request, run T12 and the other tests with v3 and v7, record the results and the decision (Julia) (added 2026-11-10)
+  - ✅ I.18.2 v7 live: `buildPrompt` adds the room-only line, `PROMPT_VERSION` 'v7', `--room-only` removed from the script; T12 with v7 recorded (added 2026-11-10)
 - ✅ I.17 Save writes into the opened or last saved file; Save As and a new project's first Save ask in the system window; the project name next to the logo ("New Project" until saved) (added 2026-11-09)
 - ⬜ I.16 Docs (`CLAUDE.md` Structure, including `shared/` and local imports in `api/` from I.8, `docs/SPEC.md` roadmap, layout, data model and part table, `README.md` features), `npm run build`, deploy, check on the live site.
 
@@ -211,7 +213,8 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - [ ] I.14.2: with no cameras, switching to Personalize fills slot 1; with two cameras, the Camera menu lists both and each shows its own Room render and cards; a version made with Camera 2 shows Camera 2's render when clicked.
 - [ ] I.14.3: two cameras survive Save and Open (thumbnails drawn again); an older file opens with empty slots; New Project empties them.
 - [ ] I.17 (Chrome or Edge): open "My Project.json", change something, Save: no window, and opening the file again shows the change; the top bar says "My Project". Save As asks for name and folder, and later Saves go to the new file. New Project shows "New Project", and its first Save asks. Cancel in a system window changes nothing. In Firefox, Save still downloads a file.
-- [ ] I.18: `npm test` covers the v7 line; T12 and the other results (3 runs each, v3 and v7) are in `docs/prompts/restyle.md`, with the decision; the live prompt changes only if v7 passes.
+- [ ] I.18: `npm test` covers the v7 line; T12 and the other results (3 runs each, v3 and v7) are in `docs/prompts/restyle.md`, with the decision; the live prompt changes only if v7 passes. (I.18.2 makes v7 live by Julia's choice)
+- [ ] I.18.2: `npm test` checks the room-only line in the live prompt and its absence without a room photo or an object photo; T12 with v7 passes 2 of 3 runs, recorded in `docs/prompts/restyle.md`.
 - [ ] I.15: T3 and T11 results (3 runs each) are in `docs/prompts/restyle.md`, with the decision.
 - [ ] No console errors.
 - [ ] `npm run build`, `npm run lint` and `npm test` succeed.
@@ -236,3 +239,5 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - 2026-11-07: Julia did not like the placed camera (I.14). Three camera slots replace it (I.14.1 to I.14.3). Answered: switching to Personalize fills slot 1 only when all slots are empty; clicking a filled slot moves the Plan view to it; the X on hover empties a slot; changing the camera in Personalize keeps the versions.
 - 2026-11-09: I.17 added (Julia): Save writes into the opened or last saved file instead of downloading a new one; only Save As (and a new project's first Save) asks for the name and folder, in the system window. The project name shows next to the logo, "New Project" until saved. Chrome and Edge only; Firefox and Safari keep the download.
 - 2026-11-10: I.18 added (Julia): a strong object photo (its own room's walls and floor) overrides the Room reference. Prompt test first: T12 and a v7 candidate line as a script option; Julia runs it (I.18.1). The live prompt stays v3 until v7 passes.
+- 2026-11-10: I.15.1 and I.18.1 decided (Julia). Wall shades: no improvement seen, not kept; the scripted runs were not done; "another model" stays in the Backlog. Room reference: v3 passes T12 (3 of 3); only that run was done. Results in `docs/prompts/restyle.md`.
+- 2026-11-10: I.18.2 added (Julia): v7 goes live anyway, since she has seen the problem in the app; checked with T12 on v7.

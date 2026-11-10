@@ -1,8 +1,10 @@
 // Live restyle prompt. Must match the latest version in docs/prompts/restyle.md.
-// v3 (H.8): built per request from the Reference Room card and the objects.
-// Images are sent in this order: 1 = Room render, then the room photo (if the
-// room is in Reference mode), then the object photos in list order.
-export const PROMPT_VERSION = 'v3'
+// v7 (I.18.2): v3 (H.8), built per request from the Reference Room card and
+// the objects, plus the room-only line when there is a room photo and an
+// object photo. Images are sent in this order: 1 = Room render, then the room
+// photo (if the room is in Reference mode), then the object photos in list
+// order.
+export const PROMPT_VERSION = 'v7'
 
 // The kind of item from its list name: "Coffee table 2" -> "coffee table".
 const kindOf = (name) => name.replace(/\s+\d+$/, '').toLowerCase()
@@ -50,7 +52,7 @@ export function buildPrompt({ room, objects }) {
     ].join('\n')
   })
 
-  return `Edit image 1. It is a plain 3D render of a room. The grey box shapes in it are placeholder furniture.
+  const prompt = `Edit image 1. It is a plain 3D render of a room. The grey box shapes in it are placeholder furniture.
 Make image 1 look like a real photograph of the same room, with real furniture in place of the grey shapes.
 
 Keep exactly as in image 1:
@@ -69,6 +71,9 @@ ${objectLines.join('\n')}
 Do not add anything else: no plants, rugs, shelves, wall slats, beams, artwork, lamps, tables, chairs or other furniture. Every object in the result must be one of the pieces listed above.
 
 Output one photorealistic 16:9 image.`
+
+  const line = roomOnlyLine({ room, objects })
+  return line ? withLineBeforeLast(prompt, line) : prompt
 }
 
 // T6 experiment (Part F): optional line about the white area outside the
@@ -96,11 +101,10 @@ function imageList(numbers) {
   return `Images ${numbers.slice(0, -1).join(', ')} and ${numbers.at(-1)}`
 }
 
-// I.18 room reference test (v7 candidate, not live): a strong object photo
-// can take over the walls and floor, so this repeats at the end that only the
-// room photo sets them. Null when there is no room photo or no object photo
-// (nothing to choose between). Same image numbers as buildPrompt. Used only
-// by scripts/try-restyle.mjs --room-only.
+// v7 room-only line (I.18): a strong object photo can take over the walls and
+// floor, so this repeats at the end that only the room photo sets them. Null
+// when there is no room photo or no object photo (nothing to choose between).
+// Same image numbers as buildPrompt.
 export function roomOnlyLine({ room, objects }) {
   if (!room.photo) return null
   const count = objects.filter((object) => object.photo).length
@@ -108,11 +112,6 @@ export function roomOnlyLine({ room, objects }) {
   const objectImages = imageList(Array.from({ length: count }, (_, i) => i + 3))
   const verb = count === 1 ? 'is' : 'are'
   return `Only image 2 sets the walls, floor and light. ${objectImages} ${verb} for the furniture only: take no wall color, wall finish, floor, rug or light from ${count === 1 ? 'it' : 'them'}, even when ${count === 1 ? 'it shows' : 'they show'} a strong room.`
-}
-
-export function withRoomOnlyLine(prompt, input) {
-  const line = roomOnlyLine(input)
-  return line ? withLineBeforeLast(prompt, line) : prompt
 }
 
 function withLineBeforeLast(prompt, line) {
