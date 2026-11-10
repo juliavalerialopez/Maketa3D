@@ -8,6 +8,7 @@ import {
   positionLimits,
   toDegrees,
   toRadians,
+  wallDistances,
 } from '../src/store/roomBounds.js'
 
 const room = { width: 6, depth: 5, height: 2.6 }
@@ -36,6 +37,35 @@ test('an object wider than the room is centered on that axis', () => {
   const narrow = { width: 1.5, depth: 5, height: 2.6 }
   const [x] = clampPosition(sofa, narrow, 5, 0)
   close(x, 0)
+})
+
+test('the distances to the walls add up to the room size minus the footprint', () => {
+  const placed = { ...sofa, position: [1, 0, -0.5] }
+  const { left, right, back, front } = wallDistances(placed, room)
+  close(left.distance, 3)
+  close(right.distance, 1)
+  close(back.distance, 1.55)
+  close(front.distance, 2.55)
+  close(left.distance + right.distance, room.width - 2)
+  close(back.distance + front.distance, room.depth - 0.9)
+})
+
+test('a turned object measures from its rotated footprint, with lines from each side to the wall', () => {
+  const turned = { ...sofa, position: [0, 0, 0], rotation: [0, Math.PI / 2, 0] }
+  const { left, back } = wallDistances(turned, room)
+  close(left.distance, 3 - 0.45)
+  close(back.distance, 2.5 - 1)
+  close(left.from[0], -0.45)
+  assert.deepEqual(left.to, [-3, left.from[1]])
+  close(back.from[1], -1)
+  assert.deepEqual(back.to, [back.from[0], -2.5])
+})
+
+test('an object against a wall is 0 from it', () => {
+  const [x, , z] = clampPosition(sofa, room, 10, 10)
+  const { right, front } = wallDistances({ ...sofa, position: [x, 0, z] }, room)
+  close(right.distance, 0)
+  close(front.distance, 0)
 })
 
 test('angles convert between degrees and radians and stay within one turn', () => {

@@ -68,6 +68,25 @@ export function positionLimits(object, room) {
   }
 }
 
+// How far each side of the object's footprint is from the wall in that
+// direction (J0.4): left (-x), right (+x), back (-z) and front (+z). The sides
+// are the extremes of its rotated (and tilted) box along the room's axes.
+// Each is { distance, from, to }: the distance in meters and the line on the
+// floor ([x, z] points) from the middle of that side straight to the wall.
+export function wallDistances(object, room) {
+  const { centre, extents } = rotatedBox(object)
+  const x = object.position[0] + centre[0]
+  const z = object.position[2] + centre[2]
+  const [halfWidth, halfDepth] = [room.width / 2, room.depth / 2]
+  const side = (from, to) => ({ distance: Math.abs(to[0] - from[0]) + Math.abs(to[1] - from[1]), from, to })
+  return {
+    left: side([x - extents[0], z], [-halfWidth, z]),
+    right: side([x + extents[0], z], [halfWidth, z]),
+    back: side([x, z - extents[2]], [x, -halfDepth]),
+    front: side([x, z + extents[2]], [x, halfDepth]),
+  }
+}
+
 // The object's position with x and z clamped inside the walls (y stays 0).
 // Clamping each axis on its own lets an object slide along a wall.
 export function clampPosition(object, room, x, z) {

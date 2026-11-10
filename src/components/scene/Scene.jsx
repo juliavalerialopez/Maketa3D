@@ -4,6 +4,7 @@ import Objects from './Objects'
 import SelectionBox from './SelectionBox'
 import ObjectWidget from './ObjectWidget'
 import MoveReadout from './MoveReadout'
+import WallDistances from './WallDistances'
 
 export default function Scene() {
   return (
@@ -14,6 +15,7 @@ export default function Scene() {
       <Walls />
       <Objects />
       <SelectionBox />
+      <WallDistances />
       <ObjectWidget />
       <MoveReadout />
     </>

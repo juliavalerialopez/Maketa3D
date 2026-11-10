@@ -107,7 +107,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - ✅ J0.1 Panel minimum width.
 - ✅ J0.2 Drag moves by default, rotate only from the widget.
 - ✅ J0.3 Move readout while dragging.
-- ⬜ J0.4 Distances to the four walls for the selected object.
+- ✅ J0.4 Distances to the four walls for the selected object.
 - ⬜ J0.5 Shortcuts: Ctrl+S, Ctrl+O, arrow nudge, R, and the focus guard.
 - ⬜ J0.6 Duplicate and Ctrl+D.
 - ⬜ J.1 Room as corners: store, floor, walls, camera-facing wall fade, Room render, clamping, save and open with old files.
