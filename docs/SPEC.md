@@ -14,7 +14,7 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 5. AI restyle: upload one reference photo in Personalize, and Generate restyles the Room render to match it while keeping the room shape, camera and sofa placement (Part F)
 6. Soft UI restyle (light and dark theme), five new objects (coffee table, armchair, TV stand with TV, bookshelf, floor lamp), a Project menu to start, open and save the layout as a JSON file (Part G)
 7. AI versions and references: up to 6 generated versions with thumbnails and download, a Reference | Creative card per object and for the room, limits from environment variables (Part H)
-8. Code health and backlog: bug fixes, tests and lint, an error screen, drag and drop upload, undo and redo, a fixed 1920 × 1080 Room render, three camera slots with a Camera menu in Personalize, Save into the opened project file with its name in the top bar, and a wall-shades prompt test (Part I)
+8. Code health and backlog: bug fixes, tests and lint, an error screen, drag and drop upload, undo and redo, a fixed 1920 × 1080 Room render, three camera slots with a Camera menu in Personalize, Save into the opened project file with its name in the top bar, a wall-shades prompt test (not kept), and prompt fixes so that only the room photo sets the walls and floor and each piece faces as in the Room render (prompt v9) (Part I)
 
 ## Layout
 - Top bar (52 px): the Maketa logo on the left, a centered "Plan | Personalize" switch, the light/dark theme switch on the right. Plan is the mode on page load.

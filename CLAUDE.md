@@ -64,7 +64,8 @@ first.
   `objects/`, one catalog entry and one line in `models.js`; do not define
   types anywhere else. The Objects section shows one button per entry. A type with a screen size (TV
   stand) also has `screenInches` limits and `sizeFor`; its formula lives in
-  `tvStandSize.js`.
+  `tvStandSize.js`. A type with a front (seat, shelves, screen) has
+  `front: true`; its model's front faces local +z.
 - `src/store/`: Zustand stores (room, objects, mode, ui, restyle,
   `historyStore` for undo and redo, `cameraSlotsStore`, `projectStore` for
   the project's file and name), plus plain helpers: `roomBounds.js` (wall
@@ -77,16 +78,17 @@ first.
 - `src/services/`: browser code that talks to the server or prepares data for
   it (e.g. `restyle.js`: image resizing, `/api/restyle` requests, error
   messages; `frame.js`: the 1920 × 1080 Room render size, the frame camera
-  and the projection onto it, and whether an object shows in the Room
-  render, using the camera stored with it; `zip.js`: the ZIP of all AI
+  and the projection onto it, whether an object shows in the Room render,
+  using the camera stored with it, and which way each object faces in it;
+  `zip.js`: the ZIP of all AI
   versions; `download.js`: saving files and data URL helpers;
   `projectFile.js`: the browser's Open and Save as windows for the project
   file). Requests go through stores; components may import constants and
   message helpers only. Exception: the scene's render code
   (`scene/SnapshotBridge.jsx`) uses the `frame.js` camera math directly.
 - `shared/`: plain JS with no imports, used by both the browser and `api/`
-  (`restyle.js`: photo, object and body limits), so each limit is defined
-  once.
+  (`restyle.js`: photo, object and body limits, and the facing values), so
+  each is defined once.
 - `api/`: Vercel functions. Files starting with `_` are helpers, not routes
   (`_gemini.js`, `_limits.js`, `_restyle-prompt.js`). API keys and secrets
   exist only here, as env vars, never in `src/`.
