@@ -1,6 +1,13 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { buildPrompt, promptImages, WALL_SHADES_LINE, withWallShadesLine } from '../api/_restyle-prompt.js'
+import {
+  buildPrompt,
+  promptImages,
+  roomOnlyLine,
+  WALL_SHADES_LINE,
+  withRoomOnlyLine,
+  withWallShadesLine,
+} from '../api/_restyle-prompt.js'
 
 const objects = [
   { name: 'Sofa 1', mode: 'reference', x: 30, y: 60, photo: 'sofa' },
@@ -38,4 +45,34 @@ test('without a room photo the first object photo is image 2', () => {
   assert.doesNotMatch(prompt, /room reference/)
   assert.match(prompt, /Sofa 1[^\n]*\n {2}Image 2 is its reference/)
   assert.match(prompt, /Armchair 2[^\n]*\n {2}Image 3 is its reference/)
+})
+
+test('the room-only line (I.18 test only) names the object photos and goes before the last line', () => {
+  const input = { room: { mode: 'reference', photo: 'room' }, objects }
+  const prompt = buildPrompt(input)
+  const line = roomOnlyLine(input)
+  assert.match(line, /^Only image 2 sets the walls, floor and light\. Images 3 and 4 are for the furniture only/)
+  assert.ok(!prompt.includes(line))
+  const lines = withRoomOnlyLine(prompt, input).split('\n')
+  assert.equal(lines.at(-1), prompt.split('\n').at(-1))
+  assert.equal(lines.at(-3), line)
+})
+
+test('the room-only line uses one image in the singular', () => {
+  const line = roomOnlyLine({ room: { mode: 'reference', photo: 'room' }, objects: objects.slice(0, 2) })
+  assert.match(line, /Image 3 is for the furniture only: take no wall color[^:]*from it, even when it shows/)
+})
+
+test('the room-only line lists three or more object photos with commas', () => {
+  const more = [...objects, { name: 'Bookshelf 1', mode: 'reference', x: 90, y: 40, photo: 'shelf' }]
+  const line = roomOnlyLine({ room: { mode: 'reference', photo: 'room' }, objects: more })
+  assert.match(line, /Images 3, 4 and 5 are for the furniture only/)
+})
+
+test('without a room photo or an object photo there is no room-only line', () => {
+  const room = { mode: 'reference', photo: 'room' }
+  assert.equal(roomOnlyLine({ room: { mode: 'creative' }, objects }), null)
+  assert.equal(roomOnlyLine({ room, objects: [objects[1]] }), null)
+  const prompt = buildPrompt({ room, objects: [objects[1]] })
+  assert.equal(withRoomOnlyLine(prompt, { room, objects: [objects[1]] }), prompt)
 })

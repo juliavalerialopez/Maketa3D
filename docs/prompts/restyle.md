@@ -16,6 +16,7 @@ Output: 1K, 16:9.
 - v2 – 2026-11-03: built per request (H.7): a room part (reference photo or creative) and one line per object with its list name, its position in image 1 (percent from the left and top) and its reference image or creative rule. Tested in H.8: T10 and T3 failed.
 - v3 – 2026-11-03 (live): v2 plus: the room photo restyles the walls and floor (paneling, moldings included); a reference's own form wins over the grey shape (T11); the camera line asks for a result that lines up with image 1.
 - v4 and v5 – 2026-11-03: tried in H.8 and not kept (see v3 Results).
+- v6 and v7 – candidates, not live: v6 is the I.15 wall-shades line ("Wall shades test"), v7 the I.18 room-only line ("Room reference test").
 
 ## v3 (2026-11-03, live)
 
@@ -186,6 +187,36 @@ The walls of image 1 have different light shades only to show where the corners 
 For reference, H.8 with the old render (before I.13 and I.14): T3 0/3, T11 1/3.
 
 Decision: open (I.15.1). Keep the shades (as the default wall colors) and v6 only if T3 or T11 improve without making T1, T2 or T7 to T10 worse. Otherwise nothing changes, and "another model" stays in the Part I Backlog.
+
+## Room reference test (Part I, I.18)
+Julia, 2026-11-10: when an object photo is strong (its own room has bold walls or floor), the result takes the walls and floor from that photo and ignores the room photo. v3 says once per object photo to ignore its walls and floor, but T10 was only tested with mild object photos. New test **T12**: with a room photo and an object photo whose background is a clearly different, strong room, the walls, floor and light follow the room photo, and the object still follows its own photo.
+
+Candidate **v7**: v3 plus this line before the last line (`roomOnlyLine` in `api/_restyle-prompt.js`, used only by the script). It is added only when there is a room photo and at least one object photo; the image numbers follow the request (here with two object photos):
+
+```text
+Only image 2 sets the walls, floor and light. Images 3 and 4 are for the furniture only: take no wall color, wall finish, floor, rug or light from them, even when they show a strong room.
+```
+
+### Steps (Julia, I.18.1)
+1. Choose two photos that clearly disagree: a room photo with light walls and a light floor (e.g. white walls, pale wood), and a sofa photo taken in a strong room (e.g. dark green or deep red walls, dark floor).
+2. Put `RESTYLE_MOCK=1` in `.env.local` and start the app with `npx vercel dev` (normal walls, no `?wallShades`). In Plan, add one sofa and one coffee table, move the view so both show, and click the plus on Camera 1 to save it.
+3. Switch to Personalize. Upload the sofa photo on the sofa's card and the room photo on the Room card, and leave the coffee table on Creative. Press Generate once, and in DevTools, Network, save the restyle request body as `scratch/room-vs-object.json`.
+4. Remove `RESTYLE_MOCK=1` again. Run 3 times each (12 paid images in all). `scratch/plain-several.json` is the plain-walls request from the "Wall shades test" steps 2 and 3 (already saved):
+   - T12, v3: `node --env-file=.env.local scripts/try-restyle.mjs scratch/room-vs-object.json`
+   - T12, v7: `node --env-file=.env.local scripts/try-restyle.mjs scratch/room-vs-object.json --room-only`
+   - Other tests, v3: `node --env-file=.env.local scripts/try-restyle.mjs scratch/plain-several.json`
+   - Other tests, v7: `node --env-file=.env.local scripts/try-restyle.mjs scratch/plain-several.json --room-only`
+   The v7 images are named `<time>-<case>-v3-room-only-<run>.png` in `scratch/restyle-runs/`. If the I.15.1 runs are not done yet, the `plain-several` v3 runs also count for its table (plain walls, v3); if they are, skip that command and reuse them.
+5. Fill in the table below. Pass rule: 2 of 3 runs.
+
+### Results
+| Test | v3 | v7 (`--room-only`) |
+|---|---|---|
+| T12 room photo wins over a strong object photo | | |
+| T7 to T11 (Part H), several pieces | | |
+| T1, T2, T3 (Part F), several pieces | | |
+
+Decision: open (I.18.1). v7 goes live (as v7 in `buildPrompt`) only if T12 passes and T1 to T3 and T7 to T11 are no worse than with v3 (T3 already fails with several pieces; it must not get worse). Otherwise v3 stays, and "another model" in the Part I Backlog covers this case too.
 
 ## Test cases
 See `docs/specs/part-f-restyle.md` (T1 to T6, pass rule: at least 2 of 3 runs on all three fixtures).

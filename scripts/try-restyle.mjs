@@ -2,7 +2,7 @@
 // prompt (buildPrompt, PROMPT_VERSION) and saves the results. Same prompt and image order
 // as /api/restyle, with no limits and no counting.
 //
-//   node --env-file=.env.local scripts/try-restyle.mjs <case.json> [--white] [--shades] [--runs N]
+//   node --env-file=.env.local scripts/try-restyle.mjs <case.json> [--white] [--shades] [--room-only] [--runs N]
 //
 // case.json is either a test case written by hand, with image paths relative
 // to the JSON file:
@@ -21,6 +21,9 @@
 // --white  adds the T6 white-area line to the prompt
 // --shades adds the I.15 wall-shades line, the v6 candidate (for renders taken
 //          with ?wallShades, see docs/prompts/restyle.md, "Wall shades test")
+// --room-only adds the I.18 line that only the room photo sets the walls and
+//          floor, the v7 candidate (see docs/prompts/restyle.md, "Room
+//          reference test"); needs a room photo and an object photo
 // --runs   number of runs (default 3, the pass rule needs 2 of 3)
 // Results go to scratch/restyle-runs/ (gitignored), with the prompt as a .txt.
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
@@ -30,6 +33,8 @@ import {
   buildPrompt,
   promptImages,
   PROMPT_VERSION,
+  roomOnlyLine,
+  withRoomOnlyLine,
   withWallShadesLine,
   withWhiteAreaLine,
 } from '../api/_restyle-prompt.js'
@@ -39,13 +44,16 @@ const OUT_DIR = 'scratch/restyle-runs'
 
 function usage(message) {
   console.error(message)
-  console.error('Usage: node --env-file=.env.local scripts/try-restyle.mjs <case.json> [--white] [--shades] [--runs N]')
+  console.error(
+    'Usage: node --env-file=.env.local scripts/try-restyle.mjs <case.json> [--white] [--shades] [--room-only] [--runs N]',
+  )
   process.exit(1)
 }
 
 const args = process.argv.slice(2)
 const white = args.includes('--white')
 const shades = args.includes('--shades')
+const roomOnly = args.includes('--room-only')
 const runsIndex = args.indexOf('--runs')
 const runs = runsIndex >= 0 ? Number(args[runsIndex + 1]) : 3
 const [casePath] = args.filter((arg, i) => !arg.startsWith('--') && !(runsIndex >= 0 && i === runsIndex + 1))
@@ -102,16 +110,20 @@ const input = {
 }
 
 const images = promptImages(input).map((image) => ({ ...image, mimeType: mimeTypes.get(image.data) ?? image.mimeType }))
+if (roomOnly && !roomOnlyLine(input)) usage('--room-only needs a room photo and at least one object photo.')
 const basePrompt = buildPrompt(input)
 const withShades = shades ? withWallShadesLine(basePrompt) : basePrompt
-const prompt = white ? withWhiteAreaLine(withShades) : withShades
-const extras = `${white ? '-white' : ''}${shades ? '-shades' : ''}`
+const withRoom = roomOnly ? withRoomOnlyLine(withShades, input) : withShades
+const prompt = white ? withWhiteAreaLine(withRoom) : withRoom
+const extras = `${white ? '-white' : ''}${shades ? '-shades' : ''}${roomOnly ? '-room-only' : ''}`
 const label = `${basename(casePath, extname(casePath))}-${PROMPT_VERSION}${extras}`
 const stamp = new Date().toISOString().replace(/[:.]/g, '-')
 await mkdir(OUT_DIR, { recursive: true })
 await writeFile(join(OUT_DIR, `${stamp}-${label}-prompt.txt`), prompt)
 
-const lineNames = [white && 'white line', shades && 'wall-shades line'].filter(Boolean)
+const lineNames = [white && 'white line', shades && 'wall-shades line', roomOnly && 'room-only line'].filter(
+  Boolean,
+)
 console.log(
   `${MODEL}, prompt ${PROMPT_VERSION}${lineNames.map((name) => ` + ${name}`).join('')}, ${images.length} image(s), ${runs} run(s): ${label}`,
 )

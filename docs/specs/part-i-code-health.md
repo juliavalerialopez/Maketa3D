@@ -150,6 +150,12 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - Writing into a file needs the browser's file access (Chrome and Edge). The first Save into an opened file may show the browser's "Allow this site to edit?" question once. Firefox and Safari don't have it: Open uses the file input as before, Save downloads the file under the project's name (`maketa-layout.json` for a new project), and Save As keeps the Maketa name dialog.
 - Closing a system window with Cancel changes nothing. A save that fails (e.g. permission refused) shows "Could not save the file." like the invalid-file message, and keeps the project's file as it was.
 
+### I.18 Room reference against strong object photos (added 2026-11-10)
+- Julia: when an object photo is strong (its own room has bold walls or floor), the result takes the walls and floor from it and ignores the Room reference. Prompt work only, no UI, tested before it goes live (like I.15).
+- New test **T12**: with a room photo and an object photo whose background is a clearly different, strong room, the walls, floor and light follow the room photo, and the object still follows its own photo. Pass rule: 2 of 3 runs.
+- I.18 prepares the test: a v7 candidate line (only image 2 sets the walls, floor and light; the object photos are for the furniture only), added only when there is a room photo and an object photo, as the `--room-only` option of `scripts/try-restyle.mjs`; the steps and the results table in `docs/prompts/restyle.md`, "Room reference test".
+- I.18.1 (Julia): save one request with clearly disagreeing photos and run T12 with v3 and v7, plus v3 and v7 on `scratch/plain-several.json` for T1 to T3 and T7 to T11 (12 paid images). v7 goes live only if T12 passes and nothing else gets worse.
+
 ### I.15 Wall shades test (rooms with several pieces)
 - Prompt and model work only, no UI. Goal: T3 (the room corner stays in place) and T11 (a reference's chaise is kept) pass with several pieces.
 - Test: make Room renders with one clearly different light shade per wall (a local change to `WALL_COLOR` in `scene/Walls.jsx`), save requests from the app, add a prompt line saying the shades only mark the corners and every wall gets the same finish, and run T3 and T11 with `scripts/try-restyle.mjs` (3 runs each, several pieces).
@@ -181,6 +187,8 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - ✅ I.15 Wall shades test for rooms with several pieces.
   - ⬜ I.15.1 Make the shaded renders, run T3 and T11, record the results and the decision (Julia) (added 2026-11-04)
   - ✅ I.15.2 Clearly different wall tints for `?wallShades`, none equal to the normal wall; the steps save the view in Camera 1 (added 2026-11-10)
+- ✅ I.18 Room reference test: T12, the v7 room-only line as `--room-only` in `scripts/try-restyle.mjs`, the steps in `docs/prompts/restyle.md` (added 2026-11-10)
+  - ⬜ I.18.1 Save the request, run T12 and the other tests with v3 and v7, record the results and the decision (Julia) (added 2026-11-10)
 - ✅ I.17 Save writes into the opened or last saved file; Save As and a new project's first Save ask in the system window; the project name next to the logo ("New Project" until saved) (added 2026-11-09)
 - ⬜ I.16 Docs (`CLAUDE.md` Structure, including `shared/` and local imports in `api/` from I.8, `docs/SPEC.md` roadmap, layout, data model and part table, `README.md` features), `npm run build`, deploy, check on the live site.
 
@@ -203,6 +211,7 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - [ ] I.14.2: with no cameras, switching to Personalize fills slot 1; with two cameras, the Camera menu lists both and each shows its own Room render and cards; a version made with Camera 2 shows Camera 2's render when clicked.
 - [ ] I.14.3: two cameras survive Save and Open (thumbnails drawn again); an older file opens with empty slots; New Project empties them.
 - [ ] I.17 (Chrome or Edge): open "My Project.json", change something, Save: no window, and opening the file again shows the change; the top bar says "My Project". Save As asks for name and folder, and later Saves go to the new file. New Project shows "New Project", and its first Save asks. Cancel in a system window changes nothing. In Firefox, Save still downloads a file.
+- [ ] I.18: `npm test` covers the v7 line; T12 and the other results (3 runs each, v3 and v7) are in `docs/prompts/restyle.md`, with the decision; the live prompt changes only if v7 passes.
 - [ ] I.15: T3 and T11 results (3 runs each) are in `docs/prompts/restyle.md`, with the decision.
 - [ ] No console errors.
 - [ ] `npm run build`, `npm run lint` and `npm test` succeed.
@@ -226,3 +235,4 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - 2026-11-04: I.13.1: the fixed render is drawn into the Plan canvas resized to 1920 × 1080 for one render, not into an off-screen target: an off-screen target skips the screen's color conversion, so the image would come out darker without extra color handling.
 - 2026-11-07: Julia did not like the placed camera (I.14). Three camera slots replace it (I.14.1 to I.14.3). Answered: switching to Personalize fills slot 1 only when all slots are empty; clicking a filled slot moves the Plan view to it; the X on hover empties a slot; changing the camera in Personalize keeps the versions.
 - 2026-11-09: I.17 added (Julia): Save writes into the opened or last saved file instead of downloading a new one; only Save As (and a new project's first Save) asks for the name and folder, in the system window. The project name shows next to the logo, "New Project" until saved. Chrome and Edge only; Firefox and Safari keep the download.
+- 2026-11-10: I.18 added (Julia): a strong object photo (its own room's walls and floor) overrides the Room reference. Prompt test first: T12 and a v7 candidate line as a script option; Julia runs it (I.18.1). The live prompt stays v3 until v7 passes.

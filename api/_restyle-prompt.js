@@ -90,6 +90,31 @@ export function withWallShadesLine(prompt) {
   return withLineBeforeLast(prompt, WALL_SHADES_LINE)
 }
 
+// "Image 3", "Images 3 and 4", "Images 3, 4 and 5".
+function imageList(numbers) {
+  if (numbers.length === 1) return `Image ${numbers[0]}`
+  return `Images ${numbers.slice(0, -1).join(', ')} and ${numbers.at(-1)}`
+}
+
+// I.18 room reference test (v7 candidate, not live): a strong object photo
+// can take over the walls and floor, so this repeats at the end that only the
+// room photo sets them. Null when there is no room photo or no object photo
+// (nothing to choose between). Same image numbers as buildPrompt. Used only
+// by scripts/try-restyle.mjs --room-only.
+export function roomOnlyLine({ room, objects }) {
+  if (!room.photo) return null
+  const count = objects.filter((object) => object.photo).length
+  if (count === 0) return null
+  const objectImages = imageList(Array.from({ length: count }, (_, i) => i + 3))
+  const verb = count === 1 ? 'is' : 'are'
+  return `Only image 2 sets the walls, floor and light. ${objectImages} ${verb} for the furniture only: take no wall color, wall finish, floor, rug or light from ${count === 1 ? 'it' : 'them'}, even when ${count === 1 ? 'it shows' : 'they show'} a strong room.`
+}
+
+export function withRoomOnlyLine(prompt, input) {
+  const line = roomOnlyLine(input)
+  return line ? withLineBeforeLast(prompt, line) : prompt
+}
+
 function withLineBeforeLast(prompt, line) {
   const lines = prompt.split('\n')
   lines.splice(lines.length - 1, 0, line, '')
