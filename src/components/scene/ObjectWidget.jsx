@@ -6,7 +6,7 @@ import { useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import { clampPosition, normalizeRadians, objectTransform } from '../../store/roomBounds'
-import { widgetControls } from './widgetState'
+import { updateRing, widgetControls } from './widgetState'
 
 const ROTATION_STEP = Math.PI / 12 // 15°
 // The ring sits outside the move arrows (arrows reach ~1.1, ring radius 1 × size).
@@ -74,12 +74,11 @@ export default function ObjectWidget() {
     widgetControls.translate = translate
     widgetControls.rotate = rotate
 
-    // Arrows win where they overlap the ring: while an arrow is hovered or
-    // dragged, the ring is paused (unless it is already being dragged).
-    const handleAxisChanged = (event) => {
-      if (!rotate.dragging) rotate.enabled = event.value === null
-    }
+    // Arrows win where they overlap the ring, and an object's body wins over
+    // the ring (J0.2): updateRing pauses the ring in both cases.
+    const handleAxisChanged = () => updateRing()
     translate.addEventListener('axis-changed', handleAxisChanged)
+    updateRing()
 
     // A drag cut short never sends mouseUp: a cancelled touch, or the widget
     // going away mid-drag (Escape or Delete). Its undo step ends here.
@@ -105,6 +104,12 @@ export default function ObjectWidget() {
     const object = getObject(selectedId)
     if (!group || !object) return
     apply(group, object, { position: [group.position.x, 0, group.position.z] })
+  }
+
+  // A ring drag can end over an object: pause the ring again now (J0.2).
+  function handleRotateEnd() {
+    endDrag()
+    updateRing()
   }
 
   function handleRotateStart() {
@@ -149,7 +154,7 @@ export default function ObjectWidget() {
         rotationSnap={ROTATION_STEP}
         size={RING_SIZE}
         onMouseDown={handleRotateStart}
-        onMouseUp={endDrag}
+        onMouseUp={handleRotateEnd}
         onObjectChange={handleRotate}
       />
     </>

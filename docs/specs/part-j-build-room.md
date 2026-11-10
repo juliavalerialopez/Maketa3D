@@ -105,7 +105,7 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 Order: fixes first, then the room data, then what I see. Each one follows the checkpoint workflow.
 
 - ✅ J0.1 Panel minimum width.
-- ⬜ J0.2 Drag moves by default, rotate only from the widget.
+- ✅ J0.2 Drag moves by default, rotate only from the widget.
 - ⬜ J0.3 Move readout while dragging.
 - ⬜ J0.4 Distances to the four walls for the selected object.
 - ⬜ J0.5 Shortcuts: Ctrl+S, Ctrl+O, arrow nudge, R, and the focus guard.

@@ -7,7 +7,7 @@ import { useRoomStore } from '../../store/roomStore'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import { clampPosition, objectTransform } from '../../store/roomBounds'
 import { OBJECT_MODELS } from '../objects/models'
-import { isWidgetActive } from './widgetState'
+import { isWidgetActive, setObjectHovered } from './widgetState'
 
 // Pixels a press may move and still count as a click (same as Fiber's own
 // limit for onPointerMissed).
@@ -18,7 +18,9 @@ const hit = new Vector3()
 
 // One object in the scene. Subscribes to its own entry only, so changing
 // one object re-renders that object and not the others.
-// Press and drag moves it on the floor; a click selects it.
+// Press and drag moves it on the floor; a click selects it. While the pointer
+// is over it, the rotate ring is paused, so a press on the object always moves
+// it (J0.2).
 function SceneObject({ id }) {
   const object = useObjectsStore((state) => state.objects.find((item) => item.id === id))
   // Read when needed: the default controls (orbit) are paused while dragging.
@@ -30,13 +32,15 @@ function SceneObject({ id }) {
   // the drag's undo step ends here and orbit comes back.
   useEffect(
     () => () => {
+      // Removed while under the pointer: no pointer out comes.
+      setObjectHovered(id, false)
       if (!dragRef.current) return
       dragRef.current = null
       endGesture()
       const { controls } = getThree()
       if (controls) controls.enabled = true
     },
-    [getThree],
+    [getThree, id],
   )
 
   if (!object) return null
@@ -99,6 +103,8 @@ function SceneObject({ id }) {
       position={position}
       rotation={rotation}
       onClick={handleClick}
+      onPointerOver={() => setObjectHovered(id, true)}
+      onPointerOut={() => setObjectHovered(id, false)}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
