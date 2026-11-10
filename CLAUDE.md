@@ -151,7 +151,8 @@ Work one task at a time, with a review stop before each commit:
 ## Subagents (ask me which to run)
 Project subagents live in `.claude/agents/`: `verifier` (build and lint,
 failures only), `spec-reviewer` (changes vs spec and these rules), `researcher`
-(open technical questions, only when I ask).
+(open technical questions, only when I ask), `portfolio-updater` (after a Part is
+Done and pushed: writes the portfolio draft and screenshots into `docs/portfolio/`).
 - After finishing a task and running `npm run build`, ask me which subagent to
   run before the review stop: verifier, spec-reviewer, both, or none. Wait for
   my answer. Never run a subagent I did not choose.
@@ -184,3 +185,10 @@ Never edit source files with `sed -i` to test something, and never run
 ## Commit messages
 Keep them simple: one short imperative line. Never add "Co-Authored-By", a
 session link, "Generated with", or any other trailer or attribution line.
+
+## Portfolio update
+When a Part's spec Status becomes Done and I have pushed, ask me whether to run
+`portfolio-updater`. It writes a draft in `docs/portfolio/` and takes screenshots
+with `scripts/portfolio-shots.mjs` (Playwright installed with `--no-save`, never
+added to package.json). I paste the draft into Framer myself. It never edits
+Framer and never commits; I review and commit its files like any other task.
