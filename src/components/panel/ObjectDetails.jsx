@@ -15,6 +15,7 @@ export default function ObjectDetails() {
   const object = useObjectsStore(selectSelectedObject)
   const updateObject = useObjectsStore((state) => state.updateObject)
   const removeObject = useObjectsStore((state) => state.removeObject)
+  const duplicateObject = useObjectsStore((state) => state.duplicateObject)
   const room = useRoomStore((state) => state.room)
 
   if (!object) return null
@@ -103,7 +104,11 @@ export default function ObjectDetails() {
         onChange={(color) => updateObject(object.id, { color })}
         {...editGesture}
       />
-      <Button onClick={() => removeObject(object.id)}>Delete</Button>
+      <div className="object-details-actions">
+        {/* Ctrl+D does the same (J0.6). */}
+        <Button onClick={() => duplicateObject(object.id)}>Duplicate</Button>
+        <Button onClick={() => removeObject(object.id)}>Delete</Button>
+      </div>
     </div>
   )
 }

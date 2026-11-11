@@ -111,7 +111,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
   - ✅ J0.3.1 The readout shows the distance moved per direction, with arrows (added 2026-11-10)
 - ✅ J0.4 Distances to the four walls for the selected object.
 - ✅ J0.5 Shortcuts: Ctrl+S, Ctrl+O, arrow nudge, and the focus guard (R dropped 2026-11-10).
-- ⬜ J0.6 Duplicate and Ctrl+D.
+- ✅ J0.6 Duplicate and Ctrl+D.
 - ⬜ J.1 Room as corners: store, floor, walls, camera-facing wall fade, Room render, clamping, save and open with old files.
 - ⬜ J.2 Corner origin: Location numbers in Object details.
 - ⬜ J.3 Shape buttons: Square, Rectangle, L with rotate. The Build button stays disabled until J.4.

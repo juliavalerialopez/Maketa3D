@@ -152,3 +152,28 @@ test('at most 50 steps are kept', () => {
   for (let index = 1; index <= 60; index++) moveTo(sofa.id, index / 100)
   assert.equal(history().past.length, 50)
 })
+
+// Duplicate (J0.6).
+test('a duplicate gets the next number, sits 0.3 m to the side, is selected, and one undo removes it', () => {
+  const sofa = addSofa()
+  useObjectsStore.getState().updateObject(sofa.id, { rotation: [0, 1, 0], color: '#123456', hidden: true })
+  useObjectsStore.getState().duplicateObject(sofa.id)
+  const copy = objects().at(-1)
+  assert.notEqual(copy.id, sofa.id)
+  assert.equal(copy.number, 2)
+  assert.deepEqual(copy.rotation, [0, 1, 0])
+  assert.equal(copy.color, '#123456')
+  assert.equal(copy.hidden, undefined)
+  assert.deepEqual(copy.position, [0.3, 0, 0])
+  assert.equal(useObjectsStore.getState().selectedId, copy.id)
+  history().undo()
+  assert.equal(objects().length, 1)
+})
+
+test('a duplicate against the right wall goes to the left, inside the walls', () => {
+  const sofa = addSofa()
+  // The default room is 6 m wide; a 2 m sofa at x = 2 touches the right wall.
+  moveTo(sofa.id, 2)
+  useObjectsStore.getState().duplicateObject(sofa.id)
+  assert.deepEqual(objects().at(-1).position, [1.7, 0, 0])
+})

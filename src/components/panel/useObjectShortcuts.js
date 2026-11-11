@@ -77,7 +77,7 @@ function nudge(event, object) {
 }
 
 // Keyboard shortcuts in Plan: undo and redo (also from a field being typed
-// in), and for the selected object Delete, Escape and the arrow keys. Plan mode only: in Personalize the scene
+// in), and for the selected object Delete, Escape, the arrow keys and Ctrl+D. Plan mode only: in Personalize the scene
 // is not visible, so nothing may be changed, deleted or deselected there.
 // Ctrl+S and Ctrl+O are in ProjectMenu (all modes).
 export default function useObjectShortcuts() {
@@ -102,10 +102,21 @@ export default function useObjectShortcuts() {
         return
       }
 
-      if (!focusIsFree() || event.ctrlKey || event.metaKey || event.altKey) return
-      const { selectedId, selectObject, removeObject } = useObjectsStore.getState()
+      // Ctrl+D duplicates (J0.6); the browser's bookmark key is blocked.
+      const duplicate = (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'd'
+      if (duplicate) event.preventDefault()
+
+      if (!focusIsFree() || event.altKey) return
+      if ((event.ctrlKey || event.metaKey) && !duplicate) return
+      const { selectedId, selectObject, removeObject, duplicateObject } = useObjectsStore.getState()
       const object = useObjectsStore.getState().objects.find((item) => item.id === selectedId)
       if (!object) return
+
+      if (duplicate) {
+        endNudge()
+        duplicateObject(selectedId)
+        return
+      }
 
       if (event.key === 'Escape') selectObject(null)
       if (event.key === 'Delete' || event.key === 'Backspace') {

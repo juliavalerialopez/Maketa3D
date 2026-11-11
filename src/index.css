@@ -602,6 +602,17 @@ canvas {
   font-weight: 700;
 }
 
+/* Duplicate and Delete side by side (J0.6). */
+.object-details-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.object-details-actions .ui-button {
+  margin-bottom: 0;
+}
+
 /* Hide switch (H.6.2): muted while the object is hidden. */
 .hide-button.hidden {
   color: var(--muted);

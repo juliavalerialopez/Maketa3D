@@ -4,6 +4,8 @@ import { clampPosition } from './roomBounds.js'
 import { OBJECT_TYPES } from '../components/objects/catalog.js'
 
 const PLACEMENT_STEP = 0.3
+// How far to the side a duplicate goes (J0.6).
+const DUPLICATE_OFFSET = 0.3
 
 // The nth new object goes n steps diagonally from the room centre (+x, +z).
 // When the next step would cross a wall, it wraps back to the centre.
@@ -48,6 +50,28 @@ export const useObjectsStore = create((set) => ({
             ...extra,
           },
         ],
+      }
+    }),
+  // A copy of object `id` (J0.6): same type, size, turn, color and screen
+  // size, with its own id and the next number of its type, 0.3 m to the right
+  // (to the left when the right wall is in the way), inside the walls, and
+  // selected. Shown even when the original is hidden. One change, so one undo
+  // step.
+  duplicateObject: (id) =>
+    set((state) => {
+      const source = state.objects.find((object) => object.id === id)
+      if (!source) return state
+      const { hidden: _hidden, ...copy } = source
+      const { room } = useRoomStore.getState()
+      const [x, , z] = source.position
+      let position = clampPosition(source, room, x + DUPLICATE_OFFSET, z)
+      if (position[0] === x) position = clampPosition(source, room, x - DUPLICATE_OFFSET, z)
+      const number = (state.lastNumbers[source.type] ?? 0) + 1
+      const duplicate = { ...copy, id: crypto.randomUUID(), number, position }
+      return {
+        lastNumbers: { ...state.lastNumbers, [source.type]: number },
+        objects: [...state.objects, duplicate],
+        selectedId: duplicate.id,
       }
     }),
   selectObject: (id) => set({ selectedId: id }),
