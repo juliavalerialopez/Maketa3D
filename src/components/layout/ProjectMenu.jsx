@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import MenuButton from '../ui/MenuButton'
 import Dialog from '../ui/Dialog'
 import { useModeStore } from '../../store/modeStore'
@@ -39,6 +39,9 @@ function toFileName(text) {
 // New and Open only work in Plan: in Personalize they would leave the Room
 // render out of date. An invalid file or a failed save shows a short message
 // for a few seconds.
+// Shortcuts (J0.5): Ctrl+S saves in every mode, Ctrl+O opens where Open
+// Project works (Cmd on Mac), also while typing in a field; the browser's own
+// Save and Open are blocked.
 export default function ProjectMenu() {
   const mode = useModeStore((state) => state.mode)
   const projectName = useProjectStore(selectProjectName)
@@ -92,6 +95,33 @@ export default function ProjectMenu() {
   }
 
   const inPlan = mode === 'plan'
+
+  // Runs in the key press itself, with no wait before the system window, so
+  // the browser counts the press as the user's action that may open it.
+  const handleShortcut = useEffectEvent((event) => {
+    if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return
+    const key = event.key.toLowerCase()
+    if (key !== 's' && key !== 'o') return
+    event.preventDefault()
+    // A held key repeats: one window at a time.
+    if (event.repeat) return
+    // A modal dialog (New Project, the Save As name) keeps the keyboard.
+    if (document.querySelector('dialog[open]')) return
+    if (key === 's') {
+      // A field being typed in is finished first (limited, like a blur), so
+      // the saved file has the checked value and opens again.
+      const active = document.activeElement
+      if (active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA') active.blur()
+      report(saveProject())
+    } else if (inPlan) open()
+  })
+
+  useEffect(() => {
+    const listener = (event) => handleShortcut(event)
+    window.addEventListener('keydown', listener)
+    return () => window.removeEventListener('keydown', listener)
+  }, [])
+
   const items = [
     { label: 'New Project', onSelect: () => setDialog('newProject'), disabled: !inPlan },
     { label: 'Open Project', onSelect: open, disabled: !inPlan },

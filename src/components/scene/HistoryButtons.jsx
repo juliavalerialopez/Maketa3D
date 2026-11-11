@@ -1,5 +1,6 @@
 import IconButton from '../ui/IconButton'
 import { selectCanRedo, selectCanUndo, useHistoryStore } from '../../store/historyStore'
+import { endNudge } from '../panel/useObjectShortcuts'
 
 const UndoIcon = (
   <svg viewBox="0 0 16 16" aria-hidden="true">
@@ -25,12 +26,18 @@ export default function HistoryButtons() {
   const undo = useHistoryStore((state) => state.undo)
   const redo = useHistoryStore((state) => state.redo)
 
+  // A burst of arrow-key moves ends first, so it can be undone at once (J0.5).
+  const run = (action) => () => {
+    endNudge()
+    action()
+  }
+
   return (
     <div className="history-buttons">
-      <IconButton label={`Undo (${MODIFIER}+Z)`} onClick={undo} disabled={!canUndo}>
+      <IconButton label={`Undo (${MODIFIER}+Z)`} onClick={run(undo)} disabled={!canUndo}>
         {UndoIcon}
       </IconButton>
-      <IconButton label={`Redo (${MODIFIER}+Shift+Z)`} onClick={redo} disabled={!canRedo}>
+      <IconButton label={`Redo (${MODIFIER}+Shift+Z)`} onClick={run(redo)} disabled={!canRedo}>
         {RedoIcon}
       </IconButton>
     </div>

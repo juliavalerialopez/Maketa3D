@@ -24,6 +24,14 @@ function handlePointerMissed() {
   useObjectsStore.getState().selectObject(null)
 }
 
+// A press in the 3D view takes the focus off a panel field or button (J0.5),
+// so the arrow keys, Delete and Ctrl+Z go to the scene, not to that field.
+// A field being typed in is finished like a blur.
+function releaseFocus() {
+  const active = document.activeElement
+  if (active && active !== document.body && active.closest('.control-panel')) active.blur()
+}
+
 // Plan mode: control panel on the left, 3D scene on the right.
 // Holds no state of its own, so nothing is lost when it unmounts.
 export default function PlanMode() {
@@ -40,7 +48,7 @@ export default function PlanMode() {
       min={15}
       max={50}
       second={
-        <div className="scene-pane">
+        <div className="scene-pane" onPointerDownCapture={releaseFocus}>
           {/* A crash or a lost WebGL context shows the error screen here (I.3). */}
           <ErrorBoundary message="The 3D view stopped working.">
             <Canvas camera={{ position: startPosition, fov: 50 }} shadows onPointerMissed={handlePointerMissed}>

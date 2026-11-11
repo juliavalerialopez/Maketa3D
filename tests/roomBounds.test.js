@@ -4,6 +4,7 @@ import {
   clampPosition,
   normalizeDegrees,
   normalizeRadians,
+  nudgeOffset,
   objectTransform,
   positionLimits,
   toDegrees,
@@ -66,6 +67,26 @@ test('an object against a wall is 0 from it', () => {
   const { right, front } = wallDistances({ ...sofa, position: [x, 0, z] }, room)
   close(right.distance, 0)
   close(front.distance, 0)
+})
+
+// Arrow keys (J0.5): relative to the screen, snapped to a room axis.
+test('looking toward the back, Up moves to the back, Right to the right', () => {
+  const view = { position: [0, 4, 5], target: [0, 0, 0] }
+  assert.deepEqual(nudgeOffset(view, 'ArrowUp', 0.1), [0, -0.1])
+  assert.deepEqual(nudgeOffset(view, 'ArrowDown', 0.1), [0, 0.1])
+  assert.deepEqual(nudgeOffset(view, 'ArrowRight', 0.1), [0.1, 0])
+  assert.deepEqual(nudgeOffset(view, 'ArrowLeft', 0.01), [-0.01, 0])
+})
+
+test('from the default corner view the keys snap to the nearest room axis', () => {
+  // Looking from +x, a bit more than from +z: straight ahead is -x.
+  const view = { position: [4.2, 4, 4], target: [0, 0, 0] }
+  assert.deepEqual(nudgeOffset(view, 'ArrowUp', 0.1), [-0.1, 0])
+  assert.deepEqual(nudgeOffset(view, 'ArrowRight', 0.1), [0, -0.1])
+})
+
+test('other keys do not nudge', () => {
+  assert.equal(nudgeOffset({ position: [0, 4, 5], target: [0, 0, 0] }, 'Enter', 0.1), null)
 })
 
 test('angles convert between degrees and radians and stay within one turn', () => {

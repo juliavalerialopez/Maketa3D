@@ -35,7 +35,8 @@ Status: **In progress**. Builds on Part A (room), Part D (arrange), Part G (save
 - **Duplicate.** Ctrl+D (and a Duplicate button in Object details) makes a copy 0.3 m to the side, with its own number, and selects it. Clamped inside the walls.
 
 ### J0: Shortcuts
-Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored while typing in a field, except Ctrl+S and Ctrl+O. Ctrl+S, Ctrl+O and Ctrl+D block the browser's own action. Delete, Backspace, Escape, the arrow keys, R and Ctrl+D act only when the focus is on the page or the 3D view, never on a field or a button.
+Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored while typing in a field, except Ctrl+S and Ctrl+O. Ctrl+S, Ctrl+O and Ctrl+D block the browser's own action. Delete, Backspace, Escape, the arrow keys and Ctrl+D act only when the focus is on the page or the 3D view, never on a field or a button. (changed 2026-11-10) No R shortcut: Julia dropped it; the move arrows and the rotate ring stay shown together.
+- (added 2026-11-10) Found while testing J0.5: with a Room field still focused, Ctrl+Z ran the browser's text undo in that field, so the room shrank and the moved object stayed. Now Ctrl+Z and Ctrl+Y in a number field finish the field first (limited, like a blur) and then run the app's undo, and a press in the 3D view takes the focus off a panel field or button.
 
 | Shortcut | Action | Status |
 |---|---|---|
@@ -47,7 +48,6 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 | Ctrl+S | Save the project (all modes) | new |
 | Ctrl+O | Open a project (Plan and Build; like the menu, not in Personalize) | new |
 | Arrow keys on a selected object | Nudge 10 cm; with Shift 1 cm | new |
-| R | Switch between the move and rotate widget | new |
 | Ctrl+D | Duplicate the selected object | new |
 | 1, 2, 3 | Build, Plan, Personalize | new (J.9) |
 
@@ -110,7 +110,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - ✅ J0.3 Move readout while dragging.
   - ✅ J0.3.1 The readout shows the distance moved per direction, with arrows (added 2026-11-10)
 - ✅ J0.4 Distances to the four walls for the selected object.
-- ⬜ J0.5 Shortcuts: Ctrl+S, Ctrl+O, arrow nudge, R, and the focus guard.
+- ✅ J0.5 Shortcuts: Ctrl+S, Ctrl+O, arrow nudge, and the focus guard (R dropped 2026-11-10).
 - ⬜ J0.6 Duplicate and Ctrl+D.
 - ⬜ J.1 Room as corners: store, floor, walls, camera-facing wall fade, Room render, clamping, save and open with old files.
 - ⬜ J.2 Corner origin: Location numbers in Object details.
@@ -129,7 +129,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - [ ] J0.3: while dragging, the label shows the same X and Z as Object details shows after the drop. (replaced by J0.3.1)
 - [ ] J0.3.1: a sofa dragged 30 cm straight shows one number, "30 cm", with an arrow the way it moved on screen; a diagonal drag shows two; 1 m and more shows in meters.
 - [ ] J0.4: a selected sofa shows four lines with distances that add up to the room size minus its footprint, for a turned sofa too, and they update while dragging.
-- [ ] J0.5: Ctrl+S saves in all modes; Ctrl+O opens in Plan and Build; arrows nudge 10 cm (Shift 1 cm) and one Ctrl+Z undoes a burst; R switches the widget; Backspace with the color field or a button focused does not delete.
+- [ ] J0.5: Ctrl+S saves in all modes; Ctrl+O opens in Plan and Build; arrows nudge 10 cm (Shift 1 cm) and one Ctrl+Z undoes a burst; Backspace with the color field or a button focused does not delete.
 - [ ] J0.6: Ctrl+D and the Duplicate button make "Sofa 2" next to "Sofa 1", selected, inside the walls; one Ctrl+Z removes it.
 - [ ] J.1: an old file opens with everything in the same place; an L room keeps furniture out of the notch; the Room render of a rectangle room looks as before; a file with a broken room is refused with a message.
 - [ ] J.2: an object in the front left corner shows Location near 0, 0; typing a Location puts it there.
@@ -141,6 +141,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - [ ] No console errors; `npm run build`, `npm run lint` and `npm test` succeed; deployed and working on the live site.
 
 ## Backlog
+- (added 2026-11-10) Zoomed in close on a big piece, the rotate ring can lie entirely over the object, and a press there moves it (J0.2), so the ring cannot be grabbed; rotate from Object details then. If this gets in the way, a rotate-only mode could fix it.
 - Draw walls freely instead of cut and drag (after testing with real users).
 - Angled walls (Part K).
 

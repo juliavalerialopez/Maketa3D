@@ -87,6 +87,27 @@ export function wallDistances(object, room) {
   }
 }
 
+// Arrow keys on the selected object (J0.5): the [dx, dz] to move it by `step`
+// meters, relative to the screen and snapped to the nearest room axis. Up
+// moves away from the camera, Down toward it, Left and Right sideways on
+// screen. `view` is the Plan view ({ position, target }); null for other keys.
+export function nudgeOffset(view, key, step) {
+  const forwardX = view.target[0] - view.position[0]
+  const forwardZ = view.target[2] - view.position[2]
+  // The room axis closest to straight ahead on screen (seen from above).
+  const ahead = Math.abs(forwardX) > Math.abs(forwardZ) ? [Math.sign(forwardX), 0] : [0, Math.sign(forwardZ)]
+  // To the right of ahead: looking along -z, the right is +x.
+  const right = [-ahead[1], ahead[0]]
+  const direction = {
+    ArrowUp: ahead,
+    ArrowDown: [-ahead[0], -ahead[1]],
+    ArrowRight: right,
+    ArrowLeft: [-right[0], -right[1]],
+  }[key]
+  // "+ 0" turns -0 into 0.
+  return direction ? [direction[0] * step + 0, direction[1] * step + 0] : null
+}
+
 // The object's position with x and z clamped inside the walls (y stays 0).
 // Clamping each axis on its own lets an object slide along a wall.
 export function clampPosition(object, room, x, z) {
