@@ -9,7 +9,15 @@ import {
   shapeFor,
   useRoomStore,
 } from '../src/store/roomStore.js'
-import { describeRoom, lCorners, rectangleCorners } from '../src/store/roomShape.js'
+import {
+  cutSpan,
+  cutWall,
+  describeRoom,
+  lCorners,
+  prepareWallDrag,
+  rectangleCorners,
+  tidyCorners,
+} from '../src/store/roomShape.js'
 import { newLayout } from '../src/store/layoutFile.js'
 import { useObjectsStore } from '../src/store/objectsStore.js'
 import { beginGesture, endGesture, useHistoryStore } from '../src/store/historyStore.js'
@@ -137,23 +145,97 @@ test('a typed wall length that keeps the room allowed is applied, its shape foll
 
 test('a dragged wall moves in 5 cm steps and stops at the limit', () => {
   const corners = rectangleCorners(5, 5)
+  const drag = prepareWallDrag(corners, 1)
   // The right wall (wall 1) dragged out 1 m: 20 steps, a 6 m wide room.
-  assert.equal(reachableStep(corners, 1, 0, 20), 20)
-  assert.deepEqual(roomSize({ corners: draggedCorners(corners, 1, 20) }), { width: 6, depth: 5 })
+  assert.equal(reachableStep(corners, drag, 0, 20), 20)
+  assert.deepEqual(roomSize({ corners: draggedCorners(corners, drag, 20) }), { width: 6, depth: 5 })
   // Dragged far in: it stops when the room is 2 m wide (the smallest).
-  assert.equal(reachableStep(corners, 1, 0, -100), -60)
+  assert.equal(reachableStep(corners, drag, 0, -100), -60)
   // Dragged far out: it stops at 10 m wide.
-  assert.equal(reachableStep(corners, 1, 0, 200), 100)
+  assert.equal(reachableStep(corners, drag, 0, 200), 100)
   // Back to where it started: the room as before.
-  assert.equal(draggedCorners(corners, 1, 0), corners)
+  assert.deepEqual(draggedCorners(corners, drag, 0), corners)
 })
 
-test('in an L, a wall stops before a wall next to it would get under 0.5 m', () => {
+test('in an L, a wall stops before a wall next to it gets under 0.5 m, or flattens the notch', () => {
   // The cut away corner's wall along x (wall 2, at z = 0, from x 2 to 0)
-  // dragged toward the front: the wall at x = 2 shrinks to 0.5 m and stops.
+  // dragged toward the front: the wall at x = 0 shrinks to 0.5 m and stops.
   const corners = lCorners(4, 4, 2, 2, 0)
-  const step = reachableStep(corners, 2, 0, 100)
-  assert.equal(step, 30)
+  const drag = prepareWallDrag(corners, 2)
+  assert.equal(reachableStep(corners, drag, 0, 33), 30)
+  // Dragged all the way to the front wall, the notch is gone: a rectangle.
+  assert.equal(reachableStep(corners, drag, 30, 40), 40)
+  assert.deepEqual(describeRoom(draggedCorners(corners, drag, 40)), { shape: 'rectangle', width: 4, depth: 4 })
+})
+
+// The back wall of a 6 x 5 room cut into three: x -3..-1, -1..1, 1..3.
+const cutRoom = [
+  { x: -3, z: -2.5 },
+  { x: -1, z: -2.5 },
+  { x: 1, z: -2.5 },
+  { x: 3, z: -2.5 },
+  { x: 3, z: 2.5 },
+  { x: -3, z: 2.5 },
+]
+
+test('a cut makes a 1 m piece (a third of a short wall), at least 0.5 m from both ends', () => {
+  const room = rectangleCorners(6, 5)
+  // The back wall (wall 0, 6 m) cut at 2 m from its start: x -1.5..-0.5.
+  const cut = cutWall(room, 0, 2)
+  assert.equal(cut.index, 1)
+  assert.deepEqual(cut.corners.slice(1, 3), [
+    { x: -1.5, z: -2.5 },
+    { x: -0.5, z: -2.5 },
+  ])
+  // Cut too near an end: moved in so 0.5 m is left.
+  assert.deepEqual(cutSpan(room, 0, 0.1), [0.5, 1.5])
+  // A 2.1 m wall gives a 0.7 m piece; a 1.5 m wall a 0.5 m one; shorter none.
+  const short = rectangleCorners(2.1, 1.5)
+  const piece = cutSpan(short, 0, 1.05)
+  assert.ok(Math.abs(piece[1] - piece[0] - 0.7) < 1e-9)
+  assert.deepEqual(cutSpan(short, 1, 0.75), [0.5, 1])
+  assert.equal(cutSpan(rectangleCorners(1.4, 3), 0, 0.7), null)
+})
+
+test('a cut piece dragged out gets side walls of at least 0.5 m, and back in line it is one wall again', () => {
+  const drag = prepareWallDrag(cutRoom, 1)
+  assert.equal(drag.corners.length, 8)
+  // 0.2 m out is too shallow for its side walls: it stays in line.
+  assert.equal(reachableStep(cutRoom, drag, 0, 4), 0)
+  // From 0.25 m it jumps out to 0.5 m: a bump.
+  assert.equal(reachableStep(cutRoom, drag, 0, 5), 10)
+  const bump = draggedCorners(cutRoom, drag, 10)
+  assert.equal(bump.length, 8)
+  assert.ok(bump.some((corner) => corner.x === -1 && corner.z === -3))
+  // Back within 0.25 m of the line: in line again, and one wall again.
+  assert.equal(reachableStep(cutRoom, drag, 10, 5), 0)
+  assert.deepEqual(draggedCorners(cutRoom, drag, 0), rectangleCorners(6, 5))
+})
+
+test('a bump dragged again later goes back into one straight wall', () => {
+  const bump = draggedCorners(cutRoom, prepareWallDrag(cutRoom, 1), 10)
+  // The bump's outer wall, from (-1, -3) to (1, -3).
+  const index = bump.findIndex((corner) => corner.x === -1 && corner.z === -3)
+  const drag = prepareWallDrag(bump, index)
+  // Dragged back in (toward +z, so negative steps): it lines up and merges.
+  const step = reachableStep(bump, drag, 0, -9)
+  assert.equal(step, -10)
+  assert.deepEqual(draggedCorners(bump, drag, step), rectangleCorners(6, 5))
+})
+
+test('tidying merges corners on top of each other and straight corners where a wall ended', () => {
+  const corners = [
+    { x: -3, z: -2.5 },
+    { x: -1, z: -2.5 },
+    { x: -1, z: -2.5 },
+    { x: 1, z: -2.5 },
+    { x: 3, z: -2.5 },
+    { x: 3, z: 2.5 },
+    { x: -3, z: 2.5 },
+  ]
+  assert.deepEqual(tidyCorners(corners, [[-1, -2.5], [1, -2.5]]), rectangleCorners(6, 5))
+  // A straight corner elsewhere (an earlier cut) stays.
+  assert.equal(tidyCorners(corners, [[-1, -2.5]]).length, 5)
 })
 
 test('a new shape pushes pieces inside, counts them, and undoes in one step', () => {

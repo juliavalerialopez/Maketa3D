@@ -45,8 +45,16 @@ export const useUiStore = create((set) => ({
   // room." after a new shape or leaving Build (J.4, J.5); null when none.
   // Here so it survives the switch from Build to Plan.
   roomNotice: null,
+  // Build (J.7): the selected wall as its two corners, { a: { x, z }, b },
+  // so it stays selected when the walls are renumbered; null when none.
+  selectedWall: null,
+  // Build (J.7): the Cut button is on; the next click on the selected wall
+  // cuts a piece out of it there.
+  cutting: false,
 
   setMoving: (moving) => set({ moving }),
+  selectWall: (selectedWall) => set({ selectedWall, cutting: false }),
+  setCutting: (cutting) => set({ cutting }),
   setRoomNotice: (roomNotice) => set({ roomNotice }),
   setSceneView: (sceneView) => set({ sceneView }),
   setPlanPercent: (planPercent) => set({ planPercent }),

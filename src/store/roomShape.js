@@ -174,6 +174,99 @@ export function moveWall(corners, index, offset) {
   )
 }
 
+// True when the walls before and after corner `index` run the same way (the
+// corner sits in the middle of a straight wall, as a cut makes).
+function isStraightCorner(corners, index) {
+  const count = corners.length
+  const before = corners[(index - 1 + count) % count]
+  const corner = corners[index]
+  const after = corners[(index + 1) % count]
+  const alongX = (a, b) => Math.abs(a.z - b.z) < EPSILON
+  const alongZ = (a, b) => Math.abs(a.x - b.x) < EPSILON
+  return (alongX(before, corner) && alongX(corner, after)) || (alongZ(before, corner) && alongZ(corner, after))
+}
+
+// Getting wall `index` ready to be dragged sideways (J.6, J.7). A wall whose
+// neighbour runs straight on from it (a piece cut out of a longer wall) gets
+// a new corner at that end, so a side wall can grow there as it moves.
+// Returns { corners, index } (the wall's index in the new corners).
+export function prepareWallDrag(corners, index) {
+  const endIndex = (index + 1) % corners.length
+  const atStart = isStraightCorner(corners, index)
+  const atEnd = isStraightCorner(corners, endIndex)
+  const next = []
+  let wallIndex = index
+  corners.forEach((corner, cornerIndex) => {
+    // The wall's end gets a copy just before it: the wall ends there.
+    if (cornerIndex === endIndex && atEnd) next.push({ ...corner })
+    next.push(corner)
+    if (cornerIndex === index) {
+      // The wall's start gets a copy just after it: the wall starts there.
+      if (atStart) next.push({ ...corner })
+      wallIndex = next.length - 1
+    }
+  })
+  return { corners: next, index: wallIndex }
+}
+
+// The corners tidied after a wall moved (J.7): corners on top of each other
+// become one (a side wall that shrank to nothing), and a corner at one of
+// `points` ([x, z], the moved wall's ends) that sits in the middle of a
+// straight wall is removed, so a piece back in line with its neighbours is
+// one wall again. Other straight corners (a cut not moved yet) stay.
+export function tidyCorners(corners, points) {
+  const same = (a, b) => Math.abs(a.x - b.x) < EPSILON && Math.abs(a.z - b.z) < EPSILON
+  let result = corners.filter((corner, index) => !same(corner, corners[(index + 1) % corners.length]))
+  for (;;) {
+    const index = result.findIndex(
+      (corner, cornerIndex) => points.some(([x, z]) => same(corner, { x, z })) && isStraightCorner(result, cornerIndex),
+    )
+    if (index === -1 || result.length <= 4) return result
+    result = result.filter((_, cornerIndex) => cornerIndex !== index)
+  }
+}
+
+// The shortest wall that can be cut, in meters (J.7).
+export const MIN_CUT_WALL = 1.5
+
+// How long a cut piece of a `length` m wall is (J.7): 1 m, a third of a wall
+// under 3 m, never under MIN_WALL.
+export const cutPieceLength = (length) => Math.max(MIN_WALL, length < 3 ? length / 3 : 1)
+
+// Where a cut piece of wall `index` goes, centred `along` meters from the
+// wall's start but at least MIN_WALL from both ends: [from, to] in meters
+// from the start, or null when the wall is too short to cut.
+export function cutSpan(corners, index, along) {
+  const { length } = roomWalls(corners)[index]
+  if (length < MIN_CUT_WALL - EPSILON) return null
+  const half = cutPieceLength(length) / 2
+  const centre = Math.min(length - MIN_WALL - half, Math.max(MIN_WALL + half, along))
+  return [centre - half, centre + half]
+}
+
+// The corners with a piece cut out of wall `index` around `along` (cutSpan):
+// two new corners on the wall, so the piece is a wall of its own that can be
+// dragged (J.7). Returns { corners, index } (the piece's wall index), or null.
+export function cutWall(corners, index, along) {
+  const span = cutSpan(corners, index, along)
+  if (!span) return null
+  const { start, end, length } = roomWalls(corners)[index]
+  const [dx, dz] = [(end.x - start.x) / length, (end.z - start.z) / length]
+  const at = (distance) => ({ x: start.x + dx * distance + 0, z: start.z + dz * distance + 0 })
+  const next = [...corners.slice(0, index + 1), at(span[0]), at(span[1]), ...corners.slice(index + 1)]
+  return { corners: next, index: index + 1 }
+}
+
+// The index of the wall running from `a` to `b` ({ x, z }, either way round),
+// or -1. Build keeps the selected wall this way, so it survives renumbering.
+export function findWall(corners, a, b) {
+  const same = (p, q) => Math.abs(p.x - q.x) < EPSILON && Math.abs(p.z - q.z) < EPSILON
+  return corners.findIndex((corner, index) => {
+    const next = corners[(index + 1) % corners.length]
+    return (same(corner, a) && same(next, b)) || (same(corner, b) && same(next, a))
+  })
+}
+
 // The corners with wall `index` set to `length` meters (Build, J.5): its end
 // farther from the origin moves (the right end of a wall along x, the back end
 // of a wall along z), by moving the wall that meets it there. The result may

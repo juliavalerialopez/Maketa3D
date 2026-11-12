@@ -3,17 +3,19 @@ import BuildScene from '../scene/BuildScene'
 import ContextLossGuard from '../scene/ContextLossGuard'
 import { TopControls } from '../scene/TopCamera'
 import { topCameraSettings } from '../scene/planViews'
-import { useModeStore } from '../../store/modeStore'
 import SplitLayout from '../layout/SplitLayout'
 import ErrorBoundary from '../layout/ErrorBoundary'
-import Section from '../panel/Section'
-import RoomInputs from '../panel/RoomInputs'
+import BuildPanel from '../panel/BuildPanel'
+import { useModeStore } from '../../store/modeStore'
 import { useUiStore } from '../../store/uiStore'
 
-// Build mode (J.5): Room configuration on the left (shape buttons, Height),
-// the room from above on the right, where each wall's length can be typed.
-// Pan and zoom like Plan's 2D view, and the same view. Holds no state of its
-// own, so nothing is lost when it unmounts. Leaving Build moves pieces
+// A click on the floor or outside the room deselects the wall (J.7).
+const deselectWall = () => useUiStore.getState().selectWall(null)
+
+// Build mode (J.5): the panel on the left (Room configuration, the selected
+// wall), the room from above on the right, where walls are typed, dragged and
+// cut. Pan and zoom like Plan's 2D view, and the same view. Holds no state of
+// its own, so nothing is lost when it unmounts. Leaving Build moves pieces
 // inside the walls (layout/modeSwitch.js).
 export default function BuildMode() {
   const planPercent = useUiStore((state) => state.planPercent)
@@ -21,13 +23,7 @@ export default function BuildMode() {
 
   return (
     <SplitLayout
-      first={
-        <div className="control-panel">
-          <Section id="room" title="Room configuration">
-            <RoomInputs inBuild />
-          </Section>
-        </div>
-      }
+      first={<BuildPanel />}
       percent={planPercent}
       onPercentChange={setPlanPercent}
       min={15}
@@ -35,7 +31,11 @@ export default function BuildMode() {
       second={
         <div className="scene-pane">
           <ErrorBoundary message="The Build view stopped working.">
-            <Canvas orthographic camera={topCameraSettings(useModeStore.getState().topView)}>
+            <Canvas
+              orthographic
+              camera={topCameraSettings(useModeStore.getState().topView)}
+              onPointerMissed={deselectWall}
+            >
               <BuildScene />
               <ContextLossGuard />
               <TopControls />

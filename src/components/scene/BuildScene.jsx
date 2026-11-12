@@ -2,19 +2,24 @@ import { useEffect, useRef, useState } from 'react'
 import { Html } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import { Plane, Vector3 } from 'three'
-import { ROOM_LIMITS, WALL_SNAP, draggedCorners, reachableStep, useRoomStore } from '../../store/roomStore'
-import { MIN_WALL } from '../../store/roomShape'
-import { beginGesture, editGesture, endGesture } from '../../store/historyStore'
-import NumberField from '../ui/NumberField'
+import { WALL_SNAP, draggedCorners, reachableStep, useRoomStore } from '../../store/roomStore'
+import { cutSpan, cutWall, findWall, prepareWallDrag } from '../../store/roomShape'
+import { useUiStore } from '../../store/uiStore'
+import { beginGesture, endGesture } from '../../store/historyStore'
+import WallLengthField from '../panel/WallLengthField'
 import Floor from './Floor'
 import { wallBoxes } from './wallBoxes'
 
 // Build draws the walls flat and dark, thicker than in 3D so they read from
 // above. Outward from the inside edge, so the room's inside size is the same.
+// The colors are the same in both themes, like the floor.
 const BUILD_WALL_THICKNESS = 0.12
 const BUILD_WALL_COLOR = '#4a463f'
-// A hovered wall (J.6): warm clay, the same in both themes like the floor.
-const BUILD_WALL_HOVER_COLOR = '#b5653d'
+// The selected wall (J.7): warm clay; a hovered one (J.6): a lighter clay.
+const BUILD_WALL_SELECTED_COLOR = '#b5653d'
+const BUILD_WALL_HOVER_COLOR = '#c98a63'
+// Where a cut would go (J.7): pale sand over the selected wall.
+const CUT_PREVIEW_COLOR = '#f1e3c6'
 // How wide the invisible strip to grab a wall is, in meters.
 const WALL_GRAB = 0.4
 // Drags happen on the floor.
@@ -25,63 +30,55 @@ const WALL_DRAW_HEIGHT = 0.02
 // How far outside a wall its length sits, in meters.
 const LABEL_GAP = 0.45
 
-// A wall's inside length, at its middle just outside the room. Typing a
-// length (or stepping it) moves the wall's end farther from the origin; a
-// length that would break the room (a wall under 0.5 m, crossing walls, a
-// room too big or too small) is refused and the field shows the length
-// again.
+// One wall is dragged at a time; meanwhile the others ignore the pointer.
+let wallDragActive = false
+
+const wallSelection = (wall) => ({ a: { ...wall.start }, b: { ...wall.end } })
+
+// A wall's length at its middle just outside the room (J.5).
 function WallLength({ index, wall }) {
-  // The length being typed or stepped, until it is final; null otherwise.
-  const [typed, setTyped] = useState(null)
-  const [refusals, setRefusals] = useState(0)
   const [mx, mz] = [(wall.start.x + wall.end.x) / 2, (wall.start.z + wall.end.z) / 2]
   const gap = BUILD_WALL_THICKNESS + LABEL_GAP
-
-  // Applied only once final (blur, a step, the end of a drag), since every
-  // length in between may not make a room.
-  function commit(length) {
-    setTyped(null)
-    if (Math.abs(length - wall.length) < 1e-9) return
-    if (!useRoomStore.getState().setWallLength(index, length)) setRefusals((count) => count + 1)
-  }
-
   return (
     <Html position={[mx + wall.normal[0] * gap, 0, mz + wall.normal[1] * gap]} center>
       <div className="wall-length">
-        {/* Remounted after a refusal, so it shows the stored length again. */}
-        <NumberField
-          key={refusals}
-          compact
-          label={`Wall ${index + 1}`}
-          value={typed ?? wall.length}
-          onChange={setTyped}
-          onCommit={commit}
-          {...editGesture}
-          min={MIN_WALL}
-          max={ROOM_LIMITS.width[1]}
-          unit="m"
-        />
+        <WallLengthField compact index={index} wall={wall} />
       </div>
     </Html>
   )
 }
 
-// One wall is dragged at a time; meanwhile the others ignore the pointer.
-let wallDragActive = false
+// How far along `wall` the floor point (x, z) is, from its start.
+function alongWall(wall, x, z) {
+  const [dx, dz] = [(wall.end.x - wall.start.x) / wall.length, (wall.end.z - wall.start.z) / wall.length]
+  return (x - wall.start.x) * dx + (z - wall.start.z) * dz
+}
 
-// One wall, with a wider invisible strip around it to grab (J.6). Hovering
-// highlights it; dragging moves it sideways only, in 5 cm steps, its corners
-// with it, so the walls next to it stretch or shrink. It stops where the room
-// would stop being allowed. The whole drag is one undo step.
-function BuildWall({ index, box }) {
+// One wall, with a wider invisible strip around it to grab.
+// - A press selects it (J.7); hovering highlights it (J.6).
+// - Dragging moves it sideways only, in 5 cm steps, its corners with it, so
+//   the walls next to it stretch or shrink. It stops where the room would
+//   stop being allowed. The whole drag is one undo step (J.6). A piece cut
+//   out of a longer wall gets side walls as it moves, and is one wall again
+//   once back in line (J.7).
+// - With Cut on, a press on the selected wall cuts a piece out there, shown
+//   while hovering (J.7).
+function BuildWall({ index, box, selected, cutting }) {
   const getThree = useThree((state) => state.get)
   const [hovered, setHovered] = useState(false)
   const hoveredRef = useRef(false)
-  // Active drag: { pointerId, corners (before the drag), normal, start:
-  // [x, z], step, shown (the corners this drag set last) }.
+  // Where a cut would go, [from, to] along the wall, while hovering with Cut on.
+  const [cutPreview, setCutPreview] = useState(null)
+  // Active drag: { pointerId, corners (before the drag), drag
+  // (prepareWallDrag), normal, start: [x, z], step, shown (the corners this
+  // drag set last) }. The walls may be renumbered meanwhile, so it keeps all
+  // it needs.
   const dragRef = useRef(null)
   const { wall } = box
   const alongX = Math.abs(wall.end.z - wall.start.z) < 1e-9
+  const cuttingHere = cutting && selected
+  // With Cut off, no old preview is kept for the next time it is on.
+  if (!cuttingHere && cutPreview) setCutPreview(null)
 
   function setControls(enabled) {
     const { controls } = getThree()
@@ -91,15 +88,20 @@ function BuildWall({ index, box }) {
   function hover(on) {
     hoveredRef.current = on
     setHovered(on)
-    document.body.style.cursor = on ? (alongX ? 'ns-resize' : 'ew-resize') : ''
+    document.body.style.cursor = on ? (cuttingHere ? 'crosshair' : alongX ? 'ns-resize' : 'ew-resize') : ''
   }
 
-  // Ends the drag: its undo step closes and pan comes back.
+  // Ends the drag: its undo step closes and pan comes back. A wall merged
+  // back in line is no longer selected.
   function stopDrag() {
     dragRef.current = null
     wallDragActive = false
     endGesture()
     setControls(true)
+    const { selectedWall, selectWall } = useUiStore.getState()
+    if (selectedWall && findWall(useRoomStore.getState().room.corners, selectedWall.a, selectedWall.b) === -1) {
+      selectWall(null)
+    }
   }
 
   // Removed mid-drag or while under the pointer (e.g. leaving Build): the
@@ -122,7 +124,25 @@ function BuildWall({ index, box }) {
     event.stopPropagation()
     if (!event.ray.intersectPlane(FLOOR, hit)) return
     const { corners } = useRoomStore.getState().room
-    dragRef.current = { pointerId: event.pointerId, corners, normal: wall.normal, start: [hit.x, hit.z], step: 0, shown: corners }
+    if (cuttingHere) {
+      // The new piece is selected, ready to be dragged.
+      const cut = cutWall(corners, index, alongWall(wall, hit.x, hit.z))
+      if (cut && useRoomStore.getState().setCorners(cut.corners)) useUiStore.getState().selectWall(wallSelection(pieceOf(cut)))
+      setCutPreview(null)
+      // Cut is off again: the pointer shows the wall can be dragged.
+      document.body.style.cursor = alongX ? 'ns-resize' : 'ew-resize'
+      return
+    }
+    useUiStore.getState().selectWall(wallSelection(wall))
+    dragRef.current = {
+      pointerId: event.pointerId,
+      corners,
+      drag: prepareWallDrag(corners, index),
+      normal: wall.normal,
+      start: [hit.x, hit.z],
+      step: 0,
+      shown: corners,
+    }
     wallDragActive = true
     beginGesture()
     event.target.setPointerCapture(event.pointerId)
@@ -131,7 +151,12 @@ function BuildWall({ index, box }) {
 
   function handlePointerMove(event) {
     const current = dragRef.current
-    if (!current || current.pointerId !== event.pointerId) return
+    if (!current || current.pointerId !== event.pointerId) {
+      if (cuttingHere && event.ray.intersectPlane(FLOOR, hit)) {
+        setCutPreview(cutSpan(useRoomStore.getState().room.corners, index, alongWall(wall, hit.x, hit.z)))
+      }
+      return
+    }
     event.stopPropagation()
     // The room was replaced meanwhile (New Project, Open Project): the drag
     // ends instead of writing the old room back.
@@ -144,11 +169,13 @@ function BuildWall({ index, box }) {
     // How far the pointer went out of the room, across the wall.
     const [nx, nz] = current.normal
     const out = (hit.x - current.start[0]) * nx + (hit.z - current.start[1]) * nz
-    const step = reachableStep(current.corners, index, current.step, Math.round(out / WALL_SNAP))
+    const step = reachableStep(current.corners, current.drag, current.step, Math.round(out / WALL_SNAP))
     if (step === current.step) return
     current.step = step
-    useRoomStore.getState().setCorners(draggedCorners(current.corners, index, step))
+    useRoomStore.getState().setCorners(draggedCorners(current.corners, current.drag, step))
     current.shown = useRoomStore.getState().room.corners
+    // The selection follows the moved wall (gone once it is back in line).
+    useUiStore.getState().selectWall(draggedWallEnds(current, step))
   }
 
   function handlePointerUp(event) {
@@ -158,12 +185,15 @@ function BuildWall({ index, box }) {
     stopDrag()
   }
 
+  const color = selected ? BUILD_WALL_SELECTED_COLOR : hovered && !wallDragActive ? BUILD_WALL_HOVER_COLOR : BUILD_WALL_COLOR
+
   return (
     <>
       <mesh position={box.position}>
         <boxGeometry args={box.size} />
-        <meshBasicMaterial color={hovered ? BUILD_WALL_HOVER_COLOR : BUILD_WALL_COLOR} />
+        <meshBasicMaterial color={color} />
       </mesh>
+      {cuttingHere && cutPreview && <CutPreview box={box} span={cutPreview} />}
       <mesh
         position={box.position}
         onPointerOver={(event) => {
@@ -173,6 +203,7 @@ function BuildWall({ index, box }) {
         // While dragging the wall stays highlighted; after the release, the
         // next move that leaves it turns it back.
         onPointerOut={() => {
+          setCutPreview(null)
           if (!dragRef.current && hoveredRef.current) hover(false)
         }}
         onPointerDown={handlePointerDown}
@@ -190,18 +221,76 @@ function BuildWall({ index, box }) {
   )
 }
 
+// The new piece of a cut (cutWall's result) as a selection.
+function pieceOf(cut) {
+  const next = cut.corners[(cut.index + 1) % cut.corners.length]
+  return { start: cut.corners[cut.index], end: next }
+}
+
+// The dragged wall's ends at `step`, as a selection.
+function draggedWallEnds(current, step) {
+  const { corners, index } = current.drag
+  const [nx, nz] = current.normal
+  const offset = step * WALL_SNAP
+  const shift = (corner) => ({ x: corner.x + nx * offset + 0, z: corner.z + nz * offset + 0 })
+  return { a: shift(corners[index]), b: shift(corners[(index + 1) % corners.length]) }
+}
+
+// Where a cut would go on the selected wall: a pale band over the wall.
+function CutPreview({ box, span }) {
+  const { wall } = box
+  const [dx, dz] = [(wall.end.x - wall.start.x) / wall.length, (wall.end.z - wall.start.z) / wall.length]
+  const middle = (span[0] + span[1]) / 2
+  const length = span[1] - span[0]
+  const out = BUILD_WALL_THICKNESS / 2
+  const x = wall.start.x + dx * middle + wall.normal[0] * out
+  const z = wall.start.z + dz * middle + wall.normal[1] * out
+  const alongX = Math.abs(dz) < 1e-9
+  return (
+    <mesh position={[x, WALL_DRAW_HEIGHT + 0.01, z]}>
+      <boxGeometry args={alongX ? [length, 0.01, BUILD_WALL_THICKNESS] : [BUILD_WALL_THICKNESS, 0.01, length]} />
+      <meshBasicMaterial color={CUT_PREVIEW_COLOR} />
+    </mesh>
+  )
+}
+
 // The Build view (J.5): the room from above, flat, with no light or shadow:
 // the floor in its color, the walls dark, each wall's length next to it.
-// Furniture is not shown. Walls can be dragged (J.6).
+// Furniture is not shown. Walls can be selected and dragged (J.6), and cut
+// (J.7). Esc stops cutting, then clears the selection.
 export default function BuildScene() {
   const { corners } = useRoomStore((state) => state.room)
+  const selection = useUiStore((state) => state.selectedWall)
+  const cutting = useUiStore((state) => state.cutting)
   const walls = wallBoxes(corners, WALL_DRAW_HEIGHT, BUILD_WALL_THICKNESS)
+  const selectedIndex = selection ? findWall(corners, selection.a, selection.b) : -1
+
+  useEffect(() => {
+    function handleKeyDown(event) {
+      // A field being typed in keeps Esc; a focused button (Cut) does not.
+      const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)
+      if (event.key !== 'Escape' || typing) return
+      const ui = useUiStore.getState()
+      if (ui.cutting) ui.setCutting(false)
+      else if (ui.selectedWall) ui.selectWall(null)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  // A selected wall that no longer exists (undo, New, Open, merged back in
+  // line) is let go, so it does not come back later by chance.
+  useEffect(() => {
+    const { selectedWall, selectWall } = useUiStore.getState()
+    if (!selectedWall || wallDragActive) return
+    if (findWall(useRoomStore.getState().room.corners, selectedWall.a, selectedWall.b) === -1) selectWall(null)
+  }, [corners, selection])
 
   return (
     <>
       <Floor flat />
       {walls.map((box, index) => (
-        <BuildWall key={index} index={index} box={box} />
+        <BuildWall key={index} index={index} box={box} selected={index === selectedIndex} cutting={cutting} />
       ))}
       {walls.map((box, index) => (
         <WallLength key={index} index={index} wall={box.wall} />

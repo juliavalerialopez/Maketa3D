@@ -8,6 +8,7 @@ import {
   moveWall,
   rectangleCorners,
   setWallLength,
+  tidyCorners,
 } from './roomShape.js'
 
 // Allowed room size in meters, per dimension: [min, max]. Width and depth are
@@ -128,25 +129,53 @@ export function reshapedCorners(room, corners) {
 // Moving a wall in Build snaps to this, in meters (J.6).
 export const WALL_SNAP = 0.05
 
-// Dragging wall `index` (J.6) of the room's `corners` as they were before the
-// drag: from `fromStep` (the last allowed position, in WALL_SNAP steps out of
-// the room) toward `targetStep`, the farthest step the wall reaches before
-// the room stops being allowed. It stops at the limit (a wall under 0.5 m,
-// walls crossing, too big or too small) and does not jump past it.
-export function reachableStep(corners, index, fromStep, targetStep) {
-  const allowed = (step) => step === 0 || isAllowedRoom(moveWall(corners, index, step * WALL_SNAP))
-  const direction = Math.sign(targetStep - fromStep)
-  let reached = fromStep
-  for (let step = fromStep + direction; direction && step !== targetStep + direction; step += direction) {
-    if (!allowed(step)) break
-    reached = step
-  }
-  return reached
+// The corners with a wall dragged to `step` (WALL_SNAP steps out of the
+// room). `drag` is prepareWallDrag's result for the room's `corners` before
+// the drag. The wall moves, and a side wall that shrank to nothing, or a
+// piece back in line with its neighbours (also at 0, after a drag out and
+// back), is tidied into one wall (J.7).
+export function draggedCorners(corners, drag, step) {
+  const moved = step === 0 ? drag.corners : moveWall(drag.corners, drag.index, step * WALL_SNAP)
+  const ends = [moved[drag.index], moved[(drag.index + 1) % moved.length]].map(({ x, z }) => [x, z])
+  return tidyCorners(moved, ends)
 }
 
-// The corners with wall `index` dragged to `step` (reachableStep).
-export function draggedCorners(corners, index, step) {
-  return step === 0 ? corners : moveWall(corners, index, step * WALL_SNAP)
+// Dragging a wall (J.6, J.7): from `fromStep` (the last allowed step) toward
+// `targetStep`, the farthest step the wall reaches. It stops where the room
+// stops being allowed (a wall under 0.5 m, walls crossing, too big or too
+// small) and does not jump past it, with one exception: a wall next to it
+// that is under 0.5 m only for a little while (a cut piece's side walls
+// growing from nothing, or shrinking back to nothing as the piece lines up
+// again) is passed over, up to 0.5 m on, and up to 0.25 m beyond the pointer.
+export function reachableStep(corners, drag, fromStep, targetStep) {
+  const allowed = (step) => isAllowedRoom(draggedCorners(corners, drag, step))
+  const direction = Math.sign(targetStep - fromStep)
+  if (!direction) return fromStep
+  const gapSteps = Math.round(MIN_WALL / WALL_SNAP)
+  // The farthest a jump may land: a little beyond the pointer.
+  const limit = targetStep + direction * Math.round(gapSteps / 2)
+  const within = (step) => (direction > 0 ? step <= limit : step >= limit)
+  let reached = fromStep
+  let step = fromStep
+  while (step !== targetStep) {
+    step += direction
+    if (allowed(step)) {
+      reached = step
+      continue
+    }
+    let landing = null
+    for (let ahead = step + direction; Math.abs(ahead - step) <= gapSteps && within(ahead); ahead += direction) {
+      if (allowed(ahead)) {
+        landing = ahead
+        break
+      }
+    }
+    if (landing === null) break
+    reached = landing
+    step = landing
+    if (direction > 0 ? step >= targetStep : step <= targetStep) break
+  }
+  return reached
 }
 
 export const useRoomStore = create((set, get) => ({

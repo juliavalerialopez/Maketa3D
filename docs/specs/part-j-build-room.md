@@ -91,18 +91,19 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 - Leaving Build: pieces outside the room are moved inside, and a line says "N objects were moved inside the room." Edits in Build are undoable (one step per drag or typed value). Moving the pieces inside is its own undo step.
 - (added 2026-11-10) New Project and Open Project work in Build, as in Plan.
 - (added 2026-11-10) Clicking Personalize from Build passes through Plan: the Room renders need Plan's 3D view, so Plan shows for a moment, the renders are taken, then Personalize opens.
-- (added 2026-11-12, J.5) Each wall's length is a small number field named "Wall 1", "Wall 2", ... just outside it: click to type, or drag or use the arrow keys like any number field. A length that would break the room (a wall under 0.5 m, walls crossing, the room under 2 m or over 10 m across) is refused and the field shows the length again. Build and Plan's 2D view share one view (pan and zoom). The Build button in Room configuration opens Build; in Build the panel shows the shape buttons and Height only.
+- (added 2026-11-12, J.5) Each wall's length is a small number field named "Wall 1", "Wall 2", ... just outside it: click to type, or drag or use the arrow keys like any number field. A length that would break the room (a wall under 0.5 m, walls crossing, the room under 2 m or over 10 m across) is refused and the field shows the length again. Build and Plan's 2D view share one view (pan and zoom). The Build button in Room configuration opens Build; in Build the panel shows the shape buttons and Height only (plus the selected wall from J.7, and Openings from J.8).
 
 ### Move a wall (J.6)
 - Hovering a wall highlights it. Dragging moves it sideways only (a horizontal wall moves up or down, a vertical wall moves left or right). Its two end corners move with it and the neighboring walls stretch or shrink.
 - Movement snaps to 5 cm.
 - A move is stopped if a wall would get shorter than 0.5 m, the room would cross itself, or a door or window would no longer fit its wall. The wall stops at the limit; for the opening case a short message says what did not fit.
-- (added 2026-11-12, J.6) The room's 2 m and 10 m limits (seen from above) stop a move too. Because no wall may be under 0.5 m, a wall cannot be dragged so far that a wall next to it vanishes: an L's notch is removed with the Rectangle button, not by dragging. The wall under the pointer is drawn in a warm clay color and the pointer shows which way it moves.
+- (added 2026-11-12, J.6) The room's 2 m and 10 m limits (seen from above) stop a move too. The wall under the pointer is drawn in a warm clay color and the pointer shows which way it moves.
 
 ### Cut and drag (J.7)
 - A selected wall shows a **Cut** button (scissors). Cutting at a point makes a 1 m piece centered there (a third of the wall if the wall is shorter than 3 m, never under 0.5 m). The wall must be at least 1.5 m long to cut.
 - That piece is now its own wall and moves like in J.6, so dragging it in or out creates an alcove or a bump. Its two short side walls grow as it moves.
 - When a moved piece lines up again with its neighbors, the extra corners are merged and it becomes one wall again.
+- (added 2026-11-12, J.7) A click on a wall selects it (clay color); its length and the Cut button show in the panel, and a click on the floor or Esc deselects. With Cut on, hovering the selected wall shows where the piece would go, and a click cuts it there; the new piece is selected. A piece stays in line until dragged 0.25 m out or in, then jumps to 0.5 m (its side walls are never under 0.5 m); dragged back within 0.25 m of the line, it lines up and merges. The same goes for any wall: dragged flush with another, the wall between them disappears (e.g. an L's notch dragged to the front wall gives a rectangle).
 
 ### Doors and windows (J.8 in Build, J.9 in Plan)
 - Build panel, Openings: **Door** and **Window** buttons. Adding one places it on the selected wall (or the longest wall if none is selected), centered.
@@ -134,7 +135,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - ✅ J.4 Shape buttons: Square, Rectangle, L with rotate. The Build button stays disabled until J.5. New Project starts as the 5 × 5 m Square (added 2026-11-12, moved here from J.2.2).
 - ✅ J.5 Build tab: top view, wall labels with typed length, furniture hidden, pan and zoom, notice on leaving.
 - ✅ J.6 Move a wall.
-- ⬜ J.7 Cut and drag.
+- ✅ J.7 Cut and drag.
 - ⬜ J.8 Doors and windows in Build. The project file saves and opens `openings` (added 2026-11-12, moved here from J.2.2).
 - ⬜ J.9 Doors and windows in Plan: list group, details, move and resize.
 - ⬜ J.10 Undo and redo in Build, and the 1, 2, 3 mode shortcuts.
