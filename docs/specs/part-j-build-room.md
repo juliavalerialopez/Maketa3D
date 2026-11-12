@@ -65,6 +65,7 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 
 ### Room data
 - `room: { height, corners: [{ x, z }, ...] }`, corners in order around the room, every edge horizontal or vertical. Walls are the edges between corners.
+- (added 2026-11-12, J.4) In the app the room also keeps its `shape` ('square', 'rectangle', 'l' or 'custom'), the shape button that made it. The file does not store it: on Open it follows from the corners (a rectangle with equal sides is a Square).
 - `openings: [{ id, type: 'door' | 'window', wallIndex, offset, width, height, sill }]`. `offset` is the distance from the wall's first corner to the opening's near edge, in meters. (added 2026-11-10) In the app they live inside the room (`room.openings`), so undo and redo cover them like the walls.
 - The floor, the walls, the wall that fades when facing the camera, the Room render and the clamping of furniture (the rotated footprint must stay inside the room) all use the corners, not width and depth.
 - Save and open: the file stores `corners` and `openings` and a version number (2; version 1 files still open). Files from before Part J (width, depth, height) import as a rectangle in the same place, so objects do not move. A file with corners that do not form a valid closed room is rejected with a clear message.
@@ -128,7 +129,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
   - ✅ J.2.1 Geometry helpers for a room of corners (`src/store/roomShape.js`): rectangle, bounding box, walls with their outward side, validity, point inside, where a footprint fits, distance to a wall; tests only, no visible change (added 2026-11-11)
   - ✅ J.2.2 The room becomes corners everywhere: store, clamping, placement, Location limits, wall distances, walls and floor, the Walk wall stop, project file version 2 with old files still opening, a message for a broken room (added 2026-11-11)
 - ✅ J.3 Corner origin: Location numbers in Object details.
-- ⬜ J.4 Shape buttons: Square, Rectangle, L with rotate. The Build button stays disabled until J.5. New Project starts as the 5 × 5 m Square (added 2026-11-12, moved here from J.2.2).
+- ✅ J.4 Shape buttons: Square, Rectangle, L with rotate. The Build button stays disabled until J.5. New Project starts as the 5 × 5 m Square (added 2026-11-12, moved here from J.2.2).
 - ⬜ J.5 Build tab: top view, wall labels with typed length, furniture hidden, pan and zoom, notice on leaving.
 - ⬜ J.6 Move a wall.
 - ⬜ J.7 Cut and drag.

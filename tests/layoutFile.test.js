@@ -36,6 +36,7 @@ beforeEach(() => newLayout())
 
 test('save then open restores the room and the objects', () => {
   const { addObject, updateObject, setHidden } = useObjectsStore.getState()
+  useRoomStore.getState().setShape('rectangle')
   useRoomStore.getState().setRoomSize({ width: 5, depth: 4 })
   addObject('sofa')
   addObject('tvStand')
@@ -48,7 +49,7 @@ test('save then open restores the room and the objects', () => {
   newLayout()
   assert.equal(importLayout(saved), 'done')
 
-  assert.deepEqual(useRoomStore.getState().room, { height: 2.6, corners: rectangleCorners(5, 4) })
+  assert.deepEqual(useRoomStore.getState().room, { shape: 'rectangle', height: 2.6, corners: rectangleCorners(5, 4) })
   const [openedSofa, openedTv] = objects()
   assert.deepEqual(openedSofa.position, [1, 0, -0.5])
   close(openedSofa.rotation[1], Math.PI / 2)
@@ -83,7 +84,7 @@ test('a version 1 file opens as a rectangle with everything in the same place, a
     cameras: [camera, null, null],
   }
   assert.equal(importLayout(text(older)), 'done')
-  assert.deepEqual(useRoomStore.getState().room, { height: 2.4, corners: rectangleCorners(6, 5) })
+  assert.deepEqual(useRoomStore.getState().room, { shape: 'rectangle', height: 2.4, corners: rectangleCorners(6, 5) })
   assert.deepEqual(objects()[0].position, [1.5, 0, 1])
   const saved = layoutData()
   assert.equal(saved.version, 2)
@@ -157,7 +158,7 @@ test('invalid files are refused and change nothing', () => {
   ]
   for (const file of invalid) assert.equal(importLayout(file), 'invalid', file)
   assert.deepEqual(layoutData(), before)
-  assert.deepEqual(useRoomStore.getState().room, layout.room)
+  assert.deepEqual(useRoomStore.getState().room, { shape: 'l', ...layout.room })
 })
 
 test('camera slots are saved and opened again, without thumbnails', () => {

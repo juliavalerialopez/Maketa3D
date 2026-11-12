@@ -1,4 +1,4 @@
-import { DEFAULT_ROOM, ROOM_LIMITS, roomSize, useRoomStore } from './roomStore.js'
+import { DEFAULT_ROOM, ROOM_LIMITS, roomSize, shapeFor, useRoomStore } from './roomStore.js'
 import { isValidRoomCorners, rectangleCorners } from './roomShape.js'
 import { useObjectsStore } from './objectsStore.js'
 import { useModeStore } from './modeStore.js'
@@ -247,11 +247,13 @@ function parseLayout(text) {
   if (roomCheck === 'invalid' || !rest) return { problem: 'invalid' }
   // Only reported for a file that is otherwise valid.
   if (roomCheck === 'broken') return { problem: 'brokenRoom' }
-  const room =
+  const corners =
     data.version === 1
-      ? { height: data.room.height, corners: rectangleCorners(data.room.width, data.room.depth) }
-      : { height: data.room.height, corners: data.room.corners.map(({ x, z }) => ({ x, z })) }
-  return { layout: data, room }
+      ? rectangleCorners(data.room.width, data.room.depth)
+      : data.room.corners.map(({ x, z }) => ({ x, z }))
+  // The file has no shape: Square, Rectangle, L or custom follow from the
+  // corners (J.4).
+  return { layout: data, room: { shape: shapeFor(corners), height: data.room.height, corners } }
 }
 
 // A file camera entry as a camera slot's view, or null.

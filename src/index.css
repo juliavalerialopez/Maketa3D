@@ -578,6 +578,30 @@ canvas {
   gap: 8px;
 }
 
+/* Room configuration (J.4): the shape buttons across the panel, and the L's
+   turn button after them. */
+.room-shapes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.room-shapes .ui-segmented {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* The shape icons, drawn as lines like the other icons. */
+.room-shape-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
 /* Objects: one Add button per type, wrapping, above the list. */
 .add-buttons {
   display: flex;
@@ -698,6 +722,13 @@ canvas {
 .ui-number-field-unit {
   flex: 0 0 1em;
   color: var(--muted);
+}
+
+/* Shown, not editable (J.4: a custom room's width and depth). */
+.ui-number-field.disabled input,
+.ui-number-field.disabled .ui-number-field-step {
+  opacity: 0.55;
+  cursor: default;
 }
 
 .ui-number-field.compact {
@@ -1406,6 +1437,12 @@ canvas {
   min-width: 0;
   padding: 4px 14px;
   font-size: 12px;
+}
+
+.ui-segmented.stretch .ui-segmented-option {
+  flex: 1 1 0;
+  display: grid;
+  place-items: center;
 }
 
 .ui-segmented-option:hover:not(:disabled) {

@@ -34,7 +34,7 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 All units in meters.
 
 ```js
-room: { height, corners: [{ x, z }, ...] }  // J.2: closed list of corners seen from above, world space (front wall at +z), every wall along x or z (store/roomShape.js)
+room: { shape, height, corners: [{ x, z }, ...] }  // shape: 'square' | 'rectangle' | 'l' | 'custom' (J.4, not saved: follows from the corners on Open); J.2: closed list of corners seen from above, world space (front wall at +z), every wall along x or z (store/roomShape.js)
 objects: [{ id, type, number, position: [x, y, z], rotation: [x, y, z], size: { width, depth, height }, color, screenInches?, hidden? }]
 // type: 'sofa' | 'coffeeTable' | 'armchair' | 'bookshelf' | 'floorLamp' | 'tvStand' (defined in objects/catalog.js)
 // number: stable per-type count (Sofa 1, Sofa 2, ...), never reused

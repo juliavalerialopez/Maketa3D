@@ -25,6 +25,64 @@ export function rectangleCorners(width, depth, centerX = 0, centerZ = 0) {
   ]
 }
 
+// Where an L's cut away corner can be, as [x sign, z sign] of that corner of
+// the bounding box, in the order the rotate button goes: seen from above with
+// the front at the bottom, clockwise from the front right.
+export const NOTCH_CORNERS = [
+  [1, 1], // front right
+  [-1, 1], // front left
+  [-1, -1], // back left
+  [1, -1], // back right
+]
+
+// An L room (J.4): a width x depth rectangle centred on (centerX, centerZ)
+// with a notchWidth x notchDepth piece cut away at corner `notch` (an index
+// into NOTCH_CORNERS).
+export function lCorners(width, depth, notchWidth, notchDepth, notch = 0, centerX = 0, centerZ = 0) {
+  const [sx, sz] = NOTCH_CORNERS[notch]
+  const [x, z] = [width / 2, depth / 2]
+  // Drawn for the front right corner, then mirrored to the chosen one.
+  const local = [
+    [-x, -z],
+    [x, -z],
+    [x, z - notchDepth],
+    [x - notchWidth, z - notchDepth],
+    [x - notchWidth, z],
+    [-x, z],
+  ]
+  // "+ 0" turns -0 into 0.
+  return local.map(([px, pz]) => ({ x: centerX + px * sx + 0, z: centerZ + pz * sz + 0 }))
+}
+
+// What kind of room the corners make: { shape: 'rectangle', width, depth },
+// { shape: 'l', width, depth, notchWidth, notchDepth, notch } or
+// { shape: 'custom', width, depth } (anything else, e.g. shaped in Build).
+// Width and depth are always the bounding box's.
+export function describeRoom(corners) {
+  const box = boundingBox(corners)
+  const size = { width: box.width, depth: box.depth }
+  const near = (a, b) => Math.abs(a - b) < EPSILON
+  const onBox = (corner, [sx, sz]) => near(corner.x, sx > 0 ? box.maxX : box.minX) && near(corner.z, sz > 0 ? box.maxZ : box.minZ)
+  if (corners.length === 4 && isValidRoomCorners(corners)) {
+    if (NOTCH_CORNERS.every((signs) => corners.some((corner) => onBox(corner, signs)))) return { shape: 'rectangle', ...size }
+  }
+  if (corners.length === 6 && isValidRoomCorners(corners)) {
+    const notch = NOTCH_CORNERS.findIndex((signs) => !corners.some((corner) => onBox(corner, signs)))
+    const inner = corners.find(
+      (corner) => corner.x > box.minX + EPSILON && corner.x < box.maxX - EPSILON && corner.z > box.minZ + EPSILON && corner.z < box.maxZ - EPSILON,
+    )
+    if (notch !== -1 && inner) {
+      const [sx, sz] = NOTCH_CORNERS[notch]
+      const notchWidth = Math.abs((sx > 0 ? box.maxX : box.minX) - inner.x)
+      const notchDepth = Math.abs((sz > 0 ? box.maxZ : box.minZ) - inner.z)
+      const expected = lCorners(box.width, box.depth, notchWidth, notchDepth, notch, box.centerX, box.centerZ)
+      const same = expected.every((point) => corners.some((corner) => near(corner.x, point.x) && near(corner.z, point.z)))
+      if (same) return { shape: 'l', ...size, notchWidth, notchDepth, notch }
+    }
+  }
+  return { shape: 'custom', ...size }
+}
+
 // The smallest box around the corners.
 export function boundingBox(corners) {
   const xs = corners.map((corner) => corner.x)

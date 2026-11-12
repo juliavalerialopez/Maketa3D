@@ -57,7 +57,7 @@ test('a room size and the clamp it causes undo in one step', () => {
   endGesture()
   assert.deepEqual(objects()[0].position, [0.5, 0, 0])
   history().undo()
-  assert.equal(roomSize(useRoomStore.getState().room).width, 6)
+  assert.equal(roomSize(useRoomStore.getState().room).width, 5)
   assert.deepEqual(objects()[0].position, [2.5, 0, 0])
 })
 
@@ -172,8 +172,8 @@ test('a duplicate gets the next number, sits 0.3 m to the side, is selected, and
 
 test('a duplicate against the right wall goes to the left, inside the walls', () => {
   const sofa = addSofa()
-  // The default room is 6 m wide; a 2 m sofa at x = 2 touches the right wall.
-  moveTo(sofa.id, 2)
+  // The default room is 5 m wide; a 2 m sofa at x = 1.5 touches the right wall.
+  moveTo(sofa.id, 1.5)
   useObjectsStore.getState().duplicateObject(sofa.id)
-  assert.deepEqual(objects().at(-1).position, [1.7, 0, 0])
+  assert.deepEqual(objects().at(-1).position, [1.2, 0, 0])
 })

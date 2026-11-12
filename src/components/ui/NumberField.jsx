@@ -31,6 +31,9 @@ const PIXELS_PER_STEP = 4
 // `onEditStart` and `onEditEnd` (optional) frame one edit (I.11, one undo
 // step): from focus or a press until blur or the end of a drag; a minus or
 // plus click is an edit of its own.
+//
+// `disabled` shows the value greyed out, with no typing, dragging or
+// stepping (e.g. a custom room's width, J.4).
 export default function NumberField({
   label,
   value,
@@ -44,6 +47,7 @@ export default function NumberField({
   unit,
   normalize,
   compact,
+  disabled = false,
 }) {
   const id = useId()
   const [draft, setDraft] = useState(String(round(value)))
@@ -132,7 +136,7 @@ export default function NumberField({
   }
 
   function handlePointerDown(event) {
-    if (focused || event.button !== 0) return
+    if (disabled || focused || event.button !== 0) return
     event.currentTarget.setPointerCapture(event.pointerId)
     startEdit()
     pressRef.current = {
@@ -188,6 +192,7 @@ export default function NumberField({
       type="button"
       className="ui-number-field-step"
       aria-label={`${name} ${label}`}
+      disabled={disabled}
       onClick={() => handleStep(direction)}
     >
       {symbol}
@@ -195,7 +200,7 @@ export default function NumberField({
   )
 
   return (
-    <div className={compact ? 'ui-number-field compact' : 'ui-number-field'}>
+    <div className={['ui-number-field', compact && 'compact', disabled && 'disabled'].filter(Boolean).join(' ')}>
       <label className="ui-number-field-label" htmlFor={id}>
         {label}
       </label>
@@ -206,7 +211,8 @@ export default function NumberField({
         type="number"
         step={step}
         value={draft}
-        className={focused ? undefined : 'ui-number-field-draggable'}
+        disabled={disabled}
+        className={focused || disabled ? undefined : 'ui-number-field-draggable'}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onFocus={handleFocus}
