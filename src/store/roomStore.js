@@ -6,10 +6,13 @@ import {
   isValidRoomCorners,
   lCorners,
   moveWall,
+  prepareWallDrag,
   rectangleCorners,
-  setWallLength,
+  roomWalls,
   tidyCorners,
+  wallLengthMove,
 } from './roomShape.js'
+import { fitOpenings, newOpening, openingsOf, openingsProblem, reanchorOpenings } from './openings.js'
 
 // Allowed room size in meters, per dimension: [min, max]. Width and depth are
 // the room's size seen from above (its corners' bounding box). Used by the
@@ -20,14 +23,15 @@ export const ROOM_LIMITS = {
   height: [2, 4],
 }
 
-// The room: { shape, height, corners } (J.2, J.4). Corners as in
-// roomShape.js, in world space with the front wall at +z. `shape` is the
+// The room: { shape, height, corners, openings } (J.2, J.4, J.8). Corners as
+// in roomShape.js, in world space with the front wall at +z. `shape` is the
 // shape button that made it: 'square', 'rectangle', 'l' (each a preset of
-// corners) or 'custom' (shaped in Build). The project file keeps only height
-// and corners; the shape is worked out again when it opens (shapeFor).
+// corners) or 'custom' (shaped in Build). Openings (doors and windows) as in
+// openings.js. The project file keeps height, corners and openings; the shape
+// is worked out again when it opens (shapeFor).
 
 // A new project's room: a 5 m square, 2.6 m high.
-export const DEFAULT_ROOM = { shape: 'square', height: 2.6, corners: rectangleCorners(5, 5) }
+export const DEFAULT_ROOM = { shape: 'square', height: 2.6, corners: rectangleCorners(5, 5), openings: [] }
 
 // An L's cut away piece, per side: at least MIN_WALL, and leaving a leg of at
 // least MIN_WALL.
@@ -64,8 +68,13 @@ export function roomParams(room) {
 
 // The room for `params` (roomParams, changed). An L's notch is kept inside
 // its limits. A custom room keeps its corners; only its height changes.
-// Anything else the room holds is kept.
+// Doors and windows are made to fit (fitOpenings); anything else the room
+// holds is kept.
 export function shapedRoom(room, params) {
+  return fitOpenings(shapedCorners(room, params), room.corners)
+}
+
+function shapedCorners(room, params) {
   const { shape, height, width, depth, centerX, centerZ } = params
   const next = { ...room, shape, height }
   if (shape === 'square') next.corners = rectangleCorners(width, width, centerX, centerZ)
@@ -119,25 +128,46 @@ export function isAllowedRoom(corners) {
   return within(width, ROOM_LIMITS.width) && within(depth, ROOM_LIMITS.depth)
 }
 
-// The room with new corners (Build), its shape button following them, or
-// null when they do not make an allowed room.
-export function reshapedCorners(room, corners) {
-  if (!isAllowedRoom(corners)) return null
-  return { ...room, corners, shape: shapeFor(corners, room.shape) }
+// The room with new corners (Build), its shape button following them, and
+// its doors and windows kept where they are (J.8; those on wall `moved.wall`
+// of the old corners move with it by `moved.shift`, [x, z]). Returns
+// { room }, or { problem }: 'shape' (not an allowed room) or 'openings' (a
+// door or window would no longer fit its wall).
+export function roomWithCorners(room, corners, moved = { wall: -1, shift: [0, 0] }) {
+  if (!isAllowedRoom(corners)) return { problem: 'shape' }
+  const openings = reanchorOpenings(room.corners, corners, openingsOf(room), moved.wall, moved.shift)
+  if (!openings) return { problem: 'openings' }
+  const next = { ...room, corners, openings, shape: shapeFor(corners, room.shape) }
+  return openingsProblem(next) ? { problem: 'openings' } : { room: next }
 }
 
 // Moving a wall in Build snaps to this, in meters (J.6).
 export const WALL_SNAP = 0.05
 
+// Getting wall `index` of `room` ready to be dragged (J.6, J.7):
+// prepareWallDrag's { corners, index } plus the wall's number in the room
+// (`wall`) and its outward side (`normal`).
+export function startWallDrag(room, index) {
+  return { ...prepareWallDrag(room.corners, index), wall: index, normal: roomWalls(room.corners)[index].normal }
+}
+
 // The corners with a wall dragged to `step` (WALL_SNAP steps out of the
-// room). `drag` is prepareWallDrag's result for the room's `corners` before
-// the drag. The wall moves, and a side wall that shrank to nothing, or a
-// piece back in line with its neighbours (also at 0, after a drag out and
-// back), is tidied into one wall (J.7).
-export function draggedCorners(corners, drag, step) {
+// room). `drag` is startWallDrag's result for the room before the drag. The
+// wall moves, and a side wall that shrank to nothing, or a piece back in line
+// with its neighbours (also at 0, after a drag out and back), is tidied into
+// one wall (J.7).
+export function draggedCorners(drag, step) {
   const moved = step === 0 ? drag.corners : moveWall(drag.corners, drag.index, step * WALL_SNAP)
   const ends = [moved[drag.index], moved[(drag.index + 1) % moved.length]].map(({ x, z }) => [x, z])
   return tidyCorners(moved, ends)
+}
+
+// The room (as before the drag) with a wall dragged to `step`: roomWithCorners'
+// { room } or { problem }. Doors and windows on the wall move with it (J.8).
+export function draggedRoom(room, drag, step) {
+  const offset = step * WALL_SNAP
+  const shift = [drag.normal[0] * offset, drag.normal[1] * offset]
+  return roomWithCorners(room, draggedCorners(drag, step), { wall: drag.wall, shift })
 }
 
 // Dragging a wall (J.6, J.7): from `fromStep` (the last allowed step) toward
@@ -147,8 +177,9 @@ export function draggedCorners(corners, drag, step) {
 // that is under 0.5 m only for a little while (a cut piece's side walls
 // growing from nothing, or shrinking back to nothing as the piece lines up
 // again) is passed over, up to 0.5 m on, and up to 0.25 m beyond the pointer.
-export function reachableStep(corners, drag, fromStep, targetStep) {
-  const allowed = (step) => isAllowedRoom(draggedCorners(corners, drag, step))
+// Doors and windows that would no longer fit stop it too (J.8).
+export function reachableStep(room, drag, fromStep, targetStep) {
+  const allowed = (step) => !draggedRoom(room, drag, step).problem
   const direction = Math.sign(targetStep - fromStep)
   if (!direction) return fromStep
   const gapSteps = Math.round(MIN_WALL / WALL_SNAP)
@@ -178,28 +209,59 @@ export function reachableStep(corners, drag, fromStep, targetStep) {
   return reached
 }
 
+// The room with opening `id` changed by `partial` (J.8), or null when it
+// would not fit (its wall, the room height, another opening).
+export function roomWithOpening(room, id, partial) {
+  const openings = openingsOf(room).map((opening) => (opening.id === id ? { ...opening, ...partial } : opening))
+  const next = { ...room, openings }
+  return openingsProblem(next) ? null : next
+}
+
 export const useRoomStore = create((set, get) => ({
   room: DEFAULT_ROOM,
-  // { width, depth, height, notchWidth, notchDepth }, each optional.
-  setRoomSize: (size) => set((state) => ({ room: resizedRoom(state.room, size) })),
+  // { width, depth, height, notchWidth, notchDepth }, each optional, applied
+  // to `base` (the room when the edit began; the current one if not given),
+  // so a number half typed never moves or drops a door for good (J.8).
+  setRoomSize: (size, base) => set((state) => ({ room: resizedRoom(base ?? state.room, size) })),
   // 'square', 'rectangle' or 'l' (the shape buttons).
   setShape: (shape) => set((state) => ({ room: reshapedRoom(state.room, shape) })),
   rotateNotch: () => set((state) => ({ room: rotatedNotch(state.room) })),
-  // Build (J.6, J.7): new corners. Returns false and changes nothing when
-  // they do not make an allowed room.
-  setCorners: (corners) => {
-    const room = reshapedCorners(get().room, corners)
-    if (room) set({ room })
-    return Boolean(room)
+  // Build (J.6, J.7): new corners, `moved` as in roomWithCorners. Returns
+  // null when done, else the problem ('shape' or 'openings'), changing
+  // nothing.
+  setCorners: (corners, moved) => {
+    const result = roomWithCorners(get().room, corners, moved)
+    if (result.room) set({ room: result.room })
+    return result.problem ?? null
   },
-  // Build (J.5): a typed wall length. Returns false and changes nothing when
-  // the room would not be allowed (a wall under 0.5 m, crossing walls, too
-  // big or too small).
+  // Build (J.5): a typed wall length: null when done, else the problem as in
+  // setCorners.
   setWallLength: (index, length) => {
-    const room = reshapedCorners(get().room, setWallLength(get().room.corners, index, length))
+    const { corners } = get().room
+    const { wall, offset } = wallLengthMove(corners, index, length)
+    const [nx, nz] = roomWalls(corners)[wall].normal
+    return get().setCorners(moveWall(corners, wall, offset), { wall, shift: [nx * offset, nz * offset] })
+  },
+  // Build (J.8): a new door or window ('door' or 'window') on wall
+  // `wallIndex` (-1: the longest), centred. Returns { id } or { problem }
+  // ('short' or 'full', see newOpening).
+  addOpening: (type, wallIndex = -1) => {
+    const { room } = get()
+    const result = newOpening(room, type, wallIndex)
+    if (result.problem) return result
+    const id = crypto.randomUUID()
+    set({ room: { ...room, openings: [...openingsOf(room), { id, ...result.opening }] } })
+    return { id }
+  },
+  // Build (J.8): changes opening `id`. Returns false and changes nothing when
+  // it would not fit.
+  updateOpening: (id, partial) => {
+    const room = roomWithOpening(get().room, id, partial)
     if (room) set({ room })
     return Boolean(room)
   },
+  removeOpening: (id) =>
+    set((state) => ({ room: { ...state.room, openings: openingsOf(state.room).filter((opening) => opening.id !== id) } })),
   // Replaces the whole room (New Project, Open Project).
   setRoom: (room) => set({ room }),
 }))

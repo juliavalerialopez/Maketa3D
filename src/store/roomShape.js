@@ -272,6 +272,13 @@ export function findWall(corners, a, b) {
 // of a wall along z), by moving the wall that meets it there. The result may
 // not be a valid room.
 export function setWallLength(corners, index, length) {
+  const { wall, offset } = wallLengthMove(corners, index, length)
+  return moveWall(corners, wall, offset)
+}
+
+// Which wall a typed length of wall `index` moves, and how far
+// (setWallLength): { wall, offset } for moveWall.
+export function wallLengthMove(corners, index, length) {
   const count = corners.length
   const walls = roomWalls(corners)
   const { start, end, length: current } = walls[index]
@@ -281,7 +288,7 @@ export function setWallLength(corners, index, length) {
   const neighbour = endIsFar ? (index + 1) % count : (index - 1 + count) % count
   const [nx, nz] = walls[neighbour].normal
   const away = alongX ? nx : -nz
-  return moveWall(corners, neighbour, (length - current) * away)
+  return { wall: neighbour, offset: (length - current) * away }
 }
 
 const isFiniteNumber = (value) => typeof value === 'number' && Number.isFinite(value)

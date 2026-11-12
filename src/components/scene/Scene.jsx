@@ -1,5 +1,6 @@
 import Floor from './Floor'
 import Walls from './Walls'
+import Openings from './Openings'
 import Objects from './Objects'
 import SelectionBox from './SelectionBox'
 import ObjectWidget from './ObjectWidget'
@@ -17,6 +18,7 @@ export default function Scene() {
       <directionalLight position={[5, 10, 5]} intensity={1} castShadow />
       <Floor />
       <Walls />
+      <Openings />
       <Objects />
       {editing && (
         <>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ROOM_LIMITS, useRoomStore } from '../../store/roomStore'
 import { MIN_WALL, findWall, roomWalls } from '../../store/roomShape'
-import { useUiStore } from '../../store/uiStore'
+import { BUILD_NOTICES, useUiStore } from '../../store/uiStore'
 import { editGesture } from '../../store/historyStore'
 import NumberField from '../ui/NumberField'
 
@@ -10,7 +10,8 @@ import NumberField from '../ui/NumberField'
 // farther from the origin. It is applied only once final (blur, a step, the
 // end of a drag), since a length in between may not make a room; a length
 // that would break the room (a wall under 0.5 m, crossing walls, a room too
-// big or too small) is refused and the field shows the length again.
+// big or too small, a door or window that would no longer fit) is refused
+// and the field shows the length again.
 // `wall` is the roomWalls entry, `index` its number.
 export default function WallLengthField({ index, wall, compact = false }) {
   // The length being typed or stepped, until it is final; null otherwise.
@@ -25,8 +26,10 @@ export default function WallLengthField({ index, wall, compact = false }) {
     const { selectedWall, selectWall } = useUiStore.getState()
     const before = useRoomStore.getState().room.corners
     const selected = selectedWall ? findWall(before, selectedWall.a, selectedWall.b) : -1
-    if (!useRoomStore.getState().setWallLength(index, length)) {
+    const problem = useRoomStore.getState().setWallLength(index, length)
+    if (problem) {
       setRefusals((count) => count + 1)
+      if (problem === 'openings') useUiStore.getState().setBuildNotice(BUILD_NOTICES.openings)
       return
     }
     if (selected === -1) return

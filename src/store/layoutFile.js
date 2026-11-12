@@ -1,5 +1,6 @@
 import { DEFAULT_ROOM, ROOM_LIMITS, roomSize, shapeFor, useRoomStore } from './roomStore.js'
 import { isValidRoomCorners, rectangleCorners } from './roomShape.js'
+import { MIN_OPENING_SIZE, OPENING_TYPES, openingsOf, openingsProblem } from './openings.js'
 import { useObjectsStore } from './objectsStore.js'
 import { useModeStore } from './modeStore.js'
 import { useHistoryStore } from './historyStore.js'
@@ -14,8 +15,10 @@ export { canPickFiles }
 
 // The layout file: the room, objects and camera slots, saved as JSON and
 // read back (see the Part G spec).
-// Version 2 (J.2): "room" is { height, corners: [{ x, z }, ...] }, the corners
-// in world space as in roomShape.js. Version 1 files (room { width, depth,
+// Version 2 (J.2): "room" is { height, corners: [{ x, z }, ...], openings },
+// the corners in world space as in roomShape.js, and since J.8 the doors and
+// windows: [{ type, wall, offset, width, height, sill }] (wall: the wall's
+// number from 0, the rest in meters as in openings.js; optional). Version 1 files (room { width, depth,
 // height }) still open, as a rectangle centred on the origin, so nothing in
 // them moves. Saving always writes version 2.
 // Only Y rotation is kept, in whole degrees 0-359; tilt and size are not
@@ -51,6 +54,14 @@ export function layoutData() {
     room: {
       height: room.height,
       corners: room.corners.map((corner) => ({ x: roundMeters(corner.x), z: roundMeters(corner.z) })),
+      openings: openingsOf(room).map((opening) => ({
+        type: opening.type,
+        wall: opening.wallIndex,
+        offset: roundMeters(opening.offset),
+        width: roundMeters(opening.width),
+        height: roundMeters(opening.height),
+        sill: roundMeters(opening.sill),
+      })),
     },
     objects: objects.map((object) => ({
       type: object.type,
@@ -201,6 +212,20 @@ function checkRoom(data) {
   return 'invalid'
 }
 
+// A door or window in the file (J.8): its type, its wall's number among
+// `wallCount`, and its place and size in meters. Whether it fits is checked
+// with the whole room (openingsProblem).
+function isValidOpening(item, wallCount) {
+  return (
+    isRecord(item) &&
+    Object.hasOwn(OPENING_TYPES, item.type) &&
+    isWhole(item.wall, 0, wallCount - 1) &&
+    ['offset', 'width', 'height', 'sill'].every((key) => isNumber(item[key]) && item[key] >= 0) &&
+    item.width >= MIN_OPENING_SIZE &&
+    item.height >= MIN_OPENING_SIZE
+  )
+}
+
 function isValidObject(item) {
   if (!isRecord(item) || !Object.hasOwn(OBJECT_TYPES, item.type)) return false
   const screen = OBJECT_TYPES[item.type].screenInches
@@ -251,9 +276,29 @@ function parseLayout(text) {
     data.version === 1
       ? rectangleCorners(data.room.width, data.room.depth)
       : data.room.corners.map(({ x, z }) => ({ x, z }))
+  // Doors and windows (J.8): optional, and they must fit their walls.
+  const openings = data.version === 1 ? [] : (data.room.openings ?? [])
+  if (!Array.isArray(openings) || !openings.every((item) => isValidOpening(item, corners.length))) {
+    return { problem: 'invalid' }
+  }
   // The file has no shape: Square, Rectangle, L or custom follow from the
   // corners (J.4).
-  return { layout: data, room: { shape: shapeFor(corners), height: data.room.height, corners } }
+  const room = {
+    shape: shapeFor(corners),
+    height: data.room.height,
+    corners,
+    openings: openings.map(({ type, wall, offset, width, height, sill }) => ({
+      id: crypto.randomUUID(),
+      type,
+      wallIndex: wall,
+      offset,
+      width,
+      height,
+      sill: type === 'door' ? 0 : sill,
+    })),
+  }
+  if (openingsProblem(room)) return { problem: 'invalid' }
+  return { layout: data, room }
 }
 
 // A file camera entry as a camera slot's view, or null.

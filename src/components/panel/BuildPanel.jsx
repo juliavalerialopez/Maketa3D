@@ -4,6 +4,7 @@ import { MIN_CUT_WALL, findWall, roomWalls } from '../../store/roomShape'
 import Section from './Section'
 import RoomInputs from './RoomInputs'
 import WallLengthField from './WallLengthField'
+import OpeningsSection from './OpeningsSection'
 import Button from '../ui/Button'
 
 const SCISSORS_ICON = (
@@ -35,8 +36,9 @@ function WallDetails({ index, wall }) {
   )
 }
 
-// Build's control panel (J.5, J.7): Room configuration (shape buttons and
-// Height) and, with a wall selected, that wall's details.
+// Build's control panel (J.5, J.7, J.8): Room configuration (shape buttons
+// and Height), with a wall selected that wall's details, and the doors and
+// windows.
 export default function BuildPanel() {
   const corners = useRoomStore((state) => state.room.corners)
   const selected = useUiStore((state) => state.selectedWall)
@@ -52,6 +54,9 @@ export default function BuildPanel() {
           <WallDetails index={index} wall={roomWalls(corners)[index]} />
         </Section>
       )}
+      <Section id="openings" title="Openings">
+        <OpeningsSection />
+      </Section>
     </div>
   )
 }

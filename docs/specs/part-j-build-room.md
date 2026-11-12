@@ -114,6 +114,7 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 - In 3D (Plan, Personalize) it is a flat colored rectangle just in front of the wall.
 - In Plan, openings are listed in the Objects section under their own **Openings** group. Selecting one opens Object details with the same fields. I can move it up, down, left, right (drag in the wall plane, number fields, arrow keys) and change width and height. It stays on its own wall. Doors cannot leave the floor.
 - Deleting an opening: Delete key or button, as for furniture.
+- (added 2026-11-12, J.8) In Build, the Openings section lists them ("Door 1", "Window 1", numbered per type); a click there or on one in the view selects it (a wall and an opening are never selected together). Its details say which wall it is on and give From wall start, Width, Height and Sill (windows), in 5 cm steps; a value that does not fit is refused and the field shows the old one. Dragging moves it along its wall in 5 cm steps, and onto another wall when the pointer comes within 0.6 m of it. Doors and windows stay where they are when walls are cut or renumbered, and move with their own wall when it moves; a wall move or typed length that would leave one not fitting stops, and a cut through one is refused, each with a short message at the bottom of the view. After a new shape, size or height in Room configuration each goes to the wall facing the same way that is nearest to where it was, slides along it or gets lower to fit, or is left out if it cannot fit (a number half typed never changes them for good); Height cannot go below the tallest one. The project file saves them with the room, as `{ type, wall, offset, width, height, sill }` (`wall` is the wall's number, no id). The 3D rectangles (Plan, Room render) come with J.8 too: a door is wood brown, a window pale blue, and each hides with its wall.
 
 ## Tasks
 Order: fixes first, then the room data, then what I see. Each one follows the checkpoint workflow.
@@ -136,7 +137,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - ✅ J.5 Build tab: top view, wall labels with typed length, furniture hidden, pan and zoom, notice on leaving.
 - ✅ J.6 Move a wall.
 - ✅ J.7 Cut and drag.
-- ⬜ J.8 Doors and windows in Build. The project file saves and opens `openings` (added 2026-11-12, moved here from J.2.2).
+- ✅ J.8 Doors and windows in Build. The project file saves and opens `openings` (added 2026-11-12, moved here from J.2.2).
 - ⬜ J.9 Doors and windows in Plan: list group, details, move and resize.
 - ⬜ J.10 Undo and redo in Build, and the 1, 2, 3 mode shortcuts.
 - ⬜ J.11 Personalize with openings: check the AI keeps doors and windows, adjust the prompt if not. Update docs and run the verifier.

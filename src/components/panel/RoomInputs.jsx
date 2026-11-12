@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ROOM_LIMITS, notchLimits, roomParams, useRoomStore } from '../../store/roomStore'
 import { useObjectsStore } from '../../store/objectsStore'
 import { movedInsideNotice, useUiStore } from '../../store/uiStore'
+import { tallestOpening } from '../../store/openings'
 import { beginGesture, editGesture, endGesture } from '../../store/historyStore'
 import { switchMode } from '../layout/modeSwitch'
 import NumberField from '../ui/NumberField'
@@ -64,6 +65,24 @@ export default function RoomInputs({ inBuild = false }) {
   const { setRoomSize, setShape, rotateNotch } = useRoomStore.getState()
   const notice = useUiStore((state) => state.roomNotice)
   const params = roomParams(room)
+  // The room when the field being edited was entered: each typed number is
+  // applied to it, so doors and windows fitted to a number half typed come
+  // back with the next one (J.8). Null when no field is being edited.
+  const [base, setBase] = useState(null)
+  // The same object every render: NumberField ends an edit when these change.
+  const sizeGesture = useMemo(
+    () => ({
+      onEditStart: () => {
+        setBase(useRoomStore.getState().room)
+        editGesture.onEditStart()
+      },
+      onEditEnd: () => {
+        setBase(null)
+        editGesture.onEditEnd()
+      },
+    }),
+    [],
+  )
 
   useEffect(() => {
     if (!notice) return
@@ -90,6 +109,9 @@ export default function RoomInputs({ inBuild = false }) {
   }
 
   const fields = inBuild ? [] : FIELDS[params.shape]
+  // Never lower than the tallest door or window (J.8), as it was before this
+  // edit.
+  const heightLimits = [Math.max(ROOM_LIMITS.height[0], tallestOpening(base ?? room)), ROOM_LIMITS.height[1]]
 
   const limitsFor = (key, limits) => {
     if (limits) return limits
@@ -116,16 +138,16 @@ export default function RoomInputs({ inBuild = false }) {
         )}
       </div>
       {params.shape === 'custom' && !inBuild && <p className="panel-notice">Custom shape. Edit it in Build.</p>}
-      {[...fields, ['height', 'Height', ROOM_LIMITS.height]].map(([key, label, limits]) => {
+      {[...fields, ['height', 'Height', heightLimits]].map(([key, label, limits]) => {
         const [min, max] = limitsFor(key, limits)
         return (
           <NumberField
             key={`${params.shape}-${key}`}
             label={label}
             value={params[key]}
-            onChange={(value) => setRoomSize({ [key]: value })}
+            onChange={(value) => setRoomSize({ [key]: value }, base ?? undefined)}
             onCommit={fitObjects}
-            {...editGesture}
+            {...sizeGesture}
             min={min}
             max={max}
             unit="m"

@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { Html } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import { Plane, Vector3 } from 'three'
-import { WALL_SNAP, draggedCorners, reachableStep, useRoomStore } from '../../store/roomStore'
-import { cutSpan, cutWall, findWall, prepareWallDrag } from '../../store/roomShape'
-import { useUiStore } from '../../store/uiStore'
+import { WALL_SNAP, draggedRoom, reachableStep, startWallDrag, useRoomStore } from '../../store/roomStore'
+import { cutSpan, cutWall, findWall } from '../../store/roomShape'
+import { BUILD_NOTICES, useUiStore } from '../../store/uiStore'
+import BuildOpenings from './BuildOpenings'
+import { focusIsFree } from '../panel/useObjectShortcuts'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import WallLengthField from '../panel/WallLengthField'
 import Floor from './Floor'
@@ -69,10 +71,9 @@ function BuildWall({ index, box, selected, cutting }) {
   const hoveredRef = useRef(false)
   // Where a cut would go, [from, to] along the wall, while hovering with Cut on.
   const [cutPreview, setCutPreview] = useState(null)
-  // Active drag: { pointerId, corners (before the drag), drag
-  // (prepareWallDrag), normal, start: [x, z], step, shown (the corners this
-  // drag set last) }. The walls may be renumbered meanwhile, so it keeps all
-  // it needs.
+  // Active drag: { pointerId, room (before the drag), drag (startWallDrag),
+  // start: [x, z], step, shown (the corners this drag set last) }. The walls
+  // may be renumbered meanwhile, so it keeps all it needs.
   const dragRef = useRef(null)
   const { wall } = box
   const alongX = Math.abs(wall.end.z - wall.start.z) < 1e-9
@@ -123,25 +124,29 @@ function BuildWall({ index, box, selected, cutting }) {
     if (event.button !== 0 || wallDragActive) return
     event.stopPropagation()
     if (!event.ray.intersectPlane(FLOOR, hit)) return
-    const { corners } = useRoomStore.getState().room
+    const { room } = useRoomStore.getState()
+    const ui = useUiStore.getState()
+    ui.setBuildNotice(null)
     if (cuttingHere) {
-      // The new piece is selected, ready to be dragged.
-      const cut = cutWall(corners, index, alongWall(wall, hit.x, hit.z))
-      if (cut && useRoomStore.getState().setCorners(cut.corners)) useUiStore.getState().selectWall(wallSelection(pieceOf(cut)))
+      // The new piece is selected, ready to be dragged. A cut through a door
+      // or window is refused.
+      const cut = cutWall(room.corners, index, alongWall(wall, hit.x, hit.z))
+      const problem = cut ? useRoomStore.getState().setCorners(cut.corners) : 'shape'
+      if (!problem) ui.selectWall(wallSelection(pieceOf(cut)))
+      else if (problem === 'openings') ui.setBuildNotice(BUILD_NOTICES.cut)
       setCutPreview(null)
       // Cut is off again: the pointer shows the wall can be dragged.
       document.body.style.cursor = alongX ? 'ns-resize' : 'ew-resize'
       return
     }
-    useUiStore.getState().selectWall(wallSelection(wall))
+    ui.selectWall(wallSelection(wall))
     dragRef.current = {
       pointerId: event.pointerId,
-      corners,
-      drag: prepareWallDrag(corners, index),
-      normal: wall.normal,
+      room,
+      drag: startWallDrag(room, index),
       start: [hit.x, hit.z],
       step: 0,
-      shown: corners,
+      shown: room.corners,
     }
     wallDragActive = true
     beginGesture()
@@ -167,12 +172,17 @@ function BuildWall({ index, box, selected, cutting }) {
     }
     if (!event.ray.intersectPlane(FLOOR, hit)) return
     // How far the pointer went out of the room, across the wall.
-    const [nx, nz] = current.normal
+    const [nx, nz] = current.drag.normal
     const out = (hit.x - current.start[0]) * nx + (hit.z - current.start[1]) * nz
-    const step = reachableStep(current.corners, current.drag, current.step, Math.round(out / WALL_SNAP))
+    const target = Math.round(out / WALL_SNAP)
+    const step = reachableStep(current.room, current.drag, current.step, target)
+    // Stopped by a door or window: say so (J.8).
+    const direction = Math.sign(target - step)
+    const blocked = direction && draggedRoom(current.room, current.drag, step + direction).problem === 'openings'
+    useUiStore.getState().setBuildNotice(blocked ? BUILD_NOTICES.openings : null)
     if (step === current.step) return
     current.step = step
-    useRoomStore.getState().setCorners(draggedCorners(current.corners, current.drag, step))
+    useRoomStore.getState().setRoom(draggedRoom(current.room, current.drag, step).room)
     current.shown = useRoomStore.getState().room.corners
     // The selection follows the moved wall (gone once it is back in line).
     useUiStore.getState().selectWall(draggedWallEnds(current, step))
@@ -230,7 +240,7 @@ function pieceOf(cut) {
 // The dragged wall's ends at `step`, as a selection.
 function draggedWallEnds(current, step) {
   const { corners, index } = current.drag
-  const [nx, nz] = current.normal
+  const [nx, nz] = current.drag.normal
   const offset = step * WALL_SNAP
   const shift = (corner) => ({ x: corner.x + nx * offset + 0, z: corner.z + nz * offset + 0 })
   return { a: shift(corners[index]), b: shift(corners[(index + 1) % corners.length]) }
@@ -259,7 +269,7 @@ function CutPreview({ box, span }) {
 // Furniture is not shown. Walls can be selected and dragged (J.6), and cut
 // (J.7). Esc stops cutting, then clears the selection.
 export default function BuildScene() {
-  const { corners } = useRoomStore((state) => state.room)
+  const { corners, openings } = useRoomStore((state) => state.room)
   const selection = useUiStore((state) => state.selectedWall)
   const cutting = useUiStore((state) => state.cutting)
   const walls = wallBoxes(corners, WALL_DRAW_HEIGHT, BUILD_WALL_THICKNESS)
@@ -269,10 +279,21 @@ export default function BuildScene() {
     function handleKeyDown(event) {
       // A field being typed in keeps Esc; a focused button (Cut) does not.
       const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)
-      if (event.key !== 'Escape' || typing) return
       const ui = useUiStore.getState()
+      // Delete or Backspace removes the selected door or window (J.8), only
+      // with the focus on the page or the view.
+      const { room, removeOpening } = useRoomStore.getState()
+      const opening = room.openings?.find((item) => item.id === ui.selectedOpening)
+      if ((event.key === 'Delete' || event.key === 'Backspace') && opening && focusIsFree()) {
+        event.preventDefault()
+        removeOpening(opening.id)
+        ui.selectOpening(null)
+        return
+      }
+      if (event.key !== 'Escape' || typing) return
       if (ui.cutting) ui.setCutting(false)
       else if (ui.selectedWall) ui.selectWall(null)
+      else if (ui.selectedOpening) ui.selectOpening(null)
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
@@ -280,11 +301,14 @@ export default function BuildScene() {
 
   // A selected wall that no longer exists (undo, New, Open, merged back in
   // line) is let go, so it does not come back later by chance.
+  // The same for a door or window that is gone (J.8).
   useEffect(() => {
-    const { selectedWall, selectWall } = useUiStore.getState()
+    const { selectedWall, selectWall, selectedOpening, selectOpening } = useUiStore.getState()
+    const { room } = useRoomStore.getState()
+    if (selectedOpening && !room.openings?.some((opening) => opening.id === selectedOpening)) selectOpening(null)
     if (!selectedWall || wallDragActive) return
-    if (findWall(useRoomStore.getState().room.corners, selectedWall.a, selectedWall.b) === -1) selectWall(null)
-  }, [corners, selection])
+    if (findWall(room.corners, selectedWall.a, selectedWall.b) === -1) selectWall(null)
+  }, [corners, openings, selection])
 
   return (
     <>
@@ -295,6 +319,7 @@ export default function BuildScene() {
       {walls.map((box, index) => (
         <WallLength key={index} index={index} wall={box.wall} />
       ))}
+      <BuildOpenings thickness={BUILD_WALL_THICKNESS} />
     </>
   )
 }

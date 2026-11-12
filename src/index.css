@@ -1377,9 +1377,10 @@ canvas {
   cursor: grabbing;
 }
 
-/* Walk: how to look and walk, at the bottom center. Clicks go through to
-   the canvas. */
-.walk-hint {
+/* Walk: how to look and walk, at the bottom center; Build's short message
+   (J.8) in the same place. Clicks go through to the canvas. */
+.walk-hint,
+.scene-notice {
   position: absolute;
   bottom: 12px;
   left: 50%;

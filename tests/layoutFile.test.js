@@ -20,7 +20,7 @@ const lCorners = [
 ]
 const layout = {
   version: 2,
-  room: { height: 2.6, corners: lCorners },
+  room: { height: 2.6, corners: lCorners, openings: [] },
   objects: [
     { type: 'sofa', number: 2, x: -1, z: -0.3, rotation: 90, color: '#112233', hidden: true },
     { type: 'tvStand', number: 5, x: 1, z: -1.2, rotation: 0, color: '#d9d2bf', screenInches: 55 },
@@ -49,7 +49,7 @@ test('save then open restores the room and the objects', () => {
   newLayout()
   assert.equal(importLayout(saved), 'done')
 
-  assert.deepEqual(useRoomStore.getState().room, { shape: 'rectangle', height: 2.6, corners: rectangleCorners(5, 4) })
+  assert.deepEqual(useRoomStore.getState().room, { shape: 'rectangle', height: 2.6, corners: rectangleCorners(5, 4), openings: [] })
   const [openedSofa, openedTv] = objects()
   assert.deepEqual(openedSofa.position, [1, 0, -0.5])
   close(openedSofa.rotation[1], Math.PI / 2)
@@ -84,11 +84,11 @@ test('a version 1 file opens as a rectangle with everything in the same place, a
     cameras: [camera, null, null],
   }
   assert.equal(importLayout(text(older)), 'done')
-  assert.deepEqual(useRoomStore.getState().room, { shape: 'rectangle', height: 2.4, corners: rectangleCorners(6, 5) })
+  assert.deepEqual(useRoomStore.getState().room, { shape: 'rectangle', height: 2.4, corners: rectangleCorners(6, 5), openings: [] })
   assert.deepEqual(objects()[0].position, [1.5, 0, 1])
   const saved = layoutData()
   assert.equal(saved.version, 2)
-  assert.deepEqual(saved.room, { height: 2.4, corners: rectangleCorners(6, 5) })
+  assert.deepEqual(saved.room, { height: 2.4, corners: rectangleCorners(6, 5), openings: [] })
   assert.deepEqual(saved.objects, older.objects)
   assert.deepEqual(saved.cameras, older.cameras)
 })

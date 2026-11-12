@@ -2,9 +2,7 @@ import { useMemo } from 'react'
 import { Shape } from 'three'
 import { useRoomStore } from '../../store/roomStore'
 
-// Warm sand from the soft UI palette. The same in both themes, so the Room
-// render sent to the AI does not depend on the theme.
-const FLOOR_COLOR = '#d9d1bb'
+import { FLOOR_COLOR } from './roomColors'
 
 // The floor: the room's corners (J.2) as one flat shape, so an L room has an
 // L floor. `flat` (Build, J.5) draws it in its plain color, with no light or

@@ -24,7 +24,10 @@ function takeRoomRenders() {
 // an undo step of their own, and Room configuration says how many (when it
 // shows next, in Plan).
 function leaveBuild(showNotice) {
-  useUiStore.getState().selectWall(null)
+  const ui = useUiStore.getState()
+  ui.selectWall(null)
+  ui.selectOpening(null)
+  ui.setBuildNotice(null)
   beginGesture()
   const moved = useObjectsStore.getState().fitToRoom(useRoomStore.getState().room)
   endGesture()

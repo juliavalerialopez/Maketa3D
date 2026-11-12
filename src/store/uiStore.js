@@ -51,9 +51,18 @@ export const useUiStore = create((set) => ({
   // Build (J.7): the Cut button is on; the next click on the selected wall
   // cuts a piece out of it there.
   cutting: false,
+  // Build (J.8): the selected door or window's id, or null. A wall and an
+  // opening are never selected together.
+  selectedOpening: null,
+  // Build's short message (J.8), e.g. why a wall stopped; null when none.
+  buildNotice: null,
 
   setMoving: (moving) => set({ moving }),
-  selectWall: (selectedWall) => set({ selectedWall, cutting: false }),
+  selectWall: (selectedWall) =>
+    set((state) => ({ selectedWall, cutting: false, selectedOpening: selectedWall ? null : state.selectedOpening })),
+  selectOpening: (selectedOpening) =>
+    set((state) => ({ selectedOpening, selectedWall: selectedOpening ? null : state.selectedWall, cutting: false })),
+  setBuildNotice: (buildNotice) => set({ buildNotice }),
   setCutting: (cutting) => set({ cutting }),
   setRoomNotice: (roomNotice) => set({ roomNotice }),
   setSceneView: (sceneView) => set({ sceneView }),
@@ -63,6 +72,15 @@ export const useUiStore = create((set) => ({
     set((state) => ({ openSections: { ...state.openSections, [id]: open } })),
   toggleFrame: () => set((state) => ({ frameVisible: !state.frameVisible })),
 }))
+
+// Build's messages (J.8): why a wall, a cut or a new door or window did not
+// happen.
+export const BUILD_NOTICES = {
+  openings: 'A door or window would no longer fit its wall.',
+  cut: 'A door or window is in the way of the cut.',
+  short: 'This wall is too short for it.',
+  full: 'There is no room for it on this wall.',
+}
 
 // The notice after `moved` objects were pushed inside the walls, or null.
 export function movedInsideNotice(moved) {
