@@ -5,10 +5,12 @@ import {
   containsPoint,
   distanceToWall,
   fitRegions,
+  fromShownPosition,
   isValidRoomCorners,
   nearestInRegions,
   rectangleCorners,
   roomWalls,
+  toShownPosition,
 } from '../src/store/roomShape.js'
 
 const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-9, `${actual} is not ${expected}`)
@@ -166,4 +168,17 @@ test('the distance to a wall follows the room, also around the corner of an L', 
   close(distanceToWall(lShape, 1, -1, [0, 1]), 1)
   // From the back part's left side, toward the front, the outer wall at z = 2.
   close(distanceToWall(lShape, -1, -1, [0, 1]), 3)
+})
+
+test('shown positions count from the front left corner: X to the right, Z toward the back', () => {
+  // The front left corner of a 6 x 5 room is 0, 0, the back right 6, 5.
+  assert.deepEqual(toShownPosition(rectangle, -3, 2.5), [0, 0])
+  assert.deepEqual(toShownPosition(rectangle, 3, -2.5), [6, 5])
+  assert.deepEqual(toShownPosition(rectangle, 0, 0), [3, 2.5])
+  // Typed numbers go back to the same place.
+  assert.deepEqual(fromShownPosition(rectangle, 3, 2.5), [0, 0])
+  assert.deepEqual(fromShownPosition(rectangle, 1, 4), [-2, -1.5])
+  // An L counts from the front left corner of its bounding box.
+  assert.deepEqual(toShownPosition(lShape, -2, 2), [0, 0])
+  assert.deepEqual(toShownPosition(lShape, 1, -1), [3, 3])
 })

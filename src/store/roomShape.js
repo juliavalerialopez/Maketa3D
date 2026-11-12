@@ -42,6 +42,25 @@ export function boundingBox(corners) {
   }
 }
 
+// Positions shown to the user (J.3) are measured from the origin: the front
+// left corner of the room's bounding box seen from above (front at the
+// bottom). Shown X grows to the right, shown Z toward the back, so every
+// position inside the room is 0 or more. Stored positions stay in world
+// space (front wall at +z) and do not change when walls move.
+
+// A world position (x, z) as the shown [X, Z].
+export function toShownPosition(corners, x, z) {
+  const { minX, maxZ } = boundingBox(corners)
+  // "+ 0" turns -0 into 0.
+  return [x - minX + 0, maxZ - z + 0]
+}
+
+// A shown [X, Z] as the world position [x, z].
+export function fromShownPosition(corners, shownX, shownZ) {
+  const { minX, maxZ } = boundingBox(corners)
+  return [shownX + minX + 0, maxZ - shownZ + 0]
+}
+
 // Twice the signed floor area: positive or negative depending on the order
 // of the corners.
 function doubleArea(corners) {

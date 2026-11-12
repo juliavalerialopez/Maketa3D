@@ -1,5 +1,12 @@
 import { Euler, Matrix4 } from 'three'
-import { boundingBox, distanceToWall, fitRegions, nearestInRegions } from './roomShape.js'
+import {
+  boundingBox,
+  distanceToWall,
+  fitRegions,
+  fromShownPosition,
+  nearestInRegions,
+  toShownPosition,
+} from './roomShape.js'
 
 // Rotation order for objects: y turns the object on the floor, x and z tilt it.
 export const ROTATION_ORDER = 'YXZ'
@@ -88,6 +95,41 @@ export function positionLimits(object, room) {
     x: [Math.min(...holding.map((region) => region.minX)) - centre[0], Math.max(...holding.map((region) => region.maxX)) - centre[0]],
     z: [Math.min(...holding.map((region) => region.minZ)) - centre[2], Math.max(...holding.map((region) => region.maxZ)) - centre[2]],
   }
+}
+
+// Location in Object details (J.3): where the front left corner of the
+// object's footprint is (its rotated, tilted box seen from above, front at
+// the bottom), measured from the room's front left corner (toShownPosition).
+// A piece pushed into that corner shows 0, 0. Stored positions stay the
+// middle of the base.
+
+// From the object's position to its footprint's front left corner, [x, z].
+function footprintCorner(object) {
+  const { centre, extents } = rotatedBox(object)
+  return [centre[0] - extents[0], centre[2] + extents[2]]
+}
+
+// The object's Location as shown, [X, Z].
+export function shownLocation(object, room) {
+  const [dx, dz] = footprintCorner(object)
+  return toShownPosition(room.corners, object.position[0] + dx, object.position[2] + dz)
+}
+
+// The position [x, z] that shows as Location [X, Z].
+export function positionFromShown(object, room, shownX, shownZ) {
+  const [dx, dz] = footprintCorner(object)
+  const [x, z] = fromShownPosition(room.corners, shownX, shownZ)
+  return [x - dx, z - dz]
+}
+
+// Allowed [min, max] for the shown X and Z (positionLimits as Location). Z
+// counts toward the back, so its ends swap.
+export function shownLimits(object, room) {
+  const limits = positionLimits(object, room)
+  const [dx, dz] = footprintCorner(object)
+  const [minX, minZ] = toShownPosition(room.corners, limits.x[0] + dx, limits.z[1] + dz)
+  const [maxX, maxZ] = toShownPosition(room.corners, limits.x[1] + dx, limits.z[0] + dz)
+  return { x: [minX, maxX], z: [minZ, maxZ] }
 }
 
 // How far each side of the object's footprint is from the wall in that

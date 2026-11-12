@@ -2,7 +2,15 @@ import { OBJECT_TYPES, objectLabel } from '../objects/catalog'
 import { selectSelectedObject, useObjectsStore } from '../../store/objectsStore'
 import { useRoomStore } from '../../store/roomStore'
 import { editGesture } from '../../store/historyStore'
-import { clampPosition, normalizeDegrees, positionLimits, toDegrees, toRadians } from '../../store/roomBounds'
+import {
+  clampPosition,
+  normalizeDegrees,
+  positionFromShown,
+  shownLimits,
+  shownLocation,
+  toDegrees,
+  toRadians,
+} from '../../store/roomBounds'
 import NumberField from '../ui/NumberField'
 import FieldGroup from '../ui/FieldGroup'
 import ColorField from '../ui/ColorField'
@@ -21,7 +29,14 @@ export default function ObjectDetails() {
   if (!object) return null
 
   const [x, y, z] = object.position
-  const limits = positionLimits(object, room)
+  // Location: the piece's front left corner, from the room's front left
+  // corner (J.3). Typed numbers go back to the stored position.
+  const [shownX, shownZ] = shownLocation(object, room)
+  const limits = shownLimits(object, room)
+  const moveTo = (newShownX, newShownZ) => {
+    const [newX, newZ] = positionFromShown(object, room, newShownX, newShownZ)
+    updateObject(object.id, { position: [newX, y, newZ] })
+  }
   const type = OBJECT_TYPES[object.type]
   const screen = type.screenInches
 
@@ -55,8 +70,8 @@ export default function ObjectDetails() {
         <NumberField
           compact
           label="X"
-          value={x}
-          onChange={(value) => updateObject(object.id, { position: [value, y, z] })}
+          value={shownX}
+          onChange={(value) => moveTo(value, shownZ)}
           {...editGesture}
           min={limits.x[0]}
           max={limits.x[1]}
@@ -64,8 +79,8 @@ export default function ObjectDetails() {
         <NumberField
           compact
           label="Z"
-          value={z}
-          onChange={(value) => updateObject(object.id, { position: [x, y, value] })}
+          value={shownZ}
+          onChange={(value) => moveTo(shownX, value)}
           {...editGesture}
           min={limits.z[0]}
           max={limits.z[1]}

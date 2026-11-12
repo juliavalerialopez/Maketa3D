@@ -6,7 +6,10 @@ import {
   normalizeRadians,
   nudgeOffset,
   objectTransform,
+  positionFromShown,
   positionLimits,
+  shownLimits,
+  shownLocation,
   toDegrees,
   toRadians,
   wallDistances,
@@ -76,6 +79,38 @@ test('in an L room the distance goes to the first wall in each direction', () =>
   close(right.distance, 0.5)
   close(right.to[0], 0)
   close(front.distance, 0.5)
+})
+
+test('Location is the front left corner of the footprint, from the room’s front left corner', () => {
+  // The 2 m x 0.9 m sofa pushed into the front left corner (x -3, z +2.5) shows 0, 0.
+  const [x, , z] = clampPosition(sofa, room, -10, 10)
+  const inCorner = { ...sofa, position: [x, 0, z] }
+  close(shownLocation(inCorner, room)[0], 0)
+  close(shownLocation(inCorner, room)[1], 0)
+  // In the middle of the 6 x 5 room its corner is 1 m left and 0.45 m in front of the middle.
+  assert.deepEqual(shownLocation({ ...sofa, position: [0, 0, 0] }, room), [2, 2.05])
+  // Typed numbers put the corner there.
+  const [typedX, typedZ] = positionFromShown(sofa, room, 2, 2.05)
+  close(typedX, 0)
+  close(typedZ, 0)
+  // Limits: from the corner to the far walls minus the footprint.
+  const limits = shownLimits({ ...sofa, position: [0, 0, 0] }, room)
+  ;[limits.x[0], limits.x[1], limits.z[0], limits.z[1]].forEach((value, index) => close(value, [0, 4, 0, 4.1][index]))
+  // Turned a quarter, its footprint is 0.9 wide and 2 deep.
+  const turned = { ...sofa, rotation: [0, Math.PI / 2, 0], position: [0, 0, 0] }
+  const [turnedX, turnedZ] = shownLocation(turned, room)
+  close(turnedX, 3 - 0.45)
+  close(turnedZ, 2.5 - 1)
+})
+
+test('in an L room the Location limits keep a piece in its leg', () => {
+  // A 1 m chair in the front left leg (x -2..0, z 0..2) of the 4 x 4 L.
+  const chair = { size: { width: 1, depth: 1, height: 0.8 }, rotation: [0, 0, 0], position: [-1, 0, 1] }
+  const limits = shownLimits(chair, lRoom)
+  // X from the left wall to the cut away corner's wall at x = 0 (shown 2), minus its 1 m.
+  ;[limits.x[0], limits.x[1]].forEach((value, index) => close(value, [0, 1][index]))
+  // Z from the front wall all the way to the back.
+  ;[limits.z[0], limits.z[1]].forEach((value, index) => close(value, [0, 3][index]))
 })
 
 test('the distances to the walls add up to the room size minus the footprint', () => {

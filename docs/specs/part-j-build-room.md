@@ -14,7 +14,7 @@ Status: **In progress**. Builds on Part A (room), Part D (arrange), Part G (save
 - The room is stored as a **closed list of corners**. Square, rectangle and L are presets of that list. In Part J every wall is horizontal or vertical. Angles come in Part K.
 - Measurements are **inside** measurements, as taken with a tape from the inside. Walls are drawn with a fixed thickness outward from the inside edge. Editing thickness is out of scope.
 - The **origin** is the bottom left corner of the room's bounding box (seen from above, front at the bottom). X grows to the right, Z grows toward the back. Stored positions do not change when walls move: only the numbers shown are recalculated, so furniture keeps its place in the room.
-- (added 2026-11-10, code survey) Stored positions stay in world coordinates, where the front wall is at +z. So shown X = `x − minX` and shown Z = `frontZ − z` (the front wall's z minus the object's z). Old files keep their place: a 6 × 5 room imports as corners at ±3, ±2.5, and camera slots need no change. Only the shown numbers start at 0.
+- (added 2026-11-10, code survey) Stored positions stay in world coordinates, where the front wall is at +z. So shown X = `x − minX` and shown Z = `frontZ − z` (the front wall's z minus the z of the point shown; for Location that is the front left corner of the piece's footprint, see Coordinates). Old files keep their place: a 6 × 5 room imports as corners at ±3, ±2.5, and camera slots need no change. Only the shown numbers start at 0.
 - (added 2026-11-10) New Project's room is a Square of 5 × 5 m, height 2.6 m (today 6 × 5).
 - Part 3 is **cut and drag** (no draw-a-wall). After testing with real users I decide if drawing is better.
 - **Furniture is hidden in Build.** On leaving Build, any piece outside the room is pushed to the nearest valid spot with a short notice.
@@ -30,7 +30,7 @@ Status: **In progress**. Builds on Part A (room), Part D (arrange), Part G (save
 ### J0: Fixes
 - **Panel minimum width.** The left panel has a minimum width at which every number in Room configuration and Object details is fully visible (about the width in my second screenshot; Claude Code measures the smallest width that works). The divider cannot go below it. (changed 2026-11-10) The minimum is **276 px**, measured by Julia.
 - **Drag moves by default.** Pressing an object and moving the mouse moves it on the floor. It rotates only when I grab the rotate widget.
-- **Move readout.** While I drag an object, a small label next to it shows its new position, X and Z in meters, the same numbers as Location in Object details (from the origin corner once J.3 is in). (changed 2026-11-10: the new position, not the distance moved.)
+- **Move readout.** While I drag an object, a small label next to it shows its new position, X and Z in meters, the same numbers as Location in Object details (from the origin corner once J.3 is in). (changed 2026-11-10: the new position, not the distance moved; replaced by J0.3.1 below, the distance moved.)
   - (added 2026-11-10) J0.3.1: after trying it, Julia wants the distance moved instead: one number per direction the object moved along the room's axes, each with an arrow showing which way it went on screen (→ ↗ ↑ ↖ ← ↙ ↓ ↘), e.g. "→ 30 cm" for a straight move and "→ 30 cm  ↑ 1.2 m" for a diagonal one. Under 1 m in centimeters, from 1 m in meters.
 - **Distance to walls.** While an object is selected in Plan, a thin line with a number (meters) goes from each of its four sides to the nearest wall in that direction. For a rotated object the four sides are the extremes of its footprint along the room axes. The numbers update while dragging.
 - **Duplicate.** Ctrl+D (and a Duplicate button in Object details) makes a copy 0.3 m to the side, with its own number, and selects it. Clamped inside the walls.
@@ -78,7 +78,7 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 - Changing the shape in Plan pushes pieces that end up outside back in, with the same notice as leaving Build.
 
 ### Coordinates
-- Object details shows Location X and Z measured from the origin corner (the middle of the object, as today). Typing a number converts back to the stored position.
+- Object details shows Location X and Z measured from the origin corner. (changed 2026-11-12, Julia) Location is the **front left corner of the piece's footprint** (seen from above, also when it is turned), not its middle, so a piece pushed into the origin corner shows 0, 0. Typing a number converts back to the stored position (still the middle of the piece).
 - Every position inside the room is 0 or more.
 
 ### Build mode
@@ -127,7 +127,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - ✅ J.2 Room as corners: store, floor, walls, camera-facing wall fade, Room render, clamping, save and open with old files.
   - ✅ J.2.1 Geometry helpers for a room of corners (`src/store/roomShape.js`): rectangle, bounding box, walls with their outward side, validity, point inside, where a footprint fits, distance to a wall; tests only, no visible change (added 2026-11-11)
   - ✅ J.2.2 The room becomes corners everywhere: store, clamping, placement, Location limits, wall distances, walls and floor, the Walk wall stop, project file version 2 with old files still opening, a message for a broken room (added 2026-11-11)
-- ⬜ J.3 Corner origin: Location numbers in Object details.
+- ✅ J.3 Corner origin: Location numbers in Object details.
 - ⬜ J.4 Shape buttons: Square, Rectangle, L with rotate. The Build button stays disabled until J.5. New Project starts as the 5 × 5 m Square (added 2026-11-12, moved here from J.2.2).
 - ⬜ J.5 Build tab: top view, wall labels with typed length, furniture hidden, pan and zoom, notice on leaving.
 - ⬜ J.6 Move a wall.
@@ -148,7 +148,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - [ ] J.1.1: 2D shows the room from above, front wall at the bottom; a sofa can be dragged and turned there; wheel zooms and empty space pans; back in 3D the camera is where I left it; the camera slots and frame guide show in 3D only.
 - [ ] J.1.2: in Walk I look around by dragging the view and walk with W A S D or the arrows at eye height; the mouse is never locked; I cannot walk through a wall; switching to Personalize from Walk shows the same Room render as from 3D.
 - [ ] J.2: an old file opens with everything in the same place; an L room keeps furniture out of the notch (and Walk stops at the L's walls); the Room render of a rectangle room looks as before; a file with a broken room is refused with a message.
-- [ ] J.3: an object in the front left corner shows Location near 0, 0; typing a Location puts it there.
+- [ ] J.3: an object pushed into the front left corner shows Location 0, 0; typing a Location puts its front left corner there.
 - [ ] J.4: Square, Rectangle and L set the room; the L rotate button moves the notch; pieces pushed in show the notice.
 - [ ] J.5: Build shows the room from above with wall lengths; a typed length moves the far end; Build → Personalize shows the Room renders; leaving Build moves pieces inside with the notice.
 - [ ] J.6 to J.9: the spec's rules hold (5 cm snap, 0.5 m walls, no crossing, openings fit their wall and the room height); each step can be undone.
@@ -160,7 +160,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - Moved to [docs/BACKLOG.md](../BACKLOG.md) on 2026-11-12, the one place for backlog ideas.
 
 ## Open questions
-- None blocking. Answered 2026-11-10 (Julia): the Build tab is always in the top bar; arrow keys move relative to the screen, snapped to the nearest room axis; a typed wall length moves the end farther from the origin; the move readout shows the new position.
+- None blocking. Answered 2026-11-10 (Julia): the Build tab is always in the top bar; arrow keys move relative to the screen, snapped to the nearest room axis; a typed wall length moves the end farther from the origin; the move readout shows the new position (later changed by J0.3.1 to the distance moved).
 
 ## Changelog
 - 2026-11-10: Draft written (Julia).
@@ -169,3 +169,4 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - 2026-11-12: New J.1, views in Plan (Julia): 2D (top view, furniture editable), 3D and Walk (mouse look and W A S D, view only), Plan only. Julia chose to renumber this once, against the never-renumber rule, since no J task was committed yet: the old J.1 to J.10 are now J.2 to J.11 (the geometry helpers are J.2.1, the switch to corners J.2.2). Entries above use the old numbers.
 - 2026-11-12: Walk controls changed before J.1.2 was committed (Julia): no pointer lock; dragging the view turns the head, W A S D walk. A joystick circle was tried (to walk, then to look) and dropped.
 - 2026-11-12: Every part's Backlog moved to one file, `docs/BACKLOG.md` (Julia); items already built or planned as J tasks were left out.
+- 2026-11-12: J.3 (Julia): Location shows the front left corner of the piece's footprint instead of its middle, so a piece pushed into the origin corner shows 0, 0.
