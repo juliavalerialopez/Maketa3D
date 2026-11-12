@@ -1310,6 +1310,17 @@ canvas {
   user-select: none;
 }
 
+/* Build (J.5): a wall's length next to it, a small raised card with the
+   number field. */
+.wall-length {
+  width: 84px;
+  padding: 4px 8px 6px;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-out-small);
+  font-size: 12px;
+}
+
 /* The distance from the selected object to each wall, on the floor (J0.4). */
 .wall-distance {
   padding: 1px 7px;

@@ -7,9 +7,11 @@ import {
   fitRegions,
   fromShownPosition,
   isValidRoomCorners,
+  moveWall,
   nearestInRegions,
   rectangleCorners,
   roomWalls,
+  setWallLength,
   toShownPosition,
 } from '../src/store/roomShape.js'
 
@@ -168,6 +170,38 @@ test('the distance to a wall follows the room, also around the corner of an L', 
   close(distanceToWall(lShape, 1, -1, [0, 1]), 1)
   // From the back part's left side, toward the front, the outer wall at z = 2.
   close(distanceToWall(lShape, -1, -1, [0, 1]), 3)
+})
+
+test('a typed wall length moves the end farther from the origin', () => {
+  // The back wall (along x, wall 0) grows to the right: the right wall moves.
+  assert.deepEqual(boundingBox(setWallLength(rectangle, 0, 7)), {
+    ...boundingBox(rectangle),
+    maxX: 4,
+    width: 7,
+    centerX: 0.5,
+  })
+  // The right wall (along z, wall 1) grows toward the back: the back wall moves.
+  const deeper = boundingBox(setWallLength(rectangle, 1, 6))
+  assert.deepEqual([deeper.minZ, deeper.maxZ], [-3.5, 2.5])
+  // The front wall (wall 2, drawn right to left) also moves its right end.
+  assert.equal(boundingBox(setWallLength(rectangle, 2, 5)).maxX, 2)
+  // In the L, the left part of the front wall (wall 4, x -2..0) moves the
+  // cut away corner's wall at x = 0.
+  const wider = setWallLength(lShape, 4, 3)
+  assert.ok(isValidRoomCorners(wider))
+  assert.ok(wider.some((corner) => corner.x === 1 && corner.z === 2))
+  // Too short for the L: the cut away corner's wall would vanish.
+  assert.equal(isValidRoomCorners(setWallLength(lShape, 4, 4)), false)
+})
+
+test('moving a wall moves its two corners along its outward side', () => {
+  // The back wall (wall 0) out by 1 m: toward -z.
+  const moved = moveWall(rectangle, 0, 1)
+  assert.deepEqual(moved.slice(0, 2), [
+    { x: -3, z: -3.5 },
+    { x: 3, z: -3.5 },
+  ])
+  assert.deepEqual(moved.slice(2), rectangle.slice(2))
 })
 
 test('shown positions count from the front left corner: X to the right, Z toward the back', () => {

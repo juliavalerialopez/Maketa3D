@@ -18,6 +18,21 @@ export const TOP_MAX_ZOOM = 1000
 // the very edge.
 const TOP_FILL = 0.8
 
+// The camera settings for a top-down canvas (2D in Plan, Build), from the
+// saved `topView` (modeStore) or a rough view until TopCamera fits the room
+// to the canvas size. The Canvas reads them once, so the first frame already
+// shows the saved view. The front wall is at the bottom (up on screen is -z).
+export function topCameraSettings(topView) {
+  const { center, zoom } = topView ?? { center: [0, 0], zoom: 50 }
+  return {
+    position: [center[0], TOP_CAMERA_HEIGHT, center[1]],
+    zoom,
+    up: [0, 0, -1],
+    near: 0.1,
+    far: TOP_CAMERA_HEIGHT * 4,
+  }
+}
+
 // 2D: what the arrow keys use as "straight ahead" (nudgeOffset in
 // roomBounds.js). Up on screen is the back of the room (-z).
 export const TOP_NUDGE_VIEW = { position: [0, 0, 0], target: [0, 0, -1] }

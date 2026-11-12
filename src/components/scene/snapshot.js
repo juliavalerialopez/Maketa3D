@@ -7,6 +7,29 @@
 // - currentView(): the frame guide's view now, to save in a camera slot.
 export const snapshotBridge = { capture: null, thumbnail: null, currentView: null }
 
+// Waiting for the Plan canvas (J.5: Build -> Personalize passes through
+// Plan): the function to run once SnapshotBridge is ready, or null.
+let pendingForPlan = null
+
+// Runs `callback` once the Plan canvas can take Room renders: now if it can,
+// otherwise when it is ready (planCanvasReady).
+export function whenPlanCanvasReady(callback) {
+  if (snapshotBridge.capture) callback()
+  else pendingForPlan = callback
+}
+
+// Forgets a waiting `whenPlanCanvasReady` (another mode was chosen first).
+export function cancelPlanCanvasWait() {
+  pendingForPlan = null
+}
+
+// Called by SnapshotBridge once its functions are in place.
+export function planCanvasReady() {
+  const callback = pendingForPlan
+  pendingForPlan = null
+  callback?.()
+}
+
 // The canvas is transparent; the Room render fills this colour behind it.
 // Always white, whatever the theme (.scene-pane follows the theme on screen),
 // so the image sent to the AI does not depend on the theme.

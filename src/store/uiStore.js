@@ -41,8 +41,13 @@ export const useUiStore = create((set) => ({
   // where the move started, { id, start: [x, z] }, for the label that shows
   // how far it moved (J0.3.1); null when none.
   moving: null,
+  // Room configuration's short notice, e.g. "2 objects were moved inside the
+  // room." after a new shape or leaving Build (J.4, J.5); null when none.
+  // Here so it survives the switch from Build to Plan.
+  roomNotice: null,
 
   setMoving: (moving) => set({ moving }),
+  setRoomNotice: (roomNotice) => set({ roomNotice }),
   setSceneView: (sceneView) => set({ sceneView }),
   setPlanPercent: (planPercent) => set({ planPercent }),
   setPersonalizePercent: (personalizePercent) => set({ personalizePercent }),
@@ -50,6 +55,12 @@ export const useUiStore = create((set) => ({
     set((state) => ({ openSections: { ...state.openSections, [id]: open } })),
   toggleFrame: () => set((state) => ({ frameVisible: !state.frameVisible })),
 }))
+
+// The notice after `moved` objects were pushed inside the walls, or null.
+export function movedInsideNotice(moved) {
+  if (!moved) return null
+  return moved === 1 ? '1 object was moved inside the room.' : `${moved} objects were moved inside the room.`
+}
 
 // Without a manual choice, follow the system setting when it changes.
 systemDark.addEventListener('change', (event) => {

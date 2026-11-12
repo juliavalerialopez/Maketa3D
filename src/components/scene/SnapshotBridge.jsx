@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import { Box3, Vector2, Vector3 } from 'three'
-import { canvasToPng, canvasToThumbnail, snapshotBridge } from './snapshot'
+import { canvasToPng, canvasToThumbnail, planCanvasReady, snapshotBridge } from './snapshot'
 import { prepareRoomRender } from './roomRenderView'
 import {
   RENDER_HEIGHT,
@@ -91,7 +91,8 @@ export default function SnapshotBridge() {
 
   useEffect(() => {
     // The frame guide's view now: the Plan camera and the point it orbits
-    // (or, before the orbit controls exist, a point straight ahead of it).
+    // (or, before the orbit controls exist, the stored 3D target, which the
+    // camera was just set to look at).
     // In 2D and Walk it is the 3D camera kept in the store, so the Room
     // renders always come from the 3D camera (J.1).
     const currentView = () => {
@@ -100,7 +101,7 @@ export default function SnapshotBridge() {
         const { position, target } = useModeStore.getState().planView
         return frameView({ position: new Vector3(...position), fov: PLAN_FOV }, new Vector3(...target), size.x, size.y)
       }
-      const target = controls?.target ?? camera.getWorldDirection(new Vector3()).add(camera.position)
+      const target = controls?.target ?? new Vector3(...useModeStore.getState().planView.target)
       return frameView(camera, target, size.x, size.y)
     }
     snapshotBridge.currentView = currentView
@@ -111,7 +112,11 @@ export default function SnapshotBridge() {
         view: cameraView(renderCamera, RENDER_WIDTH, RENDER_HEIGHT),
       }))
     snapshotBridge.thumbnail = (view) => renderView(gl, scene, camera, view, canvasToThumbnail)
+    // A switch waiting for the Plan canvas (Build -> Personalize, J.5) goes
+    // on after the next frame, once the scene and its camera are drawn.
+    const frame = requestAnimationFrame(planCanvasReady)
     return () => {
+      cancelAnimationFrame(frame)
       snapshotBridge.capture = null
       snapshotBridge.thumbnail = null
       snapshotBridge.currentView = null

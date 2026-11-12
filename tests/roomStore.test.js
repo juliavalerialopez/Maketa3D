@@ -111,6 +111,22 @@ test('a custom room keeps its corners: only its height can change here', () => {
   assert.equal(room().height, 3)
 })
 
+test('a typed wall length that keeps the room allowed is applied, its shape following', () => {
+  const { setWallLength } = useRoomStore.getState()
+  // The square's back wall to 6 m: now a 6 x 5 rectangle.
+  assert.equal(setWallLength(0, 6), true)
+  assert.deepEqual(roomSize(room()), { width: 6, depth: 5 })
+  assert.equal(room().shape, 'rectangle')
+  // Under 0.5 m, or over the 10 m limit: refused, nothing changes.
+  const before = room()
+  assert.equal(setWallLength(0, 0.2), false)
+  assert.equal(setWallLength(0, 12), false)
+  assert.equal(room(), before)
+  // One undo step per typed length.
+  useHistoryStore.getState().undo()
+  assert.deepEqual(roomSize(room()), { width: 5, depth: 5 })
+})
+
 test('a new shape pushes pieces inside, counts them, and undoes in one step', () => {
   const { addObject, updateObject } = useObjectsStore.getState()
   addObject('armchair')

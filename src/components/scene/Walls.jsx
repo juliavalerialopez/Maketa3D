@@ -1,10 +1,9 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useRoomStore } from '../../store/roomStore'
-import { roomWalls } from '../../store/roomShape'
 import { showWallFor } from './wallVisibility'
+import { wallBoxes } from './wallBoxes'
 
-const THICKNESS = 0.05
 // Light ivory from the soft UI palette. The same in both themes, so the Room
 // render sent to the AI does not depend on the theme.
 const WALL_COLOR = '#ece7da'
@@ -25,32 +24,7 @@ function wallShade([nx, nz]) {
   return nx < 0 ? WALL_SHADES[2] : WALL_SHADES[3]
 }
 
-// One box per wall of the room (J.2), sitting just outside the floor edge
-// (`normal` points out of the room). A wall along x also covers the outer
-// corner square at each end that turns outward, so every outer corner is
-// closed by exactly one wall; for a rectangle that is the front and back
-// walls, as before.
-function wallBoxes(corners, height) {
-  return roomWalls(corners).map(({ start, end, length, normal, startConvex, endConvex }) => {
-    const alongX = Math.abs(end.z - start.z) < 1e-9
-    const before = alongX && startConvex ? THICKNESS : 0
-    const after = alongX && endConvex ? THICKNESS : 0
-    const [dx, dz] = [(end.x - start.x) / length, (end.z - start.z) / length]
-    // From the wall's middle: out by half a thickness, and along it toward
-    // the end that is longer.
-    const shift = (after - before) / 2
-    const x = (start.x + end.x) / 2 + (normal[0] * THICKNESS) / 2 + dx * shift
-    const z = (start.z + end.z) / 2 + (normal[1] * THICKNESS) / 2 + dz * shift
-    const span = length + before + after
-    return {
-      position: [x, height / 2, z],
-      size: alongX ? [span, height, THICKNESS] : [THICKNESS, height, span],
-      normal: [normal[0], 0, normal[1]],
-      shade: wallShade(normal),
-    }
-  })
-}
-
+// The room's walls in 3D (Plan, Room render): one box per wall (wallBoxes).
 export default function Walls() {
   const { corners, height } = useRoomStore((state) => state.room)
   const wallRefs = useRef([])
@@ -73,7 +47,7 @@ export default function Walls() {
       receiveShadow
     >
       <boxGeometry args={wall.size} />
-      <meshStandardMaterial color={showWallShades ? wall.shade : WALL_COLOR} />
+      <meshStandardMaterial color={showWallShades ? wallShade(wall.wall.normal) : WALL_COLOR} />
     </mesh>
   ))
 }

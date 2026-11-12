@@ -7,39 +7,14 @@ import GenerateButton from './GenerateButton'
 import { useModeStore } from '../../store/modeStore'
 import { useUiStore } from '../../store/uiStore'
 import { useRestyleStore } from '../../store/restyleStore'
-import { useCameraSlotsStore } from '../../store/cameraSlotsStore'
-import { captureSlot, takeSnapshot } from '../scene/snapshot'
+import { switchMode } from './modeSwitch'
 
+// Build is the room's shape from above (J.5); Plan stays the starting mode.
 const MODES = [
+  { value: 'build', label: 'Build' },
   { value: 'plan', label: 'Plan' },
   { value: 'personalize', label: 'Personalize' },
 ]
-
-// The Room render of every filled camera slot (I.14.2). With all slots empty,
-// the current Plan view goes into slot 1 first (and becomes active).
-function takeRoomRenders() {
-  const cameraSlots = useCameraSlotsStore.getState()
-  if (cameraSlots.slots.every((slot) => !slot)) {
-    const slot = captureSlot()
-    if (slot) cameraSlots.saveSlot(0, slot)
-  }
-  const { slots, activeSlot } = useCameraSlotsStore.getState()
-  const renders = slots.map((slot) => (slot ? takeSnapshot(slot.view) : null))
-  useModeStore.getState().setRoomRenders(renders, activeSlot)
-}
-
-// Switching to Personalize unmounts the Plan canvas, so the Room renders are
-// taken first, while the canvas is still there (null for a render that
-// fails). New renders start with no versions, so the two images always match.
-function switchMode(next) {
-  const { mode, setMode } = useModeStore.getState()
-  if (next === mode) return
-  if (next === 'personalize') {
-    takeRoomRenders()
-    useRestyleStore.getState().clearVersions()
-  }
-  setMode(next)
-}
 
 // Leaving Personalize clears the versions, so it asks first when there is
 // something to lose: a version, or a request still running.
@@ -68,22 +43,25 @@ export default function TopBar() {
   const mode = useModeStore((state) => state.mode)
   const theme = useUiStore((state) => state.theme)
   const setTheme = useUiStore((state) => state.setTheme)
-  // The "Go back to Plan?" dialog is open.
-  const [confirmingLeave, setConfirmingLeave] = useState(false)
+  // The mode to go to once "Leave Personalize?" is confirmed, or null.
+  const [confirmingLeave, setConfirmingLeave] = useState(null)
 
   function handleModeChange(next) {
-    if (mode === 'personalize' && next === 'plan' && hasWorkToLose()) {
-      setConfirmingLeave(true)
+    if (mode === 'personalize' && next !== mode && hasWorkToLose()) {
+      setConfirmingLeave(next)
       return
     }
     switchMode(next)
   }
 
   function leavePersonalize() {
-    setConfirmingLeave(false)
+    const next = confirmingLeave
+    setConfirmingLeave(null)
     useRestyleStore.getState().clearVersions()
-    switchMode('plan')
+    switchMode(next)
   }
+
+  const nextLabel = MODES.find((option) => option.value === confirmingLeave)?.label
 
   return (
     <header className="top-bar">
@@ -91,11 +69,11 @@ export default function TopBar() {
       <SegmentedSwitch options={MODES} value={mode} onChange={handleModeChange} />
       {confirmingLeave && (
         <Dialog
-          title="Go back to Plan?"
+          title={`Go back to ${nextLabel}?`}
           message="Your AI versions will be cleared."
-          confirmLabel="Go to Plan"
+          confirmLabel={`Go to ${nextLabel}`}
           onConfirm={leavePersonalize}
-          onCancel={() => setConfirmingLeave(false)}
+          onCancel={() => setConfirmingLeave(null)}
         />
       )}
       <div className="top-bar-end">

@@ -161,6 +161,36 @@ export function roomWalls(corners) {
   })
 }
 
+// The corners with wall `index` moved sideways by `offset` meters along its
+// outward side (negative: into the room). Its two corners move with it, so
+// the walls next to it stretch or shrink. The result may not be a valid room
+// (check with isValidRoomCorners).
+export function moveWall(corners, index, offset) {
+  const count = corners.length
+  const [nx, nz] = roomWalls(corners)[index].normal
+  const ends = [index, (index + 1) % count]
+  return corners.map((corner, cornerIndex) =>
+    ends.includes(cornerIndex) ? { x: corner.x + nx * offset + 0, z: corner.z + nz * offset + 0 } : corner,
+  )
+}
+
+// The corners with wall `index` set to `length` meters (Build, J.5): its end
+// farther from the origin moves (the right end of a wall along x, the back end
+// of a wall along z), by moving the wall that meets it there. The result may
+// not be a valid room.
+export function setWallLength(corners, index, length) {
+  const count = corners.length
+  const walls = roomWalls(corners)
+  const { start, end, length: current } = walls[index]
+  const alongX = Math.abs(end.z - start.z) < EPSILON
+  // Shown X grows to the right (+x), shown Z toward the back (-z).
+  const endIsFar = alongX ? end.x > start.x : end.z < start.z
+  const neighbour = endIsFar ? (index + 1) % count : (index - 1 + count) % count
+  const [nx, nz] = walls[neighbour].normal
+  const away = alongX ? nx : -nz
+  return moveWall(corners, neighbour, (length - current) * away)
+}
+
 const isFiniteNumber = (value) => typeof value === 'number' && Number.isFinite(value)
 
 // True when the corners make a room: at least four corners, every wall

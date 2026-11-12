@@ -1,5 +1,13 @@
 import { create } from 'zustand'
-import { MIN_WALL, boundingBox, describeRoom, lCorners, rectangleCorners } from './roomShape.js'
+import {
+  MIN_WALL,
+  boundingBox,
+  describeRoom,
+  isValidRoomCorners,
+  lCorners,
+  rectangleCorners,
+  setWallLength,
+} from './roomShape.js'
 
 // Allowed room size in meters, per dimension: [min, max]. Width and depth are
 // the room's size seen from above (its corners' bounding box). Used by the
@@ -100,13 +108,37 @@ export function rotatedNotch(room) {
   return shapedRoom(room, { ...params, notch: (params.notch + 1) % 4 })
 }
 
-export const useRoomStore = create((set) => ({
+// True when the corners make a room the app allows: closed, along the axes,
+// walls of at least MIN_WALL, and within the size limits seen from above.
+export function isAllowedRoom(corners) {
+  if (!isValidRoomCorners(corners)) return false
+  const { width, depth } = boundingBox(corners)
+  const within = (value, [min, max]) => value >= min - 1e-9 && value <= max + 1e-9
+  return within(width, ROOM_LIMITS.width) && within(depth, ROOM_LIMITS.depth)
+}
+
+// The room with new corners (Build), its shape button following them, or
+// null when they do not make an allowed room.
+export function reshapedCorners(room, corners) {
+  if (!isAllowedRoom(corners)) return null
+  return { ...room, corners, shape: shapeFor(corners, room.shape) }
+}
+
+export const useRoomStore = create((set, get) => ({
   room: DEFAULT_ROOM,
   // { width, depth, height, notchWidth, notchDepth }, each optional.
   setRoomSize: (size) => set((state) => ({ room: resizedRoom(state.room, size) })),
   // 'square', 'rectangle' or 'l' (the shape buttons).
   setShape: (shape) => set((state) => ({ room: reshapedRoom(state.room, shape) })),
   rotateNotch: () => set((state) => ({ room: rotatedNotch(state.room) })),
+  // Build (J.5): a typed wall length. Returns false and changes nothing when
+  // the room would not be allowed (a wall under 0.5 m, crossing walls, too
+  // big or too small).
+  setWallLength: (index, length) => {
+    const room = reshapedCorners(get().room, setWallLength(get().room.corners, index, length))
+    if (room) set({ room })
+    return Boolean(room)
+  },
   // Replaces the whole room (New Project, Open Project).
   setRoom: (room) => set({ room }),
 }))

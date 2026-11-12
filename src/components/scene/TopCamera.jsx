@@ -1,8 +1,10 @@
 import { useLayoutEffect, useRef } from 'react'
 import { useThree } from '@react-three/fiber'
+import { MapControls } from '@react-three/drei'
 import { useModeStore } from '../../store/modeStore'
 import { useRoomStore } from '../../store/roomStore'
-import { TOP_CAMERA_HEIGHT, fitTopView } from './planViews'
+import { TOP_CAMERA_HEIGHT, TOP_MAX_ZOOM, TOP_MIN_ZOOM, fitTopView } from './planViews'
+
 
 // Moves the 2D camera and the pan controls to the saved 2D view, or fits the
 // whole room when there is none.
@@ -47,4 +49,23 @@ export default function TopCamera() {
   }, [resets, camera, controls, get])
 
   return null
+}
+
+// Pan and zoom for a top-down canvas: dragging empty space pans, the wheel
+// zooms toward the pointer, no turning. The view is the same in Plan's 2D and
+// in Build (J.5), kept by TopCamera.
+export function TopControls() {
+  return (
+    <>
+      <MapControls
+        makeDefault
+        enableRotate={false}
+        screenSpacePanning
+        zoomToCursor
+        minZoom={TOP_MIN_ZOOM}
+        maxZoom={TOP_MAX_ZOOM}
+      />
+      <TopCamera />
+    </>
+  )
 }

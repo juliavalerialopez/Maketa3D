@@ -91,6 +91,7 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 - Leaving Build: pieces outside the room are moved inside, and a line says "N objects were moved inside the room." Edits in Build are undoable (one step per drag or typed value). Moving the pieces inside is its own undo step.
 - (added 2026-11-10) New Project and Open Project work in Build, as in Plan.
 - (added 2026-11-10) Clicking Personalize from Build passes through Plan: the Room renders need Plan's 3D view, so Plan shows for a moment, the renders are taken, then Personalize opens.
+- (added 2026-11-12, J.5) Each wall's length is a small number field named "Wall 1", "Wall 2", ... just outside it: click to type, or drag or use the arrow keys like any number field. A length that would break the room (a wall under 0.5 m, walls crossing, the room under 2 m or over 10 m across) is refused and the field shows the length again. Build and Plan's 2D view share one view (pan and zoom). The Build button in Room configuration opens Build; in Build the panel shows the shape buttons and Height only.
 
 ### Move a wall (J.6)
 - Hovering a wall highlights it. Dragging moves it sideways only (a horizontal wall moves up or down, a vertical wall moves left or right). Its two end corners move with it and the neighboring walls stretch or shrink.
@@ -130,7 +131,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
   - ✅ J.2.2 The room becomes corners everywhere: store, clamping, placement, Location limits, wall distances, walls and floor, the Walk wall stop, project file version 2 with old files still opening, a message for a broken room (added 2026-11-11)
 - ✅ J.3 Corner origin: Location numbers in Object details.
 - ✅ J.4 Shape buttons: Square, Rectangle, L with rotate. The Build button stays disabled until J.5. New Project starts as the 5 × 5 m Square (added 2026-11-12, moved here from J.2.2).
-- ⬜ J.5 Build tab: top view, wall labels with typed length, furniture hidden, pan and zoom, notice on leaving.
+- ✅ J.5 Build tab: top view, wall labels with typed length, furniture hidden, pan and zoom, notice on leaving.
 - ⬜ J.6 Move a wall.
 - ⬜ J.7 Cut and drag.
 - ⬜ J.8 Doors and windows in Build. The project file saves and opens `openings` (added 2026-11-12, moved here from J.2.2).

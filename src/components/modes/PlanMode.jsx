@@ -1,8 +1,8 @@
 import { Canvas } from '@react-three/fiber'
-import { MapControls, OrbitControls } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import Scene from '../scene/Scene'
 import PlanCamera from '../scene/PlanCamera'
-import TopCamera from '../scene/TopCamera'
+import { TopControls } from '../scene/TopCamera'
 import SnapshotBridge from '../scene/SnapshotBridge'
 import FrameGuide from '../scene/FrameGuide'
 import ContextLossGuard from '../scene/ContextLossGuard'
@@ -10,7 +10,7 @@ import HistoryButtons from '../scene/HistoryButtons'
 import CameraSlots from '../scene/CameraSlots'
 import ViewSwitch from '../scene/ViewSwitch'
 import WalkCamera from '../scene/WalkCamera'
-import { PLAN_FOV, TOP_CAMERA_HEIGHT, TOP_MAX_ZOOM, TOP_MIN_ZOOM, WALK_FOV } from '../scene/planViews'
+import { PLAN_FOV, WALK_FOV, topCameraSettings } from '../scene/planViews'
 import SplitLayout from '../layout/SplitLayout'
 import ErrorBoundary from '../layout/ErrorBoundary'
 import ControlPanel from '../panel/ControlPanel'
@@ -65,32 +65,15 @@ function OrbitCanvas() {
 // bottom (up on screen is -z). Dragging empty space pans, the wheel zooms
 // toward the pointer, no turning (TopCamera keeps the view).
 function TopCanvas() {
-  // Read once, so the first frame already shows the saved view (or a rough
-  // fit until TopCamera fits the room to the canvas size).
-  const { center, zoom } = useModeStore.getState().topView ?? { center: [0, 0], zoom: 50 }
   return (
     <Canvas
       orthographic
-      camera={{
-        position: [center[0], TOP_CAMERA_HEIGHT, center[1]],
-        zoom,
-        up: [0, 0, -1],
-        near: 0.1,
-        far: TOP_CAMERA_HEIGHT * 4,
-      }}
+      camera={topCameraSettings(useModeStore.getState().topView)}
       shadows
       onPointerMissed={handlePointerMissed}
     >
       <SceneContent />
-      <MapControls
-        makeDefault
-        enableRotate={false}
-        screenSpacePanning
-        zoomToCursor
-        minZoom={TOP_MIN_ZOOM}
-        maxZoom={TOP_MAX_ZOOM}
-      />
-      <TopCamera />
+      <TopControls />
     </Canvas>
   )
 }
