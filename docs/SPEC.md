@@ -34,7 +34,7 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 All units in meters.
 
 ```js
-room: { width, depth, height }
+room: { height, corners: [{ x, z }, ...] }  // J.2: closed list of corners seen from above, world space (front wall at +z), every wall along x or z (store/roomShape.js)
 objects: [{ id, type, number, position: [x, y, z], rotation: [x, y, z], size: { width, depth, height }, color, screenInches?, hidden? }]
 // type: 'sofa' | 'coffeeTable' | 'armchair' | 'bookshelf' | 'floorLamp' | 'tvStand' (defined in objects/catalog.js)
 // number: stable per-type count (Sofa 1, Sofa 2, ...), never reused
@@ -75,12 +75,15 @@ Daily limit counts live on the server (Upstash Redis), not in the stores.
 Objects are always a list, even with one type.
 
 ## Project file
-Save writes the layout as JSON into the project's file (the one opened or last saved, I.17), or downloads it (`maketa-layout.json`, or the project's name) where the browser has no file access; Open reads it back. Full rules and checks: Part G spec, "Export and import".
+Save writes the layout as JSON into the project's file (the one opened or last saved, I.17), or downloads it (`maketa-layout.json`, or the project's name) where the browser has no file access; Open reads it back. Full rules and checks: Part G spec, "Export and import". Since J.2 the file is version 2 with the room as corners; version 1 files (`"room": { "width", "depth", "height" }`) still open, as a rectangle centred on the origin.
 
 ```json
 {
-  "version": 1,
-  "room": { "width": 4.0, "depth": 3.5, "height": 2.6 },
+  "version": 2,
+  "room": {
+    "height": 2.6,
+    "corners": [{ "x": -2, "z": -1.75 }, { "x": 2, "z": -1.75 }, { "x": 2, "z": 1.75 }, { "x": -2, "z": 1.75 }]
+  },
   "objects": [
     { "type": "tvStand", "number": 1, "x": 2.0, "z": 0.3, "rotation": 0, "color": "#d9d2bf", "screenInches": 55 }
   ],

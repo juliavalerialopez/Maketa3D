@@ -12,15 +12,16 @@ export const MIN_WALL = 0.5
 // Below this, two numbers count as the same (floating point noise).
 const EPSILON = 1e-6
 
-// A width x depth rectangle centred on the origin.
-export function rectangleCorners(width, depth) {
+// A width x depth rectangle centred on (centerX, centerZ), the origin if not
+// given.
+export function rectangleCorners(width, depth, centerX = 0, centerZ = 0) {
   const x = width / 2
   const z = depth / 2
   return [
-    { x: -x, z: -z },
-    { x, z: -z },
-    { x, z },
-    { x: -x, z },
+    { x: centerX - x, z: centerZ - z },
+    { x: centerX + x, z: centerZ - z },
+    { x: centerX + x, z: centerZ + z },
+    { x: centerX - x, z: centerZ + z },
   ]
 }
 
@@ -29,7 +30,16 @@ export function boundingBox(corners) {
   const xs = corners.map((corner) => corner.x)
   const zs = corners.map((corner) => corner.z)
   const [minX, maxX, minZ, maxZ] = [Math.min(...xs), Math.max(...xs), Math.min(...zs), Math.max(...zs)]
-  return { minX, maxX, minZ, maxZ, width: maxX - minX, depth: maxZ - minZ }
+  return {
+    minX,
+    maxX,
+    minZ,
+    maxZ,
+    width: maxX - minX,
+    depth: maxZ - minZ,
+    centerX: (minX + maxX) / 2,
+    centerZ: (minZ + maxZ) / 2,
+  }
 }
 
 // Twice the signed floor area: positive or negative depending on the order

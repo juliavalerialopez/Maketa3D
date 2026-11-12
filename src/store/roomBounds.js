@@ -1,4 +1,5 @@
 import { Euler, Matrix4 } from 'three'
+import { boundingBox, distanceToWall, fitRegions, nearestInRegions } from './roomShape.js'
 
 // Rotation order for objects: y turns the object on the floor, x and z tilt it.
 export const ROTATION_ORDER = 'YXZ'
@@ -46,25 +47,46 @@ export function objectTransform(object) {
   }
 }
 
+// Below this, a position counts as on the edge of where it may go.
+const EPSILON = 1e-9
+
 // Allowed range for one axis of the object's position, so its rotated box
-// stays between the walls at -roomSize/2 and +roomSize/2. A tilted box's centre
-// can sit off the origin, so the range is not always symmetric. An object
-// wider than the room gets a single centred value.
-function axisRange(roomSize, centre, extent) {
-  const min = -roomSize / 2 + extent - centre
-  const max = roomSize / 2 - extent - centre
-  if (min <= max) return [min, max]
-  const middle = (min + max) / 2
+// stays between `min` and `max` (the room's bounding box on that axis). A
+// tilted box's centre can sit off the origin, so the range is not always
+// symmetric. An object wider than the room gets a single centred value.
+function axisRange(min, max, centre, extent) {
+  const low = min + extent - centre
+  const high = max - extent - centre
+  if (low <= high) return [low, high]
+  const middle = (low + high) / 2
   return [middle, middle]
 }
 
-// Allowed [min, max] for the object's x and z, so its rotated (and tilted)
-// box stays inside the walls.
+// The limits on both axes from the room's bounding box only: for an object
+// that fits nowhere inside the walls (too big for the room).
+function boxLimits(box, centre, extents) {
+  return {
+    x: axisRange(box.minX, box.maxX, centre[0], extents[0]),
+    z: axisRange(box.minZ, box.maxZ, centre[2], extents[2]),
+  }
+}
+
+const inRegion = (region, x, z) =>
+  x >= region.minX - EPSILON && x <= region.maxX + EPSILON && z >= region.minZ - EPSILON && z <= region.maxZ + EPSILON
+
+// Allowed [min, max] for the object's x and z (Location in Object details),
+// so its rotated (and tilted) box stays inside the walls: how far it can go
+// along each axis from where it is now. In an L room that depends on where it
+// is: in the narrow leg the range across the leg is smaller.
 export function positionLimits(object, room) {
   const { centre, extents } = rotatedBox(object)
+  const x = object.position[0] + centre[0]
+  const z = object.position[2] + centre[2]
+  const holding = fitRegions(room.corners, extents[0], extents[2]).filter((region) => inRegion(region, x, z))
+  if (!holding.length) return boxLimits(boundingBox(room.corners), centre, extents)
   return {
-    x: axisRange(room.width, centre[0], extents[0]),
-    z: axisRange(room.depth, centre[2], extents[2]),
+    x: [Math.min(...holding.map((region) => region.minX)) - centre[0], Math.max(...holding.map((region) => region.maxX)) - centre[0]],
+    z: [Math.min(...holding.map((region) => region.minZ)) - centre[2], Math.max(...holding.map((region) => region.maxZ)) - centre[2]],
   }
 }
 
@@ -72,18 +94,21 @@ export function positionLimits(object, room) {
 // direction (J0.4): left (-x), right (+x), back (-z) and front (+z). The sides
 // are the extremes of its rotated (and tilted) box along the room's axes.
 // Each is { distance, from, to }: the distance in meters and the line on the
-// floor ([x, z] points) from the middle of that side straight to the wall.
+// floor ([x, z] points) from the middle of that side straight to the wall
+// (in an L room, the first wall in that direction).
 export function wallDistances(object, room) {
   const { centre, extents } = rotatedBox(object)
   const x = object.position[0] + centre[0]
   const z = object.position[2] + centre[2]
-  const [halfWidth, halfDepth] = [room.width / 2, room.depth / 2]
-  const side = (from, to) => ({ distance: Math.abs(to[0] - from[0]) + Math.abs(to[1] - from[1]), from, to })
+  const side = (from, direction) => {
+    const distance = distanceToWall(room.corners, from[0], from[1], direction) ?? 0
+    return { distance, from, to: [from[0] + direction[0] * distance, from[1] + direction[1] * distance] }
+  }
   return {
-    left: side([x - extents[0], z], [-halfWidth, z]),
-    right: side([x + extents[0], z], [halfWidth, z]),
-    back: side([x, z - extents[2]], [x, -halfDepth]),
-    front: side([x, z + extents[2]], [x, halfDepth]),
+    left: side([x - extents[0], z], [-1, 0]),
+    right: side([x + extents[0], z], [1, 0]),
+    back: side([x, z - extents[2]], [0, -1]),
+    front: side([x, z + extents[2]], [0, 1]),
   }
 }
 
@@ -108,10 +133,21 @@ export function nudgeOffset(view, key, step) {
   return direction ? [direction[0] * step + 0, direction[1] * step + 0] : null
 }
 
-// The object's position with x and z clamped inside the walls (y stays 0).
-// Clamping each axis on its own lets an object slide along a wall.
+// The object's position (x, z) moved inside the walls (y stays 0): its rotated
+// footprint must fit inside the room, also out of an L's cut away corner. A
+// position that fits stays exactly as it is; one that does not goes to the
+// nearest one that does, so an object pushed into a wall slides along it. An
+// object too big for the room is clamped to the room's bounding box (centred
+// on an axis it is wider than).
 export function clampPosition(object, room, x, z) {
-  const limits = positionLimits(object, room)
+  const { centre, extents } = rotatedBox(object)
+  const regions = fitRegions(room.corners, extents[0], extents[2])
+  const [cx, cz] = [x + centre[0], z + centre[2]]
+  if (regions.some((region) => inRegion(region, cx, cz))) return [x, 0, z]
+  const nearest = nearestInRegions(regions, cx, cz)
+  // "+ 0" turns -0 into 0.
+  if (nearest) return [nearest[0] - centre[0] + 0, 0, nearest[1] - centre[2] + 0]
+  const limits = boxLimits(boundingBox(room.corners), centre, extents)
   const clamp = (value, [min, max]) => Math.min(max, Math.max(min, value))
   return [clamp(x, limits.x), 0, clamp(z, limits.z)]
 }

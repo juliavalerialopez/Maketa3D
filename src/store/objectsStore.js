@@ -1,21 +1,25 @@
 import { create } from 'zustand'
 import { useRoomStore } from './roomStore.js'
 import { clampPosition } from './roomBounds.js'
+import { boundingBox } from './roomShape.js'
 import { OBJECT_TYPES } from '../components/objects/catalog.js'
 
 const PLACEMENT_STEP = 0.3
 // How far to the side a duplicate goes (J0.6).
 const DUPLICATE_OFFSET = 0.3
 
-// The nth new object goes n steps diagonally from the room centre (+x, +z).
-// When the next step would cross a wall, it wraps back to the centre.
+// The nth new object goes n steps diagonally from the middle of the room's
+// bounding box (+x, +z). When the next step would cross a wall, it wraps back
+// to the middle. In an L room a spot out of the room (the cut away corner)
+// is moved inside.
 function placementFor(index, size) {
-  const { width, depth } = useRoomStore.getState().room
-  const roomX = (width - size.width) / 2
-  const roomZ = (depth - size.depth) / 2
+  const { room } = useRoomStore.getState()
+  const box = boundingBox(room.corners)
+  const roomX = (box.width - size.width) / 2
+  const roomZ = (box.depth - size.depth) / 2
   const maxSteps = Math.max(0, Math.floor(Math.min(roomX, roomZ) / PLACEMENT_STEP + 1e-9))
   const step = (index % (maxSteps + 1)) * PLACEMENT_STEP
-  return [step, 0, step]
+  return clampPosition({ size, rotation: [0, 0, 0] }, room, box.centerX + step, box.centerZ + step)
 }
 
 // The selected object, or undefined when nothing is selected.

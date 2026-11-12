@@ -124,15 +124,15 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - ✅ J.1 Views in Plan: 2D, 3D and Walk (added 2026-11-12)
   - ✅ J.1.1 The 2D · 3D · Walk switch and the 2D top view, with furniture editing; Walk shown but disabled until J.1.2 (added 2026-11-12)
   - ✅ J.1.2 Walk: drag to look, W A S D and arrow keys, eye height 1.6 m, stopped by the walls (added 2026-11-12)
-- ⬜ J.2 Room as corners: store, floor, walls, camera-facing wall fade, Room render, clamping, save and open with old files.
+- ✅ J.2 Room as corners: store, floor, walls, camera-facing wall fade, Room render, clamping, save and open with old files.
   - ✅ J.2.1 Geometry helpers for a room of corners (`src/store/roomShape.js`): rectangle, bounding box, walls with their outward side, validity, point inside, where a footprint fits, distance to a wall; tests only, no visible change (added 2026-11-11)
-  - ⬜ J.2.2 The room becomes corners everywhere: store, clamping, placement, Location limits, wall distances, walls and floor, the Walk wall stop, project file version 2 with old files still opening, a message for a broken room (added 2026-11-11)
+  - ✅ J.2.2 The room becomes corners everywhere: store, clamping, placement, Location limits, wall distances, walls and floor, the Walk wall stop, project file version 2 with old files still opening, a message for a broken room (added 2026-11-11)
 - ⬜ J.3 Corner origin: Location numbers in Object details.
-- ⬜ J.4 Shape buttons: Square, Rectangle, L with rotate. The Build button stays disabled until J.5.
+- ⬜ J.4 Shape buttons: Square, Rectangle, L with rotate. The Build button stays disabled until J.5. New Project starts as the 5 × 5 m Square (added 2026-11-12, moved here from J.2.2).
 - ⬜ J.5 Build tab: top view, wall labels with typed length, furniture hidden, pan and zoom, notice on leaving.
 - ⬜ J.6 Move a wall.
 - ⬜ J.7 Cut and drag.
-- ⬜ J.8 Doors and windows in Build.
+- ⬜ J.8 Doors and windows in Build. The project file saves and opens `openings` (added 2026-11-12, moved here from J.2.2).
 - ⬜ J.9 Doors and windows in Plan: list group, details, move and resize.
 - ⬜ J.10 Undo and redo in Build, and the 1, 2, 3 mode shortcuts.
 - ⬜ J.11 Personalize with openings: check the AI keeps doors and windows, adjust the prompt if not. Update docs and run the verifier.

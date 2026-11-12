@@ -15,6 +15,7 @@ import {
 
 const MESSAGES = {
   invalid: 'Not a valid layout file.',
+  brokenRoom: 'This file cannot be opened: its walls do not make a closed room.',
   failed: 'Could not save the file.',
 }
 const ERROR_SECONDS = 5

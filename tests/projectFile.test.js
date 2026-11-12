@@ -54,7 +54,7 @@ test('Save after Open writes into the opened file without asking', async () => {
   useRoomStore.getState().setRoomSize({ width: 7 })
   assert.equal(await saveProject(), 'done')
   assert.equal(file.writes, 1)
-  assert.equal(JSON.parse(file.content).room.width, 7)
+  assert.equal(JSON.parse(file.content).room.corners[1].x, 3.5)
   assert.equal(saves.length, 0)
 })
 

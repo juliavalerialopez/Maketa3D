@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useRoomStore } from '../../store/roomStore'
+import { roomWalls } from '../../store/roomShape'
 import { showWallFor } from './wallVisibility'
 
 const THICKNESS = 0.05
@@ -17,17 +18,43 @@ const WALL_COLOR = '#ece7da'
 const WALL_SHADES = ['#e8d9b5', '#cfdde8', '#d3e3cc', '#ecd0c8']
 const showWallShades = import.meta.env.DEV && new URLSearchParams(window.location.search).has('wallShades')
 
-export default function Walls() {
-  const { width, depth, height } = useRoomStore((state) => state.room)
-  const wallRefs = useRef([])
+// The wall-shades tint for a wall, by which way it faces out of the room.
+function wallShade([nx, nz]) {
+  if (nz < 0) return WALL_SHADES[0]
+  if (nz > 0) return WALL_SHADES[1]
+  return nx < 0 ? WALL_SHADES[2] : WALL_SHADES[3]
+}
 
-  // Walls sit just outside the floor edges; front and back cover the corners.
-  const walls = [
-    { position: [0, height / 2, -(depth + THICKNESS) / 2], size: [width + 2 * THICKNESS, height, THICKNESS], normal: [0, 0, -1] },
-    { position: [0, height / 2, (depth + THICKNESS) / 2], size: [width + 2 * THICKNESS, height, THICKNESS], normal: [0, 0, 1] },
-    { position: [-(width + THICKNESS) / 2, height / 2, 0], size: [THICKNESS, height, depth], normal: [-1, 0, 0] },
-    { position: [(width + THICKNESS) / 2, height / 2, 0], size: [THICKNESS, height, depth], normal: [1, 0, 0] },
-  ]
+// One box per wall of the room (J.2), sitting just outside the floor edge
+// (`normal` points out of the room). A wall along x also covers the outer
+// corner square at each end that turns outward, so every outer corner is
+// closed by exactly one wall; for a rectangle that is the front and back
+// walls, as before.
+function wallBoxes(corners, height) {
+  return roomWalls(corners).map(({ start, end, length, normal, startConvex, endConvex }) => {
+    const alongX = Math.abs(end.z - start.z) < 1e-9
+    const before = alongX && startConvex ? THICKNESS : 0
+    const after = alongX && endConvex ? THICKNESS : 0
+    const [dx, dz] = [(end.x - start.x) / length, (end.z - start.z) / length]
+    // From the wall's middle: out by half a thickness, and along it toward
+    // the end that is longer.
+    const shift = (after - before) / 2
+    const x = (start.x + end.x) / 2 + (normal[0] * THICKNESS) / 2 + dx * shift
+    const z = (start.z + end.z) / 2 + (normal[1] * THICKNESS) / 2 + dz * shift
+    const span = length + before + after
+    return {
+      position: [x, height / 2, z],
+      size: alongX ? [span, height, THICKNESS] : [THICKNESS, height, span],
+      normal: [normal[0], 0, normal[1]],
+      shade: wallShade(normal),
+    }
+  })
+}
+
+export default function Walls() {
+  const { corners, height } = useRoomStore((state) => state.room)
+  const wallRefs = useRef([])
+  const walls = wallBoxes(corners, height)
 
   // Hide a wall when the Plan camera is on its outer side, so the interior
   // stays visible. Visibility is set on the mesh directly, never through
@@ -46,7 +73,7 @@ export default function Walls() {
       receiveShadow
     >
       <boxGeometry args={wall.size} />
-      <meshStandardMaterial color={showWallShades ? WALL_SHADES[index] : WALL_COLOR} />
+      <meshStandardMaterial color={showWallShades ? wall.shade : WALL_COLOR} />
     </mesh>
   ))
 }

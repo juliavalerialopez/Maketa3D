@@ -27,8 +27,28 @@ const lShape = [
 
 test('a rectangle is centred on the origin, and its box is its size', () => {
   assert.deepEqual(rectangle[0], { x: -3, z: -2.5 })
-  assert.deepEqual(boundingBox(rectangle), { minX: -3, maxX: 3, minZ: -2.5, maxZ: 2.5, width: 6, depth: 5 })
-  assert.deepEqual(boundingBox(lShape), { minX: -2, maxX: 2, minZ: -2, maxZ: 2, width: 4, depth: 4 })
+  assert.deepEqual(boundingBox(rectangle), {
+    minX: -3,
+    maxX: 3,
+    minZ: -2.5,
+    maxZ: 2.5,
+    width: 6,
+    depth: 5,
+    centerX: 0,
+    centerZ: 0,
+  })
+  assert.deepEqual(boundingBox(lShape), {
+    minX: -2,
+    maxX: 2,
+    minZ: -2,
+    maxZ: 2,
+    width: 4,
+    depth: 4,
+    centerX: 0,
+    centerZ: 0,
+  })
+  // Around another middle.
+  assert.deepEqual(rectangleCorners(2, 4, 1, -1)[0], { x: 0, z: -3 })
 })
 
 test('every wall knows its length and which way is out of the room', () => {

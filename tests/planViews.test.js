@@ -12,18 +12,34 @@ import {
   walkStep,
 } from '../src/components/scene/planViews.js'
 import { nudgeOffset } from '../src/store/roomBounds.js'
+import { rectangleCorners } from '../src/store/roomShape.js'
+
+// A width x depth room centred on the origin, 2.6 m high.
+const rect = (width, depth) => ({ height: 2.6, corners: rectangleCorners(width, depth) })
+// A 4 x 4 L: the front right quarter is cut away (the front is +z, the right +x).
+const lRoom = {
+  height: 2.6,
+  corners: [
+    { x: -2, z: -2 },
+    { x: 2, z: -2 },
+    { x: 2, z: 0 },
+    { x: 0, z: 0 },
+    { x: 0, z: 2 },
+    { x: -2, z: 2 },
+  ],
+}
 
 test('the 2D view fits the whole room, centered, with space around it', () => {
   // A wide view: the room's depth decides. 5 m deep in 500 px, filling 80%.
-  assert.deepEqual(fitTopView({ width: 6, depth: 5 }, 1000, 500), { center: [0, 0], zoom: 80 })
+  assert.deepEqual(fitTopView(rect(6, 5), 1000, 500), { center: [0, 0], zoom: 80 })
   // A tall view: the width decides.
-  assert.deepEqual(fitTopView({ width: 6, depth: 5 }, 600, 2000), { center: [0, 0], zoom: 80 })
+  assert.deepEqual(fitTopView(rect(6, 5), 600, 2000), { center: [0, 0], zoom: 80 })
 })
 
 test('the 2D zoom stays inside its limits, also before the view has a size', () => {
-  assert.equal(fitTopView({ width: 6, depth: 5 }, 0, 0).zoom, 50)
-  assert.equal(fitTopView({ width: 0.5, depth: 0.5 }, 5000, 5000).zoom, TOP_MAX_ZOOM)
-  assert.equal(fitTopView({ width: 100, depth: 100 }, 100, 100).zoom, TOP_MIN_ZOOM)
+  assert.equal(fitTopView(rect(6, 5), 0, 0).zoom, 50)
+  assert.equal(fitTopView(rect(0.5, 0.5), 5000, 5000).zoom, TOP_MAX_ZOOM)
+  assert.equal(fitTopView(rect(100, 100), 100, 100).zoom, TOP_MIN_ZOOM)
 })
 
 test('in 2D the arrow keys follow the screen: up is the back wall, right is +x', () => {
@@ -33,7 +49,7 @@ test('in 2D the arrow keys follow the screen: up is the back wall, right is +x',
   assert.deepEqual(nudgeOffset(TOP_NUDGE_VIEW, 'ArrowLeft', 0.1), [-0.1, 0])
 })
 
-const room = { width: 6, depth: 5, height: 2.6 }
+const room = rect(6, 5)
 const close = (actual, expected) =>
   actual.forEach((value, index) => assert.ok(Math.abs(value - expected[index]) < 1e-9, `${actual} is not ${expected}`))
 
@@ -70,8 +86,22 @@ test('the walls stop the walk 0.25 m before them, and it slides along them', () 
   // Into the back wall at an angle: stops on z, keeps moving along x.
   close(walkStep(room, [0, -2.2], [1, -1], [1, 0], 1), [Math.SQRT1_2, -2.25])
   // Standing still in a room that just got smaller pushes the eyes back in.
-  close(walkStep({ width: 2, depth: 2 }, [2, 2], [0, -1], [0, 0], 1), [0.75, 0.75])
+  close(walkStep(rect(2, 2), [2, 2], [0, -1], [0, 0], 1), [0.75, 0.75])
   assert.deepEqual(clampInRoom(room, 10, -10), [2.75, -2.25])
+})
+
+test('in an L room the inner walls stop the walk too', () => {
+  // Walking from the back right leg toward the front, into the cut away corner.
+  close(walkStep(lRoom, [1, -0.5], [0, 1], [1, 0], 1), [1, -0.25])
+  // From the front left leg toward the right.
+  close(walkStep(lRoom, [-0.5, 1], [1, 0], [1, 0], 1), [-0.25, 1])
+  // Where the legs meet, the walk goes on.
+  close(walkStep(lRoom, [-1, -1], [1, 0], [1, 0], 1), [0, -1])
+})
+
+test('the 2D view of a room off the middle is centred on it', () => {
+  const room = { height: 2.6, corners: rectangleCorners(4, 2, 1, -2) }
+  assert.deepEqual(fitTopView(room, 1000, 1000).center, [1, -2])
 })
 
 test('dragging the view turns the head with the room following the pointer', () => {

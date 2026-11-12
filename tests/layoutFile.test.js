@@ -5,15 +5,25 @@ import { useObjectsStore } from '../src/store/objectsStore.js'
 import { useRoomStore } from '../src/store/roomStore.js'
 import { useCameraSlotsStore } from '../src/store/cameraSlotsStore.js'
 import { useModeStore } from '../src/store/modeStore.js'
+import { rectangleCorners } from '../src/store/roomShape.js'
 import { tvStandSize } from '../src/components/objects/tvStandSize.js'
 
 const camera = { x: 3, y: 2.5, z: 4, targetX: 0, targetY: 0.5, targetZ: 0, fov: 48.5 }
+// A 4 x 3.5 m room with the front right quarter cut away (an L).
+const lCorners = [
+  { x: -2, z: -1.75 },
+  { x: 2, z: -1.75 },
+  { x: 2, z: 0 },
+  { x: 0, z: 0 },
+  { x: 0, z: 1.75 },
+  { x: -2, z: 1.75 },
+]
 const layout = {
-  version: 1,
-  room: { width: 4, depth: 3.5, height: 2.6 },
+  version: 2,
+  room: { height: 2.6, corners: lCorners },
   objects: [
-    { type: 'sofa', number: 2, x: 0.5, z: -0.3, rotation: 90, color: '#112233', hidden: true },
-    { type: 'tvStand', number: 5, x: 0, z: 1, rotation: 0, color: '#d9d2bf', screenInches: 55 },
+    { type: 'sofa', number: 2, x: -1, z: -0.3, rotation: 90, color: '#112233', hidden: true },
+    { type: 'tvStand', number: 5, x: 1, z: -1.2, rotation: 0, color: '#d9d2bf', screenInches: 55 },
   ],
   cameras: [null, camera, null],
 }
@@ -36,9 +46,9 @@ test('save then open restores the room and the objects', () => {
 
   const saved = text(layoutData())
   newLayout()
-  assert.equal(importLayout(saved), true)
+  assert.equal(importLayout(saved), 'done')
 
-  assert.deepEqual(useRoomStore.getState().room, { width: 5, depth: 4, height: 2.6 })
+  assert.deepEqual(useRoomStore.getState().room, { height: 2.6, corners: rectangleCorners(5, 4) })
   const [openedSofa, openedTv] = objects()
   assert.deepEqual(openedSofa.position, [1, 0, -0.5])
   close(openedSofa.rotation[1], Math.PI / 2)
@@ -61,8 +71,50 @@ test('rotations are saved as whole degrees from 0 to 359', () => {
 })
 
 test('open then save gives the same file', () => {
-  assert.equal(importLayout(text(layout)), true)
+  assert.equal(importLayout(text(layout)), 'done')
   assert.deepEqual(layoutData(), layout)
+})
+
+test('a version 1 file opens as a rectangle with everything in the same place, and saves as version 2', () => {
+  const older = {
+    version: 1,
+    room: { width: 6, depth: 5, height: 2.4 },
+    objects: [{ type: 'sofa', number: 1, x: 1.5, z: 1, rotation: 0, color: '#112233' }],
+    cameras: [camera, null, null],
+  }
+  assert.equal(importLayout(text(older)), 'done')
+  assert.deepEqual(useRoomStore.getState().room, { height: 2.4, corners: rectangleCorners(6, 5) })
+  assert.deepEqual(objects()[0].position, [1.5, 0, 1])
+  const saved = layoutData()
+  assert.equal(saved.version, 2)
+  assert.deepEqual(saved.room, { height: 2.4, corners: rectangleCorners(6, 5) })
+  assert.deepEqual(saved.objects, older.objects)
+  assert.deepEqual(saved.cameras, older.cameras)
+})
+
+test('a file whose walls do not make a closed room is refused with its own answer', () => {
+  importLayout(text(layout))
+  const before = layoutData()
+  // A wall that crosses another one.
+  const crossing = [
+    { x: -2, z: -2 },
+    { x: 2, z: -2 },
+    { x: 2, z: 2 },
+    { x: 1, z: 2 },
+    { x: 1, z: -3 },
+    { x: -2, z: -3 },
+  ]
+  // Not along the room's axes.
+  const slanted = [
+    { x: -2, z: -2 },
+    { x: 2, z: -1 },
+    { x: 2, z: 2 },
+    { x: -2, z: 2 },
+  ]
+  for (const corners of [crossing, slanted, lCorners.slice(0, 3)]) {
+    assert.equal(importLayout(text({ ...layout, room: { height: 2.6, corners } })), 'brokenRoom')
+  }
+  assert.deepEqual(layoutData(), before)
 })
 
 test('numbering continues per type after the highest imported number', () => {
@@ -77,10 +129,11 @@ test('numbering continues per type after the highest imported number', () => {
   )
 })
 
-test('an imported position outside the walls is clamped', () => {
+test('an imported position outside the walls is clamped, also out of an L room’s cut away corner', () => {
   const outside = { ...layout, objects: [{ type: 'sofa', number: 1, x: 10, z: 0, rotation: 0, color: '#112233' }] }
   importLayout(text(outside))
-  assert.deepEqual(objects()[0].position, [1, 0, 0])
+  // The 2 m sofa against the right wall, pushed back out of the cut away corner.
+  assert.deepEqual(objects()[0].position, [1, 0, -0.45])
 })
 
 test('invalid files are refused and change nothing', () => {
@@ -88,8 +141,12 @@ test('invalid files are refused and change nothing', () => {
   const before = layoutData()
   const invalid = [
     'not json',
-    text({ ...layout, version: 2 }),
-    text({ ...layout, room: { width: 20, depth: 3.5, height: 2.6 } }),
+    text({ ...layout, version: 3 }),
+    text({ ...layout, version: 1 }),
+    text({ ...layout, room: { height: 2.6, corners: rectangleCorners(20, 3.5) } }),
+    text({ ...layout, room: { height: 9, corners: lCorners } }),
+    text({ ...layout, room: { height: 2.6 } }),
+    text({ ...layout, version: 1, room: { width: 20, depth: 3.5, height: 2.6 } }),
     text({ ...layout, objects: [{ ...layout.objects[0], type: 'piano' }] }),
     text({ ...layout, objects: [{ ...layout.objects[1], screenInches: 100 }] }),
     text({ ...layout, objects: [{ ...layout.objects[0], color: 'red' }] }),
@@ -98,7 +155,7 @@ test('invalid files are refused and change nothing', () => {
     text({ ...layout, cameras: [null, { ...camera, y: 'high' }, null] }),
     text({ ...layout, cameras: [null, { ...camera, x: 0, y: 0.5, z: 0 }, null] }),
   ]
-  for (const file of invalid) assert.equal(importLayout(file), false, file)
+  for (const file of invalid) assert.equal(importLayout(file), 'invalid', file)
   assert.deepEqual(layoutData(), before)
   assert.deepEqual(useRoomStore.getState().room, layout.room)
 })
@@ -121,7 +178,7 @@ test('a file without cameras, or with the old single camera, opens with empty sl
   importLayout(text(layout))
   const older = { ...layout, camera: { x: 1, y: 1, z: 1 } }
   delete older.cameras
-  assert.equal(importLayout(text(older)), true)
+  assert.equal(importLayout(text(older)), 'done')
   assert.deepEqual(slots(), [null, null, null])
   assert.deepEqual(layoutData().cameras, [null, null, null])
 })

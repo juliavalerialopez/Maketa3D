@@ -1,4 +1,5 @@
-import { DEFAULT_ROOM, ROOM_LIMITS, useRoomStore } from './roomStore.js'
+import { DEFAULT_ROOM, ROOM_LIMITS, roomSize, useRoomStore } from './roomStore.js'
+import { isValidRoomCorners, rectangleCorners } from './roomShape.js'
 import { useObjectsStore } from './objectsStore.js'
 import { useModeStore } from './modeStore.js'
 import { useHistoryStore } from './historyStore.js'
@@ -11,8 +12,12 @@ import { canPickFiles, pickFileToOpen, pickFileToSave, writeFile } from '../serv
 
 export { canPickFiles }
 
-// The layout file: room size and objects, saved as JSON and read back
-// (see the Part G spec).
+// The layout file: the room, objects and camera slots, saved as JSON and
+// read back (see the Part G spec).
+// Version 2 (J.2): "room" is { height, corners: [{ x, z }, ...] }, the corners
+// in world space as in roomShape.js. Version 1 files (room { width, depth,
+// height }) still open, as a rectangle centred on the origin, so nothing in
+// them moves. Saving always writes version 2.
 // Only Y rotation is kept, in whole degrees 0-359; tilt and size are not
 // saved (size comes from the catalog, or from screenInches for a TV stand).
 // A hidden object (H.6.2) has "hidden": true; shown objects have no flag, so
@@ -20,7 +25,7 @@ export { canPickFiles }
 // "cameras" (I.14.3) has one entry per camera slot: null (empty) or
 // { x, y, z, targetX, targetY, targetZ, fov } (meters, fov in degrees).
 // Thumbnails are not saved. Files without it open with all slots empty.
-export const LAYOUT_VERSION = 1
+export const LAYOUT_VERSION = 2
 export const LAYOUT_FILE_NAME = 'maketa-layout.json'
 
 // Millimetres are enough; this hides float noise like 1.2000000000000002.
@@ -43,7 +48,10 @@ export function layoutData() {
   const { slots } = useCameraSlotsStore.getState()
   return {
     version: LAYOUT_VERSION,
-    room: { width: room.width, depth: room.depth, height: room.height },
+    room: {
+      height: room.height,
+      corners: room.corners.map((corner) => ({ x: roundMeters(corner.x), z: roundMeters(corner.z) })),
+    },
     objects: objects.map((object) => ({
       type: object.type,
       number: object.number,
@@ -74,8 +82,9 @@ function projectFileName() {
 
 // Open, Save and Save As (I.17) answer 'done', 'cancelled' (a system window
 // closed with Cancel), 'invalid' (Open: not a valid layout file, nothing
-// changed) or 'failed' (Save: the file could not be written; the project's
-// file stays as it was).
+// changed), 'brokenRoom' (Open: a layout file whose walls do not make a
+// closed room, J.2; nothing changed) or 'failed' (Save: the file could not be
+// written; the project's file stays as it was).
 
 // Writes the layout into `handle`'s file, which becomes the project's file.
 async function writeInto(handle) {
@@ -110,13 +119,13 @@ export function openProjectFile(file) {
 // Imports the file that `getFile` gives; on success it is the project's file.
 // A file that cannot be read counts as invalid.
 async function openFrom(getFile, fileName, handle) {
-  let ok = false
+  let result = 'invalid'
   try {
-    ok = importLayout(await (await getFile()).text())
+    result = importLayout(await (await getFile()).text())
   } catch {
     // Unreadable file: treated as invalid.
   }
-  if (!ok) return 'invalid'
+  if (result !== 'done') return result
   useProjectStore.getState().setFile(fileName, handle)
   return 'done'
 }
@@ -153,7 +162,7 @@ export async function saveProjectAs(fileName) {
 // Plan camera back at its starting view, empty camera slots (I.14.3), no
 // undo history (I.11), and no file yet (I.17: the next Save asks).
 export function newLayout() {
-  useRoomStore.getState().setRoomSize({ ...DEFAULT_ROOM })
+  useRoomStore.getState().setRoom(DEFAULT_ROOM)
   useObjectsStore.getState().replaceObjects([], {})
   useModeStore.getState().resetPlanView()
   useModeStore.getState().resetTopView()
@@ -168,13 +177,28 @@ const isWhole = (value, min, max) => Number.isInteger(value) && value >= min && 
 const isHexColor = (value) => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value)
 const isRecord = (value) => typeof value === 'object' && value !== null && !Array.isArray(value)
 
-function isValidRoom(room) {
-  return (
-    isRecord(room) &&
-    Object.entries(ROOM_LIMITS).every(
-      ([key, [min, max]]) => isNumber(room[key]) && room[key] >= min && room[key] <= max,
-    )
-  )
+const inLimits = (value, [min, max]) => isNumber(value) && value >= min && value <= max
+
+// Version 1: { width, depth, height } within the limits.
+function isValidSizeRoom(room) {
+  return isRecord(room) && Object.entries(ROOM_LIMITS).every(([key, limits]) => inLimits(room[key], limits))
+}
+
+// Version 2 (J.2): 'ok', 'broken' (the corners do not make a closed room) or
+// 'invalid' (not a room record, a height outside the limits, or a room
+// bigger or smaller than the limits seen from above).
+function checkCornerRoom(room) {
+  if (!isRecord(room) || !inLimits(room.height, ROOM_LIMITS.height) || !Array.isArray(room.corners)) return 'invalid'
+  if (!isValidRoomCorners(room.corners)) return 'broken'
+  const { width, depth } = roomSize(room)
+  return inLimits(width, ROOM_LIMITS.width) && inLimits(depth, ROOM_LIMITS.depth) ? 'ok' : 'invalid'
+}
+
+// The file's room, by file version: 'ok', 'invalid' or 'broken'.
+function checkRoom(data) {
+  if (data.version === 1) return isValidSizeRoom(data.room) ? 'ok' : 'invalid'
+  if (data.version === LAYOUT_VERSION) return checkCornerRoom(data.room)
+  return 'invalid'
 }
 
 function isValidObject(item) {
@@ -208,22 +232,26 @@ function isValidCameras(cameras) {
   return cameras === undefined || (Array.isArray(cameras) && cameras.length === SLOT_COUNT && cameras.every(isValidCamera))
 }
 
-// The file's content as a layout, or null if it is not a valid layout file.
+// The file's content: { layout, room } with the room as { height, corners },
+// or { problem: 'invalid' | 'brokenRoom' } when it cannot be opened.
 function parseLayout(text) {
   let data
   try {
     data = JSON.parse(text)
   } catch {
-    return null
+    return { problem: 'invalid' }
   }
-  const valid =
-    isRecord(data) &&
-    data.version === LAYOUT_VERSION &&
-    isValidRoom(data.room) &&
-    Array.isArray(data.objects) &&
-    data.objects.every(isValidObject) &&
-    isValidCameras(data.cameras)
-  return valid ? data : null
+  if (!isRecord(data)) return { problem: 'invalid' }
+  const roomCheck = checkRoom(data)
+  const rest = Array.isArray(data.objects) && data.objects.every(isValidObject) && isValidCameras(data.cameras)
+  if (roomCheck === 'invalid' || !rest) return { problem: 'invalid' }
+  // Only reported for a file that is otherwise valid.
+  if (roomCheck === 'broken') return { problem: 'brokenRoom' }
+  const room =
+    data.version === 1
+      ? { height: data.room.height, corners: rectangleCorners(data.room.width, data.room.depth) }
+      : { height: data.room.height, corners: data.room.corners.map(({ x, z }) => ({ x, z })) }
+  return { layout: data, room }
 }
 
 // A file camera entry as a camera slot's view, or null.
@@ -237,20 +265,15 @@ function slotView(camera) {
 }
 
 // Replaces the room, objects and camera slots with the layout in `text` (a
-// file's content). Returns false and changes nothing if the file is not a
-// valid layout. Positions are clamped inside the walls, tilt is 0, the
-// selection is cleared, and numbers continue after the highest imported one
-// per type. Camera slots come back without thumbnails; the Plan scene draws
-// them (SnapshotBridge).
+// file's content) and returns 'done'. Returns 'invalid' or 'brokenRoom' (see
+// Open above) and changes nothing if the file cannot be opened. Positions are
+// clamped inside the walls, tilt is 0, the selection is cleared, and numbers
+// continue after the highest imported one per type. Camera slots come back
+// without thumbnails; the Plan scene draws them (SnapshotBridge).
 export function importLayout(text) {
-  const layout = parseLayout(text)
-  if (!layout) return false
+  const { layout, room, problem } = parseLayout(text)
+  if (problem) return problem
 
-  const room = {
-    width: layout.room.width,
-    depth: layout.room.depth,
-    height: layout.room.height,
-  }
   const lastNumbers = {}
   const objects = layout.objects.map((item) => {
     const entry = OBJECT_TYPES[item.type]
@@ -270,7 +293,7 @@ export function importLayout(text) {
     }
   })
 
-  useRoomStore.getState().setRoomSize(room)
+  useRoomStore.getState().setRoom(room)
   useObjectsStore.getState().replaceObjects(objects, lastNumbers)
   const cameras = layout.cameras ?? Array.from({ length: SLOT_COUNT }, () => null)
   useCameraSlotsStore.getState().restoreSlots(cameras.map(slotView))
@@ -279,5 +302,5 @@ export function importLayout(text) {
   useModeStore.getState().restartWalk()
   // An opened project starts without undo history (I.11).
   useHistoryStore.getState().clear()
-  return true
+  return 'done'
 }

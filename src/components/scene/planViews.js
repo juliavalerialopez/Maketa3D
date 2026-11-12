@@ -1,6 +1,8 @@
 // The views of Plan's scene (J.1): 2D (from above), 3D (the orbit camera) and
 // Walk. Plain JS, no React and no three.js, so tests can use it.
 
+import { boundingBox, fitRegions, nearestInRegions } from '../../store/roomShape.js'
+
 // The 3D camera's vertical field of view, in degrees.
 export const PLAN_FOV = 50
 
@@ -20,13 +22,13 @@ const TOP_FILL = 0.8
 // roomBounds.js). Up on screen is the back of the room (-z).
 export const TOP_NUDGE_VIEW = { position: [0, 0, 0], target: [0, 0, -1] }
 
-// The 2D view that shows the whole room, centered, in a view `width` x
-// `height` pixels: { center: [x, z], zoom } (zoom in pixels per meter).
-// Uses width and depth of a room centered on the origin; J.2.2 moves it to
-// the corners' bounding box.
+// The 2D view that shows the whole room (its corners' bounding box),
+// centered, in a view `width` x `height` pixels: { center: [x, z], zoom }
+// (zoom in pixels per meter).
 export function fitTopView(room, width, height) {
-  const zoom = width > 0 && height > 0 ? Math.min((width * TOP_FILL) / room.width, (height * TOP_FILL) / room.depth) : 50
-  return { center: [0, 0], zoom: Math.min(TOP_MAX_ZOOM, Math.max(TOP_MIN_ZOOM, zoom)) }
+  const box = boundingBox(room.corners)
+  const zoom = width > 0 && height > 0 ? Math.min((width * TOP_FILL) / box.width, (height * TOP_FILL) / box.depth) : 50
+  return { center: [box.centerX, box.centerZ], zoom: Math.min(TOP_MAX_ZOOM, Math.max(TOP_MIN_ZOOM, zoom)) }
 }
 
 // Walk (J.1.2): eye height and the field of view, wider than 3D's so the
@@ -52,11 +54,15 @@ export const WALK_KEYS = {
   ArrowLeft: [0, -1],
 }
 
-// (x, z) kept WALL_GAP inside the walls. Uses width and depth of a room
-// centered on the origin; J.2.2 moves it to the corners.
+// (x, z) kept WALL_GAP inside the walls (J.2: any room of corners, so an L's
+// inner walls stop the walk too). A point inside stays, one outside goes to
+// the nearest point inside, so walking into a wall slides along it.
 export function clampInRoom(room, x, z) {
-  const clamp = (value, half) => Math.min(Math.max(value, -half), half)
-  return [clamp(x, Math.max(0, room.width / 2 - WALL_GAP)), clamp(z, Math.max(0, room.depth / 2 - WALL_GAP))]
+  const nearest = nearestInRegions(fitRegions(room.corners, WALL_GAP, WALL_GAP), x, z)
+  if (nearest) return nearest
+  // A room too small to keep the gap: its middle.
+  const box = boundingBox(room.corners)
+  return [box.centerX, box.centerZ]
 }
 
 // Where Walk starts: at the 3D camera (`planView`, { position, target }),

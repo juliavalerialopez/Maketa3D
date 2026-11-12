@@ -2,7 +2,7 @@ import { beforeEach, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { newLayout } from '../src/store/layoutFile.js'
 import { useObjectsStore } from '../src/store/objectsStore.js'
-import { useRoomStore } from '../src/store/roomStore.js'
+import { roomSize, useRoomStore } from '../src/store/roomStore.js'
 import { beginGesture, endGesture, useHistoryStore } from '../src/store/historyStore.js'
 import { useRestyleStore } from '../src/store/restyleStore.js'
 
@@ -57,7 +57,7 @@ test('a room size and the clamp it causes undo in one step', () => {
   endGesture()
   assert.deepEqual(objects()[0].position, [0.5, 0, 0])
   history().undo()
-  assert.equal(useRoomStore.getState().room.width, 6)
+  assert.equal(roomSize(useRoomStore.getState().room).width, 6)
   assert.deepEqual(objects()[0].position, [2.5, 0, 0])
 })
 
