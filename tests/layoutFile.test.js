@@ -142,3 +142,17 @@ test('New Project and Open fit the 2D view to the room again', () => {
   newLayout()
   assert.equal(useModeStore.getState().topView, null)
 })
+
+test('New Project and Open start Walk again at the 3D camera, also while it is open', () => {
+  const { setWalkView } = useModeStore.getState()
+  const walked = { position: [1, 1], direction: [0, 0, -1] }
+  setWalkView(walked)
+  const before = useModeStore.getState().walkViewResets
+  importLayout(text(layout))
+  assert.equal(useModeStore.getState().walkView, null)
+  assert.equal(useModeStore.getState().walkViewResets, before + 1)
+  setWalkView(walked)
+  newLayout()
+  assert.equal(useModeStore.getState().walkView, null)
+  assert.equal(useModeStore.getState().walkViewResets, before + 2)
+})

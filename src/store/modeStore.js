@@ -17,6 +17,12 @@ export const useModeStore = create((set) => ({
   topView: null,
   // Goes up on each resetTopView, so an open 2D view fits the room again.
   topViewResets: 0,
+  // Plan's Walk camera (J.1.2), { position: [x, z], direction: [x, y, z] }:
+  // saved when Walk closes, so a mode switch keeps it. Null: start at the 3D
+  // camera (choosing Walk, New Project, Open Project).
+  walkView: null,
+  // Goes up on each restartWalk, so an open Walk view starts again.
+  walkViewResets: 0,
   // One Room render per camera slot, taken when switching to Personalize
   // (I.14.2); memory only. Each is { image, objects, view } or null (an empty
   // slot, or a render that failed):
@@ -38,6 +44,10 @@ export const useModeStore = create((set) => ({
   resetPlanView: () =>
     set((state) => ({ planView: DEFAULT_PLAN_VIEW, planViewResets: state.planViewResets + 1 })),
   setTopView: (topView) => set({ topView }),
+  setWalkView: (walkView) => set({ walkView }),
+  // Walk starts again at the 3D camera (choosing Walk, New Project, Open
+  // Project), also when it is open.
+  restartWalk: () => set((state) => ({ walkView: null, walkViewResets: state.walkViewResets + 1 })),
   // The 2D view fits the room again (New Project, Open Project).
   resetTopView: () => set((state) => ({ topView: null, topViewResets: state.topViewResets + 1 })),
   // Moves the Plan camera to { position, target } (a camera slot, I.14.1).

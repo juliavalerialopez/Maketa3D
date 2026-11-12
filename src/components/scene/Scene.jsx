@@ -5,8 +5,12 @@ import SelectionBox from './SelectionBox'
 import ObjectWidget from './ObjectWidget'
 import MoveReadout from './MoveReadout'
 import WallDistances from './WallDistances'
+import { useUiStore } from '../../store/uiStore'
 
 export default function Scene() {
+  // Walk is for looking only (J.1.2): no selection, widget or measurements.
+  const editing = useUiStore((state) => state.sceneView !== 'walk')
+
   return (
     <>
       <ambientLight intensity={0.5} />
@@ -14,10 +18,14 @@ export default function Scene() {
       <Floor />
       <Walls />
       <Objects />
-      <SelectionBox />
-      <WallDistances />
-      <ObjectWidget />
-      <MoveReadout />
+      {editing && (
+        <>
+          <SelectionBox />
+          <WallDistances />
+          <ObjectWidget />
+          <MoveReadout />
+        </>
+      )}
     </>
   )
 }

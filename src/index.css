@@ -1312,6 +1312,36 @@ canvas {
   transform: translateX(-50%);
 }
 
+/* Walk (J.1.2): dragging the view turns the head. No touch scrolling or
+   zooming of the page while dragging. */
+.walk-canvas {
+  cursor: grab;
+  touch-action: none;
+}
+
+.walk-canvas:active {
+  cursor: grabbing;
+}
+
+/* Walk: how to look and walk, at the bottom center. Clicks go through to
+   the canvas. */
+.walk-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  max-width: calc(100% - 32px);
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: 99px;
+  background: var(--surface);
+  box-shadow: var(--shadow-out-small);
+  color: var(--text);
+  font-size: 13px;
+  text-align: center;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
 /* Camera slots along the bottom of the scene (I.14.1): large ui/Thumbnail
    tiles, each with its name under it. */
 .camera-slots {

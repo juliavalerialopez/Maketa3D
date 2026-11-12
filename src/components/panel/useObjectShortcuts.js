@@ -33,7 +33,7 @@ function isTyping(element) {
 // True when the focus is on the page or the 3D view, not on a field or a
 // button (J0.5): only then do the object keys act, so Backspace on the color
 // field or a button never deletes the object.
-function focusIsFree() {
+export function focusIsFree() {
   const element = document.activeElement
   return !element || element === document.body || element.tagName === 'CANVAS'
 }
@@ -110,6 +110,8 @@ export default function useObjectShortcuts() {
 
       if (!focusIsFree() || event.altKey) return
       if ((event.ctrlKey || event.metaKey) && !duplicate) return
+      // Walk is for looking only (J.1.2): its keys walk, nothing is changed.
+      if (useUiStore.getState().sceneView === 'walk') return
       const { selectedId, selectObject, removeObject, duplicateObject } = useObjectsStore.getState()
       const object = useObjectsStore.getState().objects.find((item) => item.id === selectedId)
       if (!object) return

@@ -60,7 +60,7 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 - A **2D · 3D · Walk** switch at the top center of Plan's 3D view (Undo and Redo stay top left, the frame toggle top right). 3D is the default. Plan only: Personalize shows still images and has no live view.
 - The chosen view and each view's camera survive a mode switch (kept in the store), and are not saved in the project file.
 - **2D:** the room seen straight from above, front wall at the bottom, no perspective. Wheel zooms, dragging empty space pans, no tilt or turn. Furniture can be selected, dragged, turned, nudged, duplicated and deleted as in 3D, with the move readout and wall distances. Walls cannot be moved here (that is Build, J.5).
-- **Walk:** I stand inside the room with my eyes at 1.6 m. It starts where the 3D camera is (moved inside the walls if it is outside), looking the same way. Clicking the view takes the mouse: moving it turns my head (up and down too), W A S D or the arrow keys walk (about 1.4 m/s; with Shift twice as fast), relative to where I look, always level. Walls stop me, 0.25 m before them; furniture does not. Esc gives the mouse back; clicking the view takes it again. Looking only: nothing can be selected or moved, the selection, move arrows and wall distances are hidden. All four walls show (none fades). Needs a mouse and keyboard.
+- **Walk:** I stand inside the room with my eyes at 1.6 m. It starts where the 3D camera is (moved inside the walls if it is outside), looking the same way but level, with a wider view than 3D (70°, added 2026-11-12). The mouse is never locked (changed 2026-11-12): dragging the view turns my head (the room follows the pointer; up and down stop at 85°). W A S D or the arrow keys walk (about 1.4 m/s; with Shift twice as fast), relative to where I look, always level. A line at the bottom says "Drag to look around. W A S D or the arrow keys walk, Shift goes faster." Walls stop me, 0.25 m before them; furniture does not. Looking only: nothing can be selected or moved, the selection, move arrows and wall distances are hidden. All four walls show (none fades). Needs a keyboard to walk.
 - The frame guide and the camera slots show in 3D only. The Room renders always come from the 3D camera and the slots, as today, whatever view is open when I switch to Personalize.
 
 ### Room data
@@ -121,9 +121,9 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - ✅ J0.4 Distances to the four walls for the selected object.
 - ✅ J0.5 Shortcuts: Ctrl+S, Ctrl+O, arrow nudge, and the focus guard (R dropped 2026-11-10).
 - ✅ J0.6 Duplicate and Ctrl+D.
-- ⬜ J.1 Views in Plan: 2D, 3D and Walk (added 2026-11-12)
+- ✅ J.1 Views in Plan: 2D, 3D and Walk (added 2026-11-12)
   - ✅ J.1.1 The 2D · 3D · Walk switch and the 2D top view, with furniture editing; Walk shown but disabled until J.1.2 (added 2026-11-12)
-  - ⬜ J.1.2 Walk: mouse look, W A S D and arrow keys, eye height 1.6 m, stopped by the walls (added 2026-11-12)
+  - ✅ J.1.2 Walk: drag to look, W A S D and arrow keys, eye height 1.6 m, stopped by the walls (added 2026-11-12)
 - ⬜ J.2 Room as corners: store, floor, walls, camera-facing wall fade, Room render, clamping, save and open with old files.
   - ✅ J.2.1 Geometry helpers for a room of corners (`src/store/roomShape.js`): rectangle, bounding box, walls with their outward side, validity, point inside, where a footprint fits, distance to a wall; tests only, no visible change (added 2026-11-11)
   - ⬜ J.2.2 The room becomes corners everywhere: store, clamping, placement, Location limits, wall distances, walls and floor, the Walk wall stop, project file version 2 with old files still opening, a message for a broken room (added 2026-11-11)
@@ -146,7 +146,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - [ ] J0.5: Ctrl+S saves in all modes; Ctrl+O opens in Plan and Build; arrows nudge 10 cm (Shift 1 cm) and one Ctrl+Z undoes a burst; Backspace with the color field or a button focused does not delete.
 - [ ] J0.6: Ctrl+D and the Duplicate button make "Sofa 2" next to "Sofa 1", selected, inside the walls; one Ctrl+Z removes it.
 - [ ] J.1.1: 2D shows the room from above, front wall at the bottom; a sofa can be dragged and turned there; wheel zooms and empty space pans; back in 3D the camera is where I left it; the camera slots and frame guide show in 3D only.
-- [ ] J.1.2: in Walk I look around with the mouse and walk with W A S D or the arrows at eye height; I cannot walk through a wall; Esc gives the mouse back; switching to Personalize from Walk shows the same Room render as from 3D.
+- [ ] J.1.2: in Walk I look around by dragging the view and walk with W A S D or the arrows at eye height; the mouse is never locked; I cannot walk through a wall; switching to Personalize from Walk shows the same Room render as from 3D.
 - [ ] J.2: an old file opens with everything in the same place; an L room keeps furniture out of the notch (and Walk stops at the L's walls); the Room render of a rectangle room looks as before; a file with a broken room is refused with a message.
 - [ ] J.3: an object in the front left corner shows Location near 0, 0; typing a Location puts it there.
 - [ ] J.4: Square, Rectangle and L set the room; the L rotate button moves the notch; pieces pushed in show the notice.
@@ -158,6 +158,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 
 ## Backlog
 - (added 2026-11-10) Zoomed in close on a big piece, the rotate ring can lie entirely over the object, and a press there moves it (J0.2), so the ring cannot be grabbed; rotate from Object details then. If this gets in the way, a rotate-only mode could fix it.
+- (added 2026-11-12) Improve how Walk looks and feels (Julia): the view from inside the room, and the way of looking and walking. A joystick circle was tried and dropped (J.1.2).
 - Draw walls freely instead of cut and drag (after testing with real users).
 - Angled walls (Part K).
 
@@ -169,3 +170,4 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - 2026-11-10: Spec approved, Part J started (In progress). Open questions answered. From the code survey: Ctrl+O in Plan and Build only; Build → Personalize passes through Plan; shown Z counts from the front wall (world +z); old files keep world coordinates; New Project is a 5 × 5 m square; openings live in `room` so undo covers them; file version 2.
 - 2026-11-11: J.1 split (Julia): J.1.1 the geometry helpers with tests, J.1.2 the switch to corners everywhere.
 - 2026-11-12: New J.1, views in Plan (Julia): 2D (top view, furniture editable), 3D and Walk (mouse look and W A S D, view only), Plan only. Julia chose to renumber this once, against the never-renumber rule, since no J task was committed yet: the old J.1 to J.10 are now J.2 to J.11 (the geometry helpers are J.2.1, the switch to corners J.2.2). Entries above use the old numbers.
+- 2026-11-12: Walk controls changed before J.1.2 was committed (Julia): no pointer lock; dragging the view turns the head, W A S D walk. A joystick circle was tried (to walk, then to look) and dropped.

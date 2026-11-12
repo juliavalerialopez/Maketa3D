@@ -15,6 +15,7 @@ import {
 import { useObjectsStore } from '../../store/objectsStore'
 import { useCameraSlotsStore } from '../../store/cameraSlotsStore'
 import { useModeStore } from '../../store/modeStore'
+import { useUiStore } from '../../store/uiStore'
 import { PLAN_FOV } from './planViews'
 
 const box = new Box3()
@@ -91,11 +92,11 @@ export default function SnapshotBridge() {
   useEffect(() => {
     // The frame guide's view now: the Plan camera and the point it orbits
     // (or, before the orbit controls exist, a point straight ahead of it).
-    // In the 2D view it is the 3D camera kept in the store, so the Room
+    // In 2D and Walk it is the 3D camera kept in the store, so the Room
     // renders always come from the 3D camera (J.1).
     const currentView = () => {
       const size = gl.getSize(new Vector2())
-      if (!camera.isPerspectiveCamera) {
+      if (useUiStore.getState().sceneView !== '3d') {
         const { position, target } = useModeStore.getState().planView
         return frameView({ position: new Vector3(...position), fov: PLAN_FOV }, new Vector3(...target), size.x, size.y)
       }

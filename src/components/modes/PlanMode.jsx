@@ -9,7 +9,8 @@ import ContextLossGuard from '../scene/ContextLossGuard'
 import HistoryButtons from '../scene/HistoryButtons'
 import CameraSlots from '../scene/CameraSlots'
 import ViewSwitch from '../scene/ViewSwitch'
-import { PLAN_FOV, TOP_CAMERA_HEIGHT, TOP_MAX_ZOOM, TOP_MIN_ZOOM } from '../scene/planViews'
+import WalkCamera from '../scene/WalkCamera'
+import { PLAN_FOV, TOP_CAMERA_HEIGHT, TOP_MAX_ZOOM, TOP_MIN_ZOOM, WALK_FOV } from '../scene/planViews'
 import SplitLayout from '../layout/SplitLayout'
 import ErrorBoundary from '../layout/ErrorBoundary'
 import ControlPanel from '../panel/ControlPanel'
@@ -94,6 +95,26 @@ function TopCanvas() {
   )
 }
 
+// Walk (J.1.2): inside the room at eye height. Dragging the view turns the
+// head, W A S D walk (WalkCamera).
+function WalkCanvas() {
+  return (
+    <Canvas className="walk-canvas" camera={{ fov: WALK_FOV, near: 0.05 }} shadows>
+      <SceneContent />
+      <WalkCamera />
+    </Canvas>
+  )
+}
+
+// A line on how to look and walk. Plain HTML that lets clicks through to the
+// canvas.
+function WalkHint() {
+  return <p className="walk-hint">Drag to look around. W A S D or the arrow keys walk, Shift goes faster.</p>
+}
+
+// One canvas per view (J.1).
+const CANVASES = { '2d': TopCanvas, '3d': OrbitCanvas, walk: WalkCanvas }
+
 // Plan mode: control panel on the left, 3D scene on the right.
 // Holds no state of its own, so nothing is lost when it unmounts.
 export default function PlanMode() {
@@ -101,6 +122,7 @@ export default function PlanMode() {
   const setPlanPercent = useUiStore((state) => state.setPlanPercent)
   const sceneView = useUiStore((state) => state.sceneView)
   const is3d = sceneView === '3d'
+  const ViewCanvas = CANVASES[sceneView]
 
   return (
     <SplitLayout
@@ -115,7 +137,8 @@ export default function PlanMode() {
           <ErrorBoundary message="The 3D view stopped working.">
             {/* Each view has its own canvas (keys differ), so switching
                 closes one camera (it saves its view) and opens the other. */}
-            {sceneView === '2d' ? <TopCanvas key="2d" /> : <OrbitCanvas key="3d" />}
+            <ViewCanvas key={sceneView} />
+            {sceneView === 'walk' && <WalkHint />}
             {/* The frame and the camera slots belong to the 3D camera: the
                 Room renders always come from it (J.1). */}
             {is3d && <FrameGuide />}
