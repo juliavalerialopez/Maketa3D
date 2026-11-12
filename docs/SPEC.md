@@ -15,7 +15,7 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 6. Soft UI restyle (light and dark theme), five new objects (coffee table, armchair, TV stand with TV, bookshelf, floor lamp), a Project menu to start, open and save the layout as a JSON file (Part G)
 7. AI versions and references: up to 6 generated versions with thumbnails and download, a Reference | Creative card per object and for the room, limits from environment variables (Part H)
 8. Code health and backlog: bug fixes, tests and lint, an error screen, drag and drop upload, undo and redo, a fixed 1920 × 1080 Room render, three camera slots with a Camera menu in Personalize, Save into the opened project file with its name in the top bar, a wall-shades prompt test (not kept), and prompt fixes so that only the room photo sets the walls and floor and each piece faces as in the Room render (prompt v9) (Part I)
-9. Build the room: fixes and shortcuts, square, rectangle and L-shaped rooms, a Build top view to move and cut walls, doors and windows, positions measured from a corner (Part J)
+9. Build the room: fixes and shortcuts, 2D, 3D and Walk views in Plan, square, rectangle and L-shaped rooms, a Build top view to move and cut walls, doors and windows, positions measured from a corner (Part J)
 
 ## Layout
 - Top bar (52 px): the Maketa logo on the left, a centered "Plan | Personalize" switch, the light/dark theme switch on the right. Plan is the mode on page load.
@@ -109,7 +109,7 @@ Save writes the layout as JSON into the project's file (the one opened or last s
 | G | specs/part-g-style-objects-layout.md | Soft UI and dark theme, five new objects, Project menu (new, open, save) | Done |
 | H | specs/part-h-references-versions.md | Version history, download, a reference image per object and for the room, Hide switch, limits from env vars | Done |
 | I | specs/part-i-code-health.md | Bug fixes, code health and tests; drag and drop upload, undo, fixed 1920 × 1080 render, camera slots, save into the opened file, wall-shade test, prompt v9 (room photo sets the walls, pieces keep their facing) | Done |
-| J | specs/part-j-build-room.md | Fixes and shortcuts (J0); room shapes (square, rectangle, L) and a Build top view; doors and windows; positions from a corner | In progress |
+| J | specs/part-j-build-room.md | Fixes and shortcuts (J0); 2D, 3D and Walk views in Plan; room shapes (square, rectangle, L) and a Build top view; doors and windows; positions from a corner | In progress |
 
 ## How we work
 - Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.
