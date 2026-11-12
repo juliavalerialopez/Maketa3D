@@ -41,6 +41,9 @@ const near = (a, b) => Math.abs(a - b) < 1e-9
 const clamp = (value, [min, max]) => Math.min(max, Math.max(min, value))
 // To the nearest 5 cm.
 const roundToStep = (meters) => Math.round(meters * 20) / 20
+// A Rectangle made from a room with equal sides: its depth, as a share of
+// its width (J.4.1).
+const RECTANGLE_DEPTH = 0.75
 
 // The shape button for a room with these corners (a file just opened): a
 // rectangle is a Square when its sides are equal and Rectangle was not
@@ -97,12 +100,17 @@ export function resizedRoom(room, size) {
 
 // The room as another preset shape (J.4), keeping width and depth where they
 // make sense: a Square takes the width as its side, a Rectangle keeps the
-// bounding box, a new L cuts half of each side away at the front right.
+// bounding box (one with equal sides gets a depth of 3/4 of its width, at
+// least 2 m, so it looks like a rectangle, J.4.1), a new L cuts half of each
+// side away at the front right.
 export function reshapedRoom(room, shape) {
   const params = roomParams(room)
   if (shape === params.shape) return room
   const next = { ...params, shape }
   if (shape === 'square') next.depth = next.width
+  if (shape === 'rectangle' && near(next.width, next.depth)) {
+    next.depth = Math.max(ROOM_LIMITS.depth[0], roundToStep(next.width * RECTANGLE_DEPTH))
+  }
   if (shape === 'l') {
     next.notchWidth = roundToStep(next.width / 2)
     next.notchDepth = roundToStep(next.depth / 2)

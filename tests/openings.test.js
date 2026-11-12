@@ -97,6 +97,7 @@ test('after a new shape a door stays on the wall facing the same way, nearest to
   const { setShape, addOpening, rotateNotch, setRoomSize } = useRoomStore.getState()
   setShape('rectangle')
   setRoomSize({ width: 6 })
+  setRoomSize({ depth: 5 })
   // A door on the front wall (wall 2 of a rectangle, facing +z), at the left.
   const { id } = addOpening('door', 2)
   useRoomStore.getState().updateOpening(id, { offset: 4 })

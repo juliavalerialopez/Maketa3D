@@ -73,7 +73,7 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 ### Shape buttons (Room configuration, Plan and Build)
 - Four icon buttons above the fields: **Square** (default), **Rectangle**, **L**, **Build**.
 - Square: Side and Height. Rectangle: Width, Depth, Height. L: Width, Depth, Notch width, Notch depth, Height, plus a **rotate** button that moves the notch to the next corner. Each leg of the L stays at least 0.5 m.
-- Switching between shapes keeps width and depth where they make sense.
+- Switching between shapes keeps width and depth where they make sense. (added 2026-11-12, J.4.1) A Rectangle made from a room with equal sides keeps the width and is 3/4 as deep (at least 2 m), e.g. the 5 m Square becomes 5 × 3.75 m.
 - Build opens the Build tab.
 - If the room was shaped in Build into something that is not a preset, no shape button is selected, Width and Depth show the bounding box (not editable) and a line says "Custom shape. Edit it in Build."
 - Changing the shape in Plan pushes pieces that end up outside back in, with the same notice as leaving Build.
@@ -134,6 +134,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
   - ✅ J.2.2 The room becomes corners everywhere: store, clamping, placement, Location limits, wall distances, walls and floor, the Walk wall stop, project file version 2 with old files still opening, a message for a broken room (added 2026-11-11)
 - ✅ J.3 Corner origin: Location numbers in Object details.
 - ✅ J.4 Shape buttons: Square, Rectangle, L with rotate. The Build button stays disabled until J.5. New Project starts as the 5 × 5 m Square (added 2026-11-12, moved here from J.2.2).
+  - ✅ J.4.1 Rectangle from a Square: it keeps the width and is 3/4 as deep (at least 2 m), so it no longer looks like the Square (added 2026-11-12, found by Julia)
 - ✅ J.5 Build tab: top view, wall labels with typed length, furniture hidden, pan and zoom, notice on leaving.
 - ✅ J.6 Move a wall.
 - ✅ J.7 Cut and drag.

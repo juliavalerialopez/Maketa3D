@@ -40,9 +40,11 @@ test('a square keeps its sides equal; a rectangle has its own width and depth', 
   const { setRoomSize, setShape } = useRoomStore.getState()
   setRoomSize({ width: 4 })
   assert.deepEqual(roomSize(room()), { width: 4, depth: 4 })
+  // From a square, a Rectangle keeps the width and is 3/4 as deep (J.4.1).
   setShape('rectangle')
-  setRoomSize({ depth: 3 })
   assert.deepEqual(roomSize(room()), { width: 4, depth: 3 })
+  setRoomSize({ depth: 3.5 })
+  assert.deepEqual(roomSize(room()), { width: 4, depth: 3.5 })
   // Back to a square: the width is the side.
   setShape('square')
   assert.deepEqual(roomSize(room()), { width: 4, depth: 4 })
