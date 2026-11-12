@@ -4,6 +4,11 @@
 // camera of the Room render and the camera slot thumbnails.
 
 export function showWallFor(mesh, camera) {
+  // Seen from straight above (Plan's 2D view, J.1), no wall is in the way.
+  if (camera.isOrthographicCamera) {
+    mesh.visible = true
+    return
+  }
   const [nx, ny, nz] = mesh.userData.wallNormal
   const facing =
     (camera.position.x - mesh.position.x) * nx +

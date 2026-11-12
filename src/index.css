@@ -1301,6 +1301,17 @@ canvas {
   gap: 8px;
 }
 
+/* The 2D · 3D · Walk switch at the top center of the scene (J.1), on its
+   own surface so it reads over the room. */
+.view-switch {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  border-radius: 99px;
+  background: var(--surface);
+  transform: translateX(-50%);
+}
+
 /* Camera slots along the bottom of the scene (I.14.1): large ui/Thumbnail
    tiles, each with its name under it. */
 .camera-slots {
@@ -1367,8 +1378,13 @@ canvas {
   font-size: 12px;
 }
 
-.ui-segmented-option:hover {
+.ui-segmented-option:hover:not(:disabled) {
   color: var(--text);
+}
+
+.ui-segmented-option:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 .ui-segmented-option.selected {

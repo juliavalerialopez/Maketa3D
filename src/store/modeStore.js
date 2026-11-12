@@ -12,6 +12,11 @@ export const useModeStore = create((set) => ({
   // Goes up on each resetPlanView or goToPlanView, so a mounted Plan camera
   // moves to the new view.
   planViewResets: 0,
+  // Plan's 2D camera (J.1), { center: [x, z], zoom }: saved when the 2D view
+  // closes, applied when it opens again. Null: fit the whole room.
+  topView: null,
+  // Goes up on each resetTopView, so an open 2D view fits the room again.
+  topViewResets: 0,
   // One Room render per camera slot, taken when switching to Personalize
   // (I.14.2); memory only. Each is { image, objects, view } or null (an empty
   // slot, or a render that failed):
@@ -32,6 +37,9 @@ export const useModeStore = create((set) => ({
   setPlanView: (planView) => set({ planView }),
   resetPlanView: () =>
     set((state) => ({ planView: DEFAULT_PLAN_VIEW, planViewResets: state.planViewResets + 1 })),
+  setTopView: (topView) => set({ topView }),
+  // The 2D view fits the room again (New Project, Open Project).
+  resetTopView: () => set((state) => ({ topView: null, topViewResets: state.topViewResets + 1 })),
   // Moves the Plan camera to { position, target } (a camera slot, I.14.1).
   goToPlanView: ({ position, target }) =>
     set((state) => ({ planView: { position, target }, planViewResets: state.planViewResets + 1 })),

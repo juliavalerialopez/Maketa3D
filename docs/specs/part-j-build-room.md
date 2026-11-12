@@ -122,7 +122,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - ✅ J0.5 Shortcuts: Ctrl+S, Ctrl+O, arrow nudge, and the focus guard (R dropped 2026-11-10).
 - ✅ J0.6 Duplicate and Ctrl+D.
 - ⬜ J.1 Views in Plan: 2D, 3D and Walk (added 2026-11-12)
-  - ⬜ J.1.1 The 2D · 3D · Walk switch and the 2D top view, with furniture editing; Walk shown but disabled until J.1.2 (added 2026-11-12)
+  - ✅ J.1.1 The 2D · 3D · Walk switch and the 2D top view, with furniture editing; Walk shown but disabled until J.1.2 (added 2026-11-12)
   - ⬜ J.1.2 Walk: mouse look, W A S D and arrow keys, eye height 1.6 m, stopped by the walls (added 2026-11-12)
 - ⬜ J.2 Room as corners: store, floor, walls, camera-facing wall fade, Room render, clamping, save and open with old files.
   - ✅ J.2.1 Geometry helpers for a room of corners (`src/store/roomShape.js`): rectangle, bounding box, walls with their outward side, validity, point inside, where a footprint fits, distance to a wall; tests only, no visible change (added 2026-11-11)

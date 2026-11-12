@@ -4,6 +4,7 @@ import { importLayout, layoutData, newLayout } from '../src/store/layoutFile.js'
 import { useObjectsStore } from '../src/store/objectsStore.js'
 import { useRoomStore } from '../src/store/roomStore.js'
 import { useCameraSlotsStore } from '../src/store/cameraSlotsStore.js'
+import { useModeStore } from '../src/store/modeStore.js'
 import { tvStandSize } from '../src/components/objects/tvStandSize.js'
 
 const camera = { x: 3, y: 2.5, z: 4, targetX: 0, targetY: 0.5, targetZ: 0, fov: 48.5 }
@@ -130,4 +131,14 @@ test('a new project empties the camera slots', () => {
   assert.notEqual(slots()[1], null)
   newLayout()
   assert.deepEqual(slots(), [null, null, null])
+})
+
+test('New Project and Open fit the 2D view to the room again', () => {
+  const { setTopView } = useModeStore.getState()
+  setTopView({ center: [1, 2], zoom: 300 })
+  importLayout(text(layout))
+  assert.equal(useModeStore.getState().topView, null)
+  setTopView({ center: [1, 2], zoom: 300 })
+  newLayout()
+  assert.equal(useModeStore.getState().topView, null)
 })

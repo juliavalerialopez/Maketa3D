@@ -156,6 +156,7 @@ export function newLayout() {
   useRoomStore.getState().setRoomSize({ ...DEFAULT_ROOM })
   useObjectsStore.getState().replaceObjects([], {})
   useModeStore.getState().resetPlanView()
+  useModeStore.getState().resetTopView()
   useCameraSlotsStore.getState().clearSlots()
   useHistoryStore.getState().clear()
   useProjectStore.getState().clearFile()
@@ -272,6 +273,8 @@ export function importLayout(text) {
   useObjectsStore.getState().replaceObjects(objects, lastNumbers)
   const cameras = layout.cameras ?? Array.from({ length: SLOT_COUNT }, () => null)
   useCameraSlotsStore.getState().restoreSlots(cameras.map(slotView))
+  // The 2D view fits the opened room (J.1).
+  useModeStore.getState().resetTopView()
   // An opened project starts without undo history (I.11).
   useHistoryStore.getState().clear()
   return true

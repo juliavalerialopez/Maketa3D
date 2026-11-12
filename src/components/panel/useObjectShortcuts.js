@@ -6,6 +6,7 @@ import { useUiStore } from '../../store/uiStore'
 import { beginGesture, endGesture, useHistoryStore } from '../../store/historyStore'
 import { clampPosition, nudgeOffset } from '../../store/roomBounds'
 import { currentView } from '../scene/snapshot'
+import { TOP_NUDGE_VIEW } from '../scene/planViews'
 
 // Arrow keys move the selected object this far (meters); with Shift, the
 // small step (J0.5).
@@ -58,7 +59,8 @@ export function endNudge() {
 // Moves the selected object one step for an arrow key, relative to the
 // screen, clamped inside the walls. Returns false for other keys.
 function nudge(event, object) {
-  const view = currentView()
+  // In 2D, up on screen is always the back of the room (J.1).
+  const view = useUiStore.getState().sceneView === '2d' ? TOP_NUDGE_VIEW : currentView()
   const offset = view && nudgeOffset(view, event.key, event.shiftKey ? NUDGE_STEP_SMALL : NUDGE_STEP)
   if (!offset) return false
   // Another object selected mid-burst starts a burst of its own.
