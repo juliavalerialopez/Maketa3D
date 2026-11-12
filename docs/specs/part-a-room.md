@@ -67,7 +67,7 @@ Adding objects, selection, object details, dragging, saving.
 - ✅ A.6 Build passes and deploy
 
 ## Backlog
-- Redesign the room inputs (visual polish; behavior from A.4 stays)
+- Moved to [docs/BACKLOG.md](../BACKLOG.md) on 2026-11-12, the one place for backlog ideas.
 
 ## Open questions
 - None blocking. Decisions above use defaults; update this file if they change.

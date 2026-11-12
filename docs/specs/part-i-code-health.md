@@ -233,13 +233,7 @@ Changes the Part G Save and Save As rules. Done before I.16.
 - [ ] Deployed and working on the live Vercel URL, without the test limits set.
 
 ## Backlog
-- Autosave the layout in the browser (`layoutData` and `importLayout`), restored on load.
-- Split three.js and drei into their own chunk, so a deploy doesn't make visitors download them again (measure first; 323 kB gzipped today).
-- Keep AI versions as Blobs with object URLs instead of data URLs (less memory with 6 versions).
-- Another image model for rooms with several pieces, if I.15 does not help (with a decision record).
-- (added 2026-11-10) Show a piece's front in the Plan view and the Room render, e.g. the TV's back in dark grey instead of black, so a piece turned the wrong way is easy to see (found in I.19).
-- Part J: "Save the Module": save the camera position together with the room styles. (from Part H)
-- Part J: doors and windows. (from Part H)
+- Moved to [docs/BACKLOG.md](../BACKLOG.md) on 2026-11-12, the one place for backlog ideas.
 
 ## Open questions
 - None blocking. Answered 2026-11-04: undo covers all room and object changes, with redo; one camera per project, always present, the Room render always from it, the frame guide replaced by its preview; the I.15 test is prepared here and run by Julia (I.15.1).

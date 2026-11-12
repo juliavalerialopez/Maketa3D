@@ -112,12 +112,12 @@ Save writes the layout as JSON into the project's file (the one opened or last s
 | J | specs/part-j-build-room.md | Fixes and shortcuts (J0); 2D, 3D and Walk views in Plan; room shapes (square, rectangle, L) and a Build top view; doors and windows; positions from a corner | In progress |
 
 ## How we work
-- Each part is a sprint with **Goal**, **Tasks**, **Backlog** and **Changelog**.
+- Each part is a sprint with **Goal**, **Tasks** and **Changelog**.
 - Tasks are numbered `<Part>.<n>.<m>` (e.g. A.4.3) so they can be referenced directly.
 - A deviation (something we do that wasn't planned) becomes a new numbered task tagged `(added YYYY-MM-DD)`. Existing numbers are never renumbered.
 - When a goal changes, add a dated line to that part's Changelog.
 - A part is done when its acceptance criteria pass and it is deployed. The next part's goals are confirmed before it starts.
-- Ideas outside the current part go to that part's Backlog and are reviewed at the start of the next part.
+- Ideas outside the current part go to [BACKLOG.md](BACKLOG.md), the one backlog for the whole app (since 2026-11-12), with the date and the part they came from. It is reviewed at the start of each part; an idea picked up becomes a numbered task in that part and leaves the backlog.
 
 ## Rules
 - Every day ends with a working deploy on Vercel (branch `master`).

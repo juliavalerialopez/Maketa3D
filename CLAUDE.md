@@ -100,7 +100,9 @@ first.
 - `public/models/`: static assets (`.glb`, etc.), referenced as URL strings
   (e.g. `"/models/x.glb"`), **never** as ES imports
 - `docs/SPEC.md`: product spec (source of truth)
-- `docs/specs/part-*.md`: part specs with numbered tasks, backlog, changelog
+- `docs/specs/part-*.md`: part specs with numbered tasks and changelog
+- `docs/BACKLOG.md`: the one backlog for every part (ideas outside the
+  current part go here, with the date and the part they came from)
 - `docs/prompts/`: AI prompts, one file each, with numbered versions and test
   results. The live copy in `api/` must match the latest version.
 - `docs/decisions/`: decision records (`NNNN-title.md`), e.g. the model choice

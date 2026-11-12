@@ -157,10 +157,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - [ ] No console errors; `npm run build`, `npm run lint` and `npm test` succeed; deployed and working on the live site.
 
 ## Backlog
-- (added 2026-11-10) Zoomed in close on a big piece, the rotate ring can lie entirely over the object, and a press there moves it (J0.2), so the ring cannot be grabbed; rotate from Object details then. If this gets in the way, a rotate-only mode could fix it.
-- (added 2026-11-12) Improve how Walk looks and feels (Julia): the view from inside the room, and the way of looking and walking. A joystick circle was tried and dropped (J.1.2).
-- Draw walls freely instead of cut and drag (after testing with real users).
-- Angled walls (Part K).
+- Moved to [docs/BACKLOG.md](../BACKLOG.md) on 2026-11-12, the one place for backlog ideas.
 
 ## Open questions
 - None blocking. Answered 2026-11-10 (Julia): the Build tab is always in the top bar; arrow keys move relative to the screen, snapped to the nearest room axis; a typed wall length moves the end farther from the origin; the move readout shows the new position.
@@ -171,3 +168,4 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - 2026-11-11: J.1 split (Julia): J.1.1 the geometry helpers with tests, J.1.2 the switch to corners everywhere.
 - 2026-11-12: New J.1, views in Plan (Julia): 2D (top view, furniture editable), 3D and Walk (mouse look and W A S D, view only), Plan only. Julia chose to renumber this once, against the never-renumber rule, since no J task was committed yet: the old J.1 to J.10 are now J.2 to J.11 (the geometry helpers are J.2.1, the switch to corners J.2.2). Entries above use the old numbers.
 - 2026-11-12: Walk controls changed before J.1.2 was committed (Julia): no pointer lock; dragging the view turns the head, W A S D walk. A joystick circle was tried (to walk, then to look) and dropped.
+- 2026-11-12: Every part's Backlog moved to one file, `docs/BACKLOG.md` (Julia); items already built or planned as J tasks were left out.

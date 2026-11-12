@@ -103,15 +103,7 @@ Editing size. Selecting by clicking in 3D, dragging to move or rotate (Part D). 
 - [x] Deployed and working on the live Vercel URL.
 
 ## Backlog
-- Click an object in 3D to select it; click empty or Escape to deselect (prototype interaction model). Part D, together with dragging.
-- Edit object size (width, depth, height), with limits to decide.
-- Undo delete. (moved to Part I, I.11)
-- New-object placement after a delete can land on an existing object (placement counts objects, not free spots).
-- Keep objects inside the room when the room shrinks or an object is rotated (also in Part B backlog). (shrink moved to Part I, I.1)
-- Color swatches next to the native picker.
-- `NumberField` resyncs its text when `value` changes from outside while not focused (needed once Part D drags objects with Object details open).
-- `Objects.jsx`: subscribe to ids, each object to itself, so editing one object doesn't re-render all (matters for Part D dragging).
-- `SplitLayout`: pointer events with pointer capture (touch/pen), no text selection while dragging the divider.
+- Moved to [docs/BACKLOG.md](../BACKLOG.md) on 2026-11-12, the one place for backlog ideas.
 
 ## Open questions
 - None blocking.

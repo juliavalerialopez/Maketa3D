@@ -94,10 +94,7 @@ Image upload. Any AI call, API key, serverless function or prompt. Controls in t
 - [x] Deployed and working on the live Vercel URL.
 
 ## Backlog
-- Manual "Refresh render" button in Personalize.
-- A placeable camera object in the room (the render taken from it instead of the orbit camera). (moved to Part I, I.14)
-- Fixed 1920 × 1080 render through a render target, independent of window size. (moved to Part I, I.13; built without a render target, see I.13.1)
-- Keep the Personalize panel's group state in `uiStore` once groups exist.
+- Moved to [docs/BACKLOG.md](../BACKLOG.md) on 2026-11-12, the one place for backlog ideas.
 
 ## Open questions
 - None blocking.

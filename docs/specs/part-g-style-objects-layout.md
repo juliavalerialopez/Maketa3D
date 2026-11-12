@@ -132,11 +132,7 @@ The style mock shows a few things that do not exist in the app. They are not par
 - [x] Deployed and working on the live Vercel URL, in both themes.
 
 ## Backlog
-- Saving AI images as alternatives (Part H): each generated image is kept as an option in its own section, so the user can keep several and go back to any of them.
-- The restyle prompt assumes one grey box sofa. Other objects in the Room render are not handled by Part F; review in Part H.
-- Export tilt (rotation X and Z).
-- Size editing for objects other than the TV.
-- From the mock: Snap to wall, Undo, scene toolbar. (Undo moved to Part I, I.11)
+- Moved to [docs/BACKLOG.md](../BACKLOG.md) on 2026-11-12, the one place for backlog ideas.
 
 ## Open questions
 - None blocking. Decided while drafting: import does not ask before replacing; light is the default with no system preference; Export stays enabled with no objects.

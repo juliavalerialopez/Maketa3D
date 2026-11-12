@@ -160,12 +160,7 @@ Order: unblock testing, then what I can see, then references, then the AI side. 
 - [ ] Deployed and working on the live Vercel URL, without the test limits set.
 
 ## Backlog
-- Part J: "Save the Module": save the camera position together with the room styles, so a view and its results can be kept and reopened.
-- Part J: doors and windows (they get reference cards once they exist).
-- Export tilt (rotation X and Z). (from Part G)
-- Size editing for objects other than the TV. (from Part G)
-- Room layout with several pieces (H.8): the AI moves the room corner to between the pieces (T3) and may drop a reference's chaise (T11). Prompt wording, corner positions in the prompt, and a line drawn on the corner did not fix it. Ideas: walls with clearly different shades in the Room render, or another model. (wall shades test moved to Part I, I.15)
-- From the mock: Snap to wall, Undo, scene toolbar. (from Part G) (Undo moved to Part I, I.11)
+- Moved to [docs/BACKLOG.md](../BACKLOG.md) on 2026-11-12, the one place for backlog ideas.
 
 ## Open questions
 - None blocking. Answered 2026-11-02: the Room card is part of H and counts toward the 8 photos; blocked at 6 versions; leaving Personalize asks and clears versions; off-frame objects are skipped; titles use the list name ("Reference Sofa 1"); doors and windows come in Part I; test limit is 20 per visitor locally, public stays 3 per visitor and 20 per day.
