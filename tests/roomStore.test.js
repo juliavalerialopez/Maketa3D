@@ -1,6 +1,14 @@
 import { beforeEach, test } from 'node:test'
 import assert from 'node:assert/strict'
-import { DEFAULT_ROOM, roomParams, roomSize, shapeFor, useRoomStore } from '../src/store/roomStore.js'
+import {
+  DEFAULT_ROOM,
+  draggedCorners,
+  reachableStep,
+  roomParams,
+  roomSize,
+  shapeFor,
+  useRoomStore,
+} from '../src/store/roomStore.js'
 import { describeRoom, lCorners, rectangleCorners } from '../src/store/roomShape.js'
 import { newLayout } from '../src/store/layoutFile.js'
 import { useObjectsStore } from '../src/store/objectsStore.js'
@@ -125,6 +133,27 @@ test('a typed wall length that keeps the room allowed is applied, its shape foll
   // One undo step per typed length.
   useHistoryStore.getState().undo()
   assert.deepEqual(roomSize(room()), { width: 5, depth: 5 })
+})
+
+test('a dragged wall moves in 5 cm steps and stops at the limit', () => {
+  const corners = rectangleCorners(5, 5)
+  // The right wall (wall 1) dragged out 1 m: 20 steps, a 6 m wide room.
+  assert.equal(reachableStep(corners, 1, 0, 20), 20)
+  assert.deepEqual(roomSize({ corners: draggedCorners(corners, 1, 20) }), { width: 6, depth: 5 })
+  // Dragged far in: it stops when the room is 2 m wide (the smallest).
+  assert.equal(reachableStep(corners, 1, 0, -100), -60)
+  // Dragged far out: it stops at 10 m wide.
+  assert.equal(reachableStep(corners, 1, 0, 200), 100)
+  // Back to where it started: the room as before.
+  assert.equal(draggedCorners(corners, 1, 0), corners)
+})
+
+test('in an L, a wall stops before a wall next to it would get under 0.5 m', () => {
+  // The cut away corner's wall along x (wall 2, at z = 0, from x 2 to 0)
+  // dragged toward the front: the wall at x = 2 shrinks to 0.5 m and stops.
+  const corners = lCorners(4, 4, 2, 2, 0)
+  const step = reachableStep(corners, 2, 0, 100)
+  assert.equal(step, 30)
 })
 
 test('a new shape pushes pieces inside, counts them, and undoes in one step', () => {

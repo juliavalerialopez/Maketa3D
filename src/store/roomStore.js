@@ -5,6 +5,7 @@ import {
   describeRoom,
   isValidRoomCorners,
   lCorners,
+  moveWall,
   rectangleCorners,
   setWallLength,
 } from './roomShape.js'
@@ -124,6 +125,30 @@ export function reshapedCorners(room, corners) {
   return { ...room, corners, shape: shapeFor(corners, room.shape) }
 }
 
+// Moving a wall in Build snaps to this, in meters (J.6).
+export const WALL_SNAP = 0.05
+
+// Dragging wall `index` (J.6) of the room's `corners` as they were before the
+// drag: from `fromStep` (the last allowed position, in WALL_SNAP steps out of
+// the room) toward `targetStep`, the farthest step the wall reaches before
+// the room stops being allowed. It stops at the limit (a wall under 0.5 m,
+// walls crossing, too big or too small) and does not jump past it.
+export function reachableStep(corners, index, fromStep, targetStep) {
+  const allowed = (step) => step === 0 || isAllowedRoom(moveWall(corners, index, step * WALL_SNAP))
+  const direction = Math.sign(targetStep - fromStep)
+  let reached = fromStep
+  for (let step = fromStep + direction; direction && step !== targetStep + direction; step += direction) {
+    if (!allowed(step)) break
+    reached = step
+  }
+  return reached
+}
+
+// The corners with wall `index` dragged to `step` (reachableStep).
+export function draggedCorners(corners, index, step) {
+  return step === 0 ? corners : moveWall(corners, index, step * WALL_SNAP)
+}
+
 export const useRoomStore = create((set, get) => ({
   room: DEFAULT_ROOM,
   // { width, depth, height, notchWidth, notchDepth }, each optional.
@@ -131,6 +156,13 @@ export const useRoomStore = create((set, get) => ({
   // 'square', 'rectangle' or 'l' (the shape buttons).
   setShape: (shape) => set((state) => ({ room: reshapedRoom(state.room, shape) })),
   rotateNotch: () => set((state) => ({ room: rotatedNotch(state.room) })),
+  // Build (J.6, J.7): new corners. Returns false and changes nothing when
+  // they do not make an allowed room.
+  setCorners: (corners) => {
+    const room = reshapedCorners(get().room, corners)
+    if (room) set({ room })
+    return Boolean(room)
+  },
   // Build (J.5): a typed wall length. Returns false and changes nothing when
   // the room would not be allowed (a wall under 0.5 m, crossing walls, too
   // big or too small).

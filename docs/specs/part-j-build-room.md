@@ -97,6 +97,7 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 - Hovering a wall highlights it. Dragging moves it sideways only (a horizontal wall moves up or down, a vertical wall moves left or right). Its two end corners move with it and the neighboring walls stretch or shrink.
 - Movement snaps to 5 cm.
 - A move is stopped if a wall would get shorter than 0.5 m, the room would cross itself, or a door or window would no longer fit its wall. The wall stops at the limit; for the opening case a short message says what did not fit.
+- (added 2026-11-12, J.6) The room's 2 m and 10 m limits (seen from above) stop a move too. Because no wall may be under 0.5 m, a wall cannot be dragged so far that a wall next to it vanishes: an L's notch is removed with the Rectangle button, not by dragging. The wall under the pointer is drawn in a warm clay color and the pointer shows which way it moves.
 
 ### Cut and drag (J.7)
 - A selected wall shows a **Cut** button (scissors). Cutting at a point makes a 1 m piece centered there (a third of the wall if the wall is shorter than 3 m, never under 0.5 m). The wall must be at least 1.5 m long to cut.
@@ -132,7 +133,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - ✅ J.3 Corner origin: Location numbers in Object details.
 - ✅ J.4 Shape buttons: Square, Rectangle, L with rotate. The Build button stays disabled until J.5. New Project starts as the 5 × 5 m Square (added 2026-11-12, moved here from J.2.2).
 - ✅ J.5 Build tab: top view, wall labels with typed length, furniture hidden, pan and zoom, notice on leaving.
-- ⬜ J.6 Move a wall.
+- ✅ J.6 Move a wall.
 - ⬜ J.7 Cut and drag.
 - ⬜ J.8 Doors and windows in Build. The project file saves and opens `openings` (added 2026-11-12, moved here from J.2.2).
 - ⬜ J.9 Doors and windows in Plan: list group, details, move and resize.
