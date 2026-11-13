@@ -93,6 +93,7 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 - (added 2026-11-10) New Project and Open Project work in Build, as in Plan.
 - (added 2026-11-10) Clicking Personalize from Build passes through Plan: the Room renders need Plan's 3D view, so Plan shows for a moment, the renders are taken, then Personalize opens.
 - (added 2026-11-12, J.5) Each wall's length is a small number field named "Wall 1", "Wall 2", ... just outside it: click to type, or drag or use the arrow keys like any number field. A length that would break the room (a wall under 0.5 m, walls crossing, the room under 2 m or over 10 m across) is refused and the field shows the length again. Build and Plan's 2D view share one view (pan and zoom). The Build button in Room configuration opens Build; in Build the panel shows the shape buttons and Height only (plus the selected wall from J.7, and Openings from J.8).
+- (changed 2026-11-13, J.5.1, Julia) The length next to each wall is plain text ("3.50 m"), with no field, card or wall number, and a click on it goes to the view. A length is typed in the panel's Wall section, once the wall is selected; the rules above stay.
 
 ### Move a wall (J.6)
 - Hovering a wall highlights it. Dragging moves it sideways only (a horizontal wall moves up or down, a vertical wall moves left or right). Its two end corners move with it and the neighboring walls stretch or shrink.
@@ -105,6 +106,8 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 - That piece is now its own wall and moves like in J.6, so dragging it in or out creates an alcove or a bump. Its two short side walls grow as it moves.
 - When a moved piece lines up again with its neighbors, the extra corners are merged and it becomes one wall again.
 - (added 2026-11-12, J.7) A click on a wall selects it (clay color); its length and the Cut button show in the panel, and a click on the floor or Esc deselects. With Cut on, hovering the selected wall shows where the piece would go, and a click cuts it there; the new piece is selected. A piece stays in line until dragged 0.25 m out or in, then jumps to 0.5 m (its side walls are never under 0.5 m); dragged back within 0.25 m of the line, it lines up and merges. The same goes for any wall: dragged flush with another, the wall between them disappears (e.g. an L's notch dragged to the front wall gives a rectangle).
+- (changed 2026-11-13, J.7.1, Julia) Cut no longer makes a 1 m piece. With Cut on, a point follows the pointer along the selected wall in 5 cm steps, at least 0.5 m from each end, with its distance to each end shown as text beside it. A click splits the wall in two walls in line at that point; each can then be dragged on its own (for an alcove: cut twice, drag the middle piece). A wall shorter than 1 m cannot be cut; a point inside a door or window is refused with the message. After the cut, Cut is off and nothing is selected; Esc cancels.
+- (added 2026-11-13, J.8.3, Julia) A click on a wall selects it and shows a small bar next to it in the view with **Cut**, **Door** and **Window**; each starts the same tool as its panel button. The bar hides while the wall is dragged, when the selection is cleared, and while a tool is on.
 
 ### Doors and windows (J.8 in Build, J.9 in Plan)
 - Build panel, Openings: **Door** and **Window** buttons. Adding one places it on the selected wall (or the longest wall if none is selected), centered.
@@ -116,6 +119,9 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 - In Plan, openings are listed in the Objects section under their own **Openings** group. Selecting one opens Object details with the same fields. I can move it up, down, left, right (drag in the wall plane, number fields, arrow keys) and change width and height. It stays on its own wall. Doors cannot leave the floor.
 - Deleting an opening: Delete key or button, as for furniture.
 - (added 2026-11-12, J.8) In Build, the Openings section lists them ("Door 1", "Window 1", numbered per type); a click there or on one in the view selects it (a wall and an opening are never selected together). Its details say which wall it is on and give From wall start, Width, Height and Sill (windows), in 5 cm steps; a value that does not fit is refused and the field shows the old one. Dragging moves it along its wall in 5 cm steps, and onto another wall when the pointer comes within 0.6 m of it. Doors and windows stay where they are when walls are cut or renumbered, and move with their own wall when it moves; a wall move or typed length that would leave one not fitting stops, and a cut through one is refused, each with a short message at the bottom of the view. After a new shape, size or height in Room configuration each goes to the wall facing the same way that is nearest to where it was, slides along it or gets lower to fit, or is left out if it cannot fit (a number half typed never changes them for good); Height cannot go below the tallest one. The project file saves them with the room, as `{ type, wall, offset, width, height, sill }` (`wall` is the wall's number, no id). The 3D rectangles (Plan, Room render) come with J.8 too: a door is wood brown, a window pale blue, and each hides with its wall.
+- (changed 2026-11-13, J.8.1 and J.8.2, Julia) The Door and Window buttons (panel, and the wall bar from J.8.3) no longer add one in the middle of a wall; they change the pointer into a placing tool, on any wall, and Esc cancels:
+  - **Door:** a 0.90 m door preview follows the pointer on the nearest wall in 5 cm steps, with the distance from each side of the door to its wall's ends shown as text. One click places it, selected. Where it does not fit (a wall end, another opening) the preview shows it cannot go there and a click does nothing.
+  - **Window:** a point follows the pointer on the nearest wall with its distance to the wall's ends; a click sets where the window starts. Then the preview stretches from there to the pointer along the same wall, with its width and the distances shown; a second click sets where it ends and places it (1.20 m high, sill 0.90 m), selected. At least 0.3 m wide; it cannot cover another opening or come within 0.1 m of the wall's ends.
 
 ## Tasks
 Order: fixes first, then the room data, then what I see. Each one follows the checkpoint workflow.
@@ -139,9 +145,14 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
   - ✅ J.4.1 Rectangle from a Square: it keeps the width and is 3/4 as deep (at least 2 m), so it no longer looks like the Square (added 2026-11-12, found by Julia)
   - ✅ J.4.2 Hovering a Room configuration field highlights the walls it moves, in clay with a line on the floor (added 2026-11-12, Julia)
 - ✅ J.5 Build tab: top view, wall labels with typed length, furniture hidden, pan and zoom, notice on leaving.
+  - ✅ J.5.1 Wall lengths in the view are plain text; a length is typed only in the panel, for the selected wall (added 2026-11-13, Julia)
 - ✅ J.6 Move a wall.
 - ✅ J.7 Cut and drag.
+  - ⬜ J.7.1 Cut at a point: a point follows the pointer on the selected wall with its distance to both ends; a click splits the wall in two there (added 2026-11-13, Julia)
 - ✅ J.8 Doors and windows in Build. The project file saves and opens `openings` (added 2026-11-12, moved here from J.2.2).
+  - ⬜ J.8.1 Place a door with the pointer: a 0.90 m door follows the pointer on any wall with its distances to the wall's ends; one click places it (added 2026-11-13, Julia)
+  - ⬜ J.8.2 Place a window with two clicks: where it starts, then where it ends, with a preview of its size, on any wall (added 2026-11-13, Julia)
+  - ⬜ J.8.3 Wall options: a click on a wall shows a small bar next to it with Cut, Door and Window (added 2026-11-13, Julia)
 - ⬜ J.9 Doors and windows in Plan: list group, details, move and resize.
 - ⬜ J.10 Undo and redo in Build, and the 1, 2, 3 mode shortcuts.
 - ⬜ J.11 Personalize with openings: check the AI keeps doors and windows, adjust the prompt if not. Update docs and run the verifier.
@@ -179,3 +190,4 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - 2026-11-12: Walk controls changed before J.1.2 was committed (Julia): no pointer lock; dragging the view turns the head, W A S D walk. A joystick circle was tried (to walk, then to look) and dropped.
 - 2026-11-12: Every part's Backlog moved to one file, `docs/BACKLOG.md` (Julia); items already built or planned as J tasks were left out.
 - 2026-11-12: J.3 (Julia): Location shows the front left corner of the piece's footprint instead of its middle, so a piece pushed into the origin corner shows 0, 0.
+- 2026-11-13: New wall tools in Build (Julia): wall lengths as plain text in the view, typed in the panel (J.5.1); Cut splits a wall at a point shown with its distances (J.7.1, replaces the 1 m piece); Door and Window are placed with the pointer, a door in one click and a window by its start and end (J.8.1, J.8.2; the panel buttons no longer add one in the middle of a wall); a bar next to a clicked wall with Cut, Door and Window (J.8.3).

@@ -1322,15 +1322,15 @@ canvas {
   user-select: none;
 }
 
-/* Build (J.5): a wall's length next to it, a small raised card with the
-   number field. */
+/* Build (J.5.1): a wall's length next to it, as plain text. Clicks go
+   through to the view. */
 .wall-length {
-  width: 84px;
-  padding: 4px 8px 6px;
-  border-radius: 12px;
-  background: var(--surface);
-  box-shadow: var(--shadow-out-small);
+  color: var(--text);
   font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
 }
 
 /* The distance from the selected object to each wall, on the floor (J0.4). */

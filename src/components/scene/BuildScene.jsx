@@ -8,7 +8,6 @@ import { BUILD_NOTICES, useUiStore } from '../../store/uiStore'
 import BuildOpenings from './BuildOpenings'
 import { focusIsFree } from '../panel/useObjectShortcuts'
 import { beginGesture, endGesture } from '../../store/historyStore'
-import WallLengthField from '../panel/WallLengthField'
 import Floor from './Floor'
 import { wallBoxes } from './wallBoxes'
 
@@ -37,15 +36,14 @@ let wallDragActive = false
 
 const wallSelection = (wall) => ({ a: { ...wall.start }, b: { ...wall.end } })
 
-// A wall's length at its middle just outside the room (J.5).
-function WallLength({ index, wall }) {
+// A wall's inside length as text, at its middle just outside the room (J.5,
+// J.5.1). It is typed in the panel, once the wall is selected.
+function WallLength({ wall }) {
   const [mx, mz] = [(wall.start.x + wall.end.x) / 2, (wall.start.z + wall.end.z) / 2]
   const gap = BUILD_WALL_THICKNESS + LABEL_GAP
   return (
     <Html position={[mx + wall.normal[0] * gap, 0, mz + wall.normal[1] * gap]} center>
-      <div className="wall-length">
-        <WallLengthField compact index={index} wall={wall} />
-      </div>
+      <div className="wall-length">{(Math.round(wall.length * 100) / 100).toFixed(2)} m</div>
     </Html>
   )
 }
@@ -334,7 +332,7 @@ export default function BuildScene() {
         />
       ))}
       {walls.map((box, index) => (
-        <WallLength key={index} index={index} wall={box.wall} />
+        <WallLength key={index} wall={box.wall} />
       ))}
       <BuildOpenings thickness={BUILD_WALL_THICKNESS} />
     </>

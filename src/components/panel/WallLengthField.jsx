@@ -5,15 +5,15 @@ import { BUILD_NOTICES, useUiStore } from '../../store/uiStore'
 import { editGesture } from '../../store/historyStore'
 import NumberField from '../ui/NumberField'
 
-// A wall's inside length in Build (J.5), next to the wall and in the Wall
-// section (J.7). Typing a length (or stepping it) moves the wall's end
+// A wall's inside length in Build's Wall section (J.5, J.7; the view shows it
+// as text, J.5.1). Typing a length (or stepping it) moves the wall's end
 // farther from the origin. It is applied only once final (blur, a step, the
 // end of a drag), since a length in between may not make a room; a length
 // that would break the room (a wall under 0.5 m, crossing walls, a room too
 // big or too small, a door or window that would no longer fit) is refused
 // and the field shows the length again.
 // `wall` is the roomWalls entry, `index` its number.
-export default function WallLengthField({ index, wall, compact = false }) {
+export default function WallLengthField({ index, wall }) {
   // The length being typed or stepped, until it is final; null otherwise.
   const [typed, setTyped] = useState(null)
   const [refusals, setRefusals] = useState(0)
@@ -41,8 +41,7 @@ export default function WallLengthField({ index, wall, compact = false }) {
     // Remounted after a refusal, so it shows the stored length again.
     <NumberField
       key={refusals}
-      compact={compact}
-      label={compact ? `Wall ${index + 1}` : 'Length'}
+      label="Length"
       value={typed ?? wall.length}
       onChange={setTyped}
       onCommit={commit}
