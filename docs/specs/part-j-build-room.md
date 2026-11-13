@@ -77,6 +77,7 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 - Build opens the Build tab.
 - If the room was shaped in Build into something that is not a preset, no shape button is selected, Width and Depth show the bounding box (not editable) and a line says "Custom shape. Edit it in Build."
 - Changing the shape in Plan pushes pieces that end up outside back in, with the same notice as leaving Build.
+- (added 2026-11-12, J.4.2) While the pointer is over a field, the walls it moves are clay in the view, with a clay line along their foot on the floor (so a wall the 3D view hides still shows; the line is never in the Room render). Width: every wall along the depth (left and right, an L's notch wall too; the room stays centred). Depth: every wall along the width. Side (Square): all walls. Notch width and Notch depth: the notch's inner wall that moves. Height (changed 2026-11-13, Julia): only the top edge of every wall is clay, no floor line; in Build, seen from above, that is the whole wall.
 
 ### Coordinates
 - Object details shows Location X and Z measured from the origin corner. (changed 2026-11-12, Julia) Location is the **front left corner of the piece's footprint** (seen from above, also when it is turned), not its middle, so a piece pushed into the origin corner shows 0, 0. Typing a number converts back to the stored position (still the middle of the piece).
@@ -129,12 +130,14 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - ✅ J.1 Views in Plan: 2D, 3D and Walk (added 2026-11-12)
   - ✅ J.1.1 The 2D · 3D · Walk switch and the 2D top view, with furniture editing; Walk shown but disabled until J.1.2 (added 2026-11-12)
   - ✅ J.1.2 Walk: drag to look, W A S D and arrow keys, eye height 1.6 m, stopped by the walls (added 2026-11-12)
+  - ⬜ J.1.3 Bug: furniture casts shadows in 3D but none in 2D (added 2026-11-12, found by Julia)
 - ✅ J.2 Room as corners: store, floor, walls, camera-facing wall fade, Room render, clamping, save and open with old files.
   - ✅ J.2.1 Geometry helpers for a room of corners (`src/store/roomShape.js`): rectangle, bounding box, walls with their outward side, validity, point inside, where a footprint fits, distance to a wall; tests only, no visible change (added 2026-11-11)
   - ✅ J.2.2 The room becomes corners everywhere: store, clamping, placement, Location limits, wall distances, walls and floor, the Walk wall stop, project file version 2 with old files still opening, a message for a broken room (added 2026-11-11)
 - ✅ J.3 Corner origin: Location numbers in Object details.
 - ✅ J.4 Shape buttons: Square, Rectangle, L with rotate. The Build button stays disabled until J.5. New Project starts as the 5 × 5 m Square (added 2026-11-12, moved here from J.2.2).
   - ✅ J.4.1 Rectangle from a Square: it keeps the width and is 3/4 as deep (at least 2 m), so it no longer looks like the Square (added 2026-11-12, found by Julia)
+  - ✅ J.4.2 Hovering a Room configuration field highlights the walls it moves, in clay with a line on the floor (added 2026-11-12, Julia)
 - ✅ J.5 Build tab: top view, wall labels with typed length, furniture hidden, pan and zoom, notice on leaving.
 - ✅ J.6 Move a wall.
 - ✅ J.7 Cut and drag.

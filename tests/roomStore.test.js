@@ -9,6 +9,7 @@ import {
   shapeFor,
   startWallDrag,
   useRoomStore,
+  wallsChangedBy,
 } from '../src/store/roomStore.js'
 import {
   cutSpan,
@@ -241,6 +242,22 @@ test('tidying merges corners on top of each other and straight corners where a w
   assert.deepEqual(tidyCorners(corners, [[-1, -2.5], [1, -2.5]]), rectangleCorners(6, 5))
   // A straight corner elsewhere (an earlier cut) stays.
   assert.equal(tidyCorners(corners, [[-1, -2.5]]).length, 5)
+})
+
+test('each Room configuration field highlights the walls it moves', () => {
+  const rect = { shape: 'rectangle', height: 2.6, corners: rectangleCorners(6, 5), openings: [] }
+  // Walls: 0 back, 1 right, 2 front, 3 left.
+  assert.deepEqual(wallsChangedBy(rect, 'width'), [1, 3])
+  assert.deepEqual(wallsChangedBy(rect, 'depth'), [0, 2])
+  // Height moves no wall (its top edge lights up instead).
+  assert.deepEqual(wallsChangedBy(rect, 'height'), [])
+  assert.deepEqual(wallsChangedBy({ ...rect, shape: 'square' }, 'width'), [0, 1, 2, 3])
+  // The L's notch at the front right: its inner walls are 2 (along x, at
+  // z = 0) and 3 (along z, at x = 0).
+  const l = { ...rect, shape: 'l', corners: lCorners(4, 4, 2, 2, 0) }
+  assert.deepEqual(wallsChangedBy(l, 'notchWidth'), [3])
+  assert.deepEqual(wallsChangedBy(l, 'notchDepth'), [2])
+  assert.deepEqual(wallsChangedBy(l, 'width'), [1, 3, 5])
 })
 
 test('a new shape pushes pieces inside, counts them, and undoes in one step', () => {

@@ -65,7 +65,7 @@ function alongWall(wall, x, z) {
 //   once back in line (J.7).
 // - With Cut on, a press on the selected wall cuts a piece out there, shown
 //   while hovering (J.7).
-function BuildWall({ index, box, selected, cutting }) {
+function BuildWall({ index, box, selected, highlighted, cutting }) {
   const getThree = useThree((state) => state.get)
   const [hovered, setHovered] = useState(false)
   const hoveredRef = useRef(false)
@@ -195,7 +195,14 @@ function BuildWall({ index, box, selected, cutting }) {
     stopDrag()
   }
 
-  const color = selected ? BUILD_WALL_SELECTED_COLOR : hovered && !wallDragActive ? BUILD_WALL_HOVER_COLOR : BUILD_WALL_COLOR
+  // A Room configuration field under the pointer lights up the walls it
+  // changes (J.4.2), like a selected wall.
+  const color =
+    selected || highlighted
+      ? BUILD_WALL_SELECTED_COLOR
+      : hovered && !wallDragActive
+        ? BUILD_WALL_HOVER_COLOR
+        : BUILD_WALL_COLOR
 
   return (
     <>
@@ -272,6 +279,9 @@ export default function BuildScene() {
   const { corners, openings } = useRoomStore((state) => state.room)
   const selection = useUiStore((state) => state.selectedWall)
   const cutting = useUiStore((state) => state.cutting)
+  const highlightedWalls = useUiStore((state) => state.highlightedWalls)
+  // Height: seen from above, a wall's top edge is the whole wall.
+  const highlightedTop = useUiStore((state) => state.highlightedTop)
   const walls = wallBoxes(corners, WALL_DRAW_HEIGHT, BUILD_WALL_THICKNESS)
   const selectedIndex = selection ? findWall(corners, selection.a, selection.b) : -1
 
@@ -314,7 +324,14 @@ export default function BuildScene() {
     <>
       <Floor flat />
       {walls.map((box, index) => (
-        <BuildWall key={index} index={index} box={box} selected={index === selectedIndex} cutting={cutting} />
+        <BuildWall
+          key={index}
+          index={index}
+          box={box}
+          selected={index === selectedIndex}
+          highlighted={highlightedTop || highlightedWalls.includes(index)}
+          cutting={cutting}
+        />
       ))}
       {walls.map((box, index) => (
         <WallLength key={index} index={index} wall={box.wall} />

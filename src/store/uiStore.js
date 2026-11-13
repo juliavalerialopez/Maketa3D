@@ -56,6 +56,11 @@ export const useUiStore = create((set) => ({
   selectedOpening: null,
   // Build's short message (J.8), e.g. why a wall stopped; null when none.
   buildNotice: null,
+  // The walls (their numbers) that the Room configuration field under the
+  // pointer changes, highlighted in the view (J.4.2); empty when none.
+  highlightedWalls: [],
+  // True while the pointer is over Height: the walls' top edge lights up.
+  highlightedTop: false,
 
   setMoving: (moving) => set({ moving }),
   selectWall: (selectedWall) =>
@@ -63,6 +68,9 @@ export const useUiStore = create((set) => ({
   selectOpening: (selectedOpening) =>
     set((state) => ({ selectedOpening, selectedWall: selectedOpening ? null : state.selectedWall, cutting: false })),
   setBuildNotice: (buildNotice) => set({ buildNotice }),
+  // The highlight for a Room configuration field (J.4.2): the walls it moves,
+  // and whether the walls' top edge lights up (Height).
+  setHighlight: (highlightedWalls, highlightedTop = false) => set({ highlightedWalls, highlightedTop }),
   setCutting: (cutting) => set({ cutting }),
   setRoomNotice: (roomNotice) => set({ roomNotice }),
   setSceneView: (sceneView) => set({ sceneView }),

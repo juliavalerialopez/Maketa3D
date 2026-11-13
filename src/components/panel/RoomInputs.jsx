@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ROOM_LIMITS, notchLimits, roomParams, useRoomStore } from '../../store/roomStore'
+import { ROOM_LIMITS, notchLimits, roomParams, useRoomStore, wallsChangedBy } from '../../store/roomStore'
 import { useObjectsStore } from '../../store/objectsStore'
 import { movedInsideNotice, useUiStore } from '../../store/uiStore'
 import { tallestOpening } from '../../store/openings'
@@ -90,6 +90,16 @@ export default function RoomInputs({ inBuild = false }) {
     return () => clearTimeout(timer)
   }, [notice])
 
+  // Highlights the walls field `key` changes, or for Height their top edge,
+  // or nothing (J.4.2).
+  const highlight = (key) =>
+    useUiStore
+      .getState()
+      .setHighlight(key ? wallsChangedBy(useRoomStore.getState().room, key) : [], key === 'height')
+
+  // Gone with the panel (a mode switch): no highlight is left behind.
+  useEffect(() => () => useUiStore.getState().setHighlight([]), [])
+
   // The store already has the committed size here. Returns how many moved.
   const fitObjects = () => (inBuild ? 0 : useObjectsStore.getState().fitToRoom(useRoomStore.getState().room))
 
@@ -140,19 +150,26 @@ export default function RoomInputs({ inBuild = false }) {
       {params.shape === 'custom' && !inBuild && <p className="panel-notice">Custom shape. Edit it in Build.</p>}
       {[...fields, ['height', 'Height', heightLimits]].map(([key, label, limits]) => {
         const [min, max] = limitsFor(key, limits)
+        // While the pointer is over a field, the walls it changes light up
+        // in the view (J.4.2).
         return (
-          <NumberField
+          <div
             key={`${params.shape}-${key}`}
-            label={label}
-            value={params[key]}
-            onChange={(value) => setRoomSize({ [key]: value }, base ?? undefined)}
-            onCommit={fitObjects}
-            {...sizeGesture}
-            min={min}
-            max={max}
-            unit="m"
-            disabled={params.shape === 'custom' && key !== 'height'}
-          />
+            onPointerEnter={() => highlight(key)}
+            onPointerLeave={() => highlight(null)}
+          >
+            <NumberField
+              label={label}
+              value={params[key]}
+              onChange={(value) => setRoomSize({ [key]: value }, base ?? undefined)}
+              onCommit={fitObjects}
+              {...sizeGesture}
+              min={min}
+              max={max}
+              unit="m"
+              disabled={params.shape === 'custom' && key !== 'height'}
+            />
+          </div>
         )
       })}
       {notice && (

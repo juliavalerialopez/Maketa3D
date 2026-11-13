@@ -127,6 +127,29 @@ export function rotatedNotch(room) {
   return shapedRoom(room, { ...params, notch: (params.notch + 1) % 4 })
 }
 
+// The walls (their numbers) that a Room configuration field moves (J.4.2),
+// shown while the pointer is over the field. The room stays centred, so
+// Width moves every wall along z (left and right, and an L's notch wall
+// too), Depth every wall along x, a Square's Side all of them; Notch width
+// and Notch depth move the notch's inner wall along z or along x. Height
+// moves no wall: it shows as the walls' top edge instead.
+export function wallsChangedBy(room, key) {
+  const box = boundingBox(room.corners)
+  const walls = roomWalls(room.corners)
+  const alongZ = (wall) => Math.abs(wall.normal[0]) > 0.5
+  const inner = (wall) =>
+    alongZ(wall)
+      ? !near(wall.start.x, box.minX) && !near(wall.start.x, box.maxX)
+      : !near(wall.start.z, box.minZ) && !near(wall.start.z, box.maxZ)
+  const pick = (keep) => walls.flatMap((wall, index) => (keep(wall) ? [index] : []))
+  if (key === 'width' && room.shape === 'square') return pick(() => true)
+  if (key === 'width') return pick(alongZ)
+  if (key === 'depth') return pick((wall) => !alongZ(wall))
+  if (key === 'notchWidth') return pick((wall) => alongZ(wall) && inner(wall))
+  if (key === 'notchDepth') return pick((wall) => !alongZ(wall) && inner(wall))
+  return []
+}
+
 // True when the corners make a room the app allows: closed, along the axes,
 // walls of at least MIN_WALL, and within the size limits seen from above.
 export function isAllowedRoom(corners) {
