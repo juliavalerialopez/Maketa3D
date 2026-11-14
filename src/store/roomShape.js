@@ -8,6 +8,9 @@
 
 // The shortest wall allowed, in meters.
 export const MIN_WALL = 0.5
+// The least gap between two walls that do not meet at a corner, in meters
+// (J.7.1): as much as the shortest wall.
+export const WALL_CLEARANCE = MIN_WALL
 
 // Below this, two numbers count as the same (floating point noise).
 const EPSILON = 1e-6
@@ -226,35 +229,34 @@ export function tidyCorners(corners, points) {
   }
 }
 
-// The shortest wall that can be cut, in meters (J.7).
-export const MIN_CUT_WALL = 1.5
+// The shortest wall that can be cut, in meters: both pieces are at least
+// MIN_WALL (J.7.1).
+export const MIN_CUT_WALL = 2 * MIN_WALL
 
-// How long a cut piece of a `length` m wall is (J.7): 1 m, a third of a wall
-// under 3 m, never under MIN_WALL.
-export const cutPieceLength = (length) => Math.max(MIN_WALL, length < 3 ? length / 3 : 1)
+// A cut point moves along its wall in 5 cm steps, counted from the wall's
+// start.
+const CUT_STEPS_PER_METER = 20
 
-// Where a cut piece of wall `index` goes, centred `along` meters from the
-// wall's start but at least MIN_WALL from both ends: [from, to] in meters
-// from the start, or null when the wall is too short to cut.
-export function cutSpan(corners, index, along) {
+// Where a cut of wall `index` goes for the pointer `along` meters from the
+// wall's start (J.7.1): in 5 cm steps, at least MIN_WALL from both ends.
+// Meters from the start, or null when the wall is too short to cut.
+export function cutPoint(corners, index, along) {
   const { length } = roomWalls(corners)[index]
   if (length < MIN_CUT_WALL - EPSILON) return null
-  const half = cutPieceLength(length) / 2
-  const centre = Math.min(length - MIN_WALL - half, Math.max(MIN_WALL + half, along))
-  return [centre - half, centre + half]
+  const snapped = Math.round(along * CUT_STEPS_PER_METER) / CUT_STEPS_PER_METER
+  return Math.min(length - MIN_WALL, Math.max(MIN_WALL, snapped))
 }
 
-// The corners with a piece cut out of wall `index` around `along` (cutSpan):
-// two new corners on the wall, so the piece is a wall of its own that can be
-// dragged (J.7). Returns { corners, index } (the piece's wall index), or null.
-export function cutWall(corners, index, along) {
-  const span = cutSpan(corners, index, along)
-  if (!span) return null
+// The corners with wall `index` split in two at `cutPoint(corners, index,
+// along)`: a new corner on the wall, so each piece is a wall of its own that
+// can be dragged (J.7.1). Null when the wall is too short to cut.
+export function splitWall(corners, index, along) {
+  const at = cutPoint(corners, index, along)
+  if (at === null) return null
   const { start, end, length } = roomWalls(corners)[index]
   const [dx, dz] = [(end.x - start.x) / length, (end.z - start.z) / length]
-  const at = (distance) => ({ x: start.x + dx * distance + 0, z: start.z + dz * distance + 0 })
-  const next = [...corners.slice(0, index + 1), at(span[0]), at(span[1]), ...corners.slice(index + 1)]
-  return { corners: next, index: index + 1 }
+  const point = { x: start.x + dx * at + 0, z: start.z + dz * at + 0 }
+  return [...corners.slice(0, index + 1), point, ...corners.slice(index + 1)]
 }
 
 // The index of the wall running from `a` to `b` ({ x, z }, either way round),
@@ -269,11 +271,40 @@ export function findWall(corners, a, b) {
 
 // The corners with wall `index` set to `length` meters (Build, J.5): its end
 // farther from the origin moves (the right end of a wall along x, the back end
-// of a wall along z), by moving the wall that meets it there. The result may
-// not be a valid room.
+// of a wall along z), by moving the wall that meets it there, or, where that
+// end is a cut point, by sliding the cut point (J.7.1). The result may not be
+// a valid room.
 export function setWallLength(corners, index, length) {
+  const slid = slideCutPoint(corners, index, length)
+  if (slid) return slid
   const { wall, offset } = wallLengthMove(corners, index, length)
   return moveWall(corners, wall, offset)
+}
+
+// True when wall `index`'s end is its far one from the origin (setWallLength):
+// shown X grows to the right (+x), shown Z toward the back (-z).
+function endIsFar(walls, index) {
+  const { start, end } = walls[index]
+  return Math.abs(end.z - start.z) < EPSILON ? end.x > start.x : end.z < start.z
+}
+
+// The corners with wall `index` set to `length` meters by sliding its far end
+// along the wall, when that end is a cut point (a straight corner, J.7.1):
+// the piece on the other side gets shorter or longer. Null when the far end
+// is a real corner. The result may not be a valid room.
+export function slideCutPoint(corners, index, length) {
+  const walls = roomWalls(corners)
+  const { start, end, length: current } = walls[index]
+  const far = endIsFar(walls, index)
+  const cornerIndex = far ? (index + 1) % corners.length : index
+  if (!isStraightCorner(corners, cornerIndex)) return null
+  // From the near end toward the far one.
+  const sign = far ? 1 : -1
+  const [dx, dz] = [((end.x - start.x) / current) * sign, ((end.z - start.z) / current) * sign]
+  const change = length - current
+  return corners.map((corner, cornerAt) =>
+    cornerAt === cornerIndex ? { x: corner.x + dx * change + 0, z: corner.z + dz * change + 0 } : corner,
+  )
 }
 
 // Which wall a typed length of wall `index` moves, and how far
@@ -283,9 +314,7 @@ export function wallLengthMove(corners, index, length) {
   const walls = roomWalls(corners)
   const { start, end, length: current } = walls[index]
   const alongX = Math.abs(end.z - start.z) < EPSILON
-  // Shown X grows to the right (+x), shown Z toward the back (-z).
-  const endIsFar = alongX ? end.x > start.x : end.z < start.z
-  const neighbour = endIsFar ? (index + 1) % count : (index - 1 + count) % count
+  const neighbour = endIsFar(walls, index) ? (index + 1) % count : (index - 1 + count) % count
   const [nx, nz] = walls[neighbour].normal
   const away = alongX ? nx : -nz
   return { wall: neighbour, offset: (length - current) * away }
@@ -294,8 +323,9 @@ export function wallLengthMove(corners, index, length) {
 const isFiniteNumber = (value) => typeof value === 'number' && Number.isFinite(value)
 
 // True when the corners make a room: at least four corners, every wall
-// along x or along z and at least MIN_WALL long, a floor with an area, and
-// no wall crossing or touching another one (except its two neighbours).
+// along x or along z and at least MIN_WALL long, a floor with an area, no
+// wall folding back over its neighbour, and every wall at least
+// WALL_CLEARANCE from the others (except its two neighbours).
 export function isValidRoomCorners(corners) {
   if (!Array.isArray(corners) || corners.length < 4) return false
   if (!corners.every((corner) => corner && isFiniteNumber(corner.x) && isFiniteNumber(corner.z))) return false
@@ -318,16 +348,26 @@ export function isValidRoomCorners(corners) {
   }
   if (Math.abs(doubleArea(corners)) < EPSILON) return false
 
-  // Walls along an axis are their own boxes: two meet exactly when the boxes
-  // overlap.
-  const meet = (a, b) =>
-    Math.max(a.minX, b.minX) <= Math.min(a.maxX, b.maxX) + EPSILON &&
-    Math.max(a.minZ, b.minZ) <= Math.min(a.maxZ, b.maxZ) + EPSILON
+  // Two walls in line at a corner (a cut) run on the same way, never back
+  // over each other.
+  const foldsBack = corners.some((corner, index) => {
+    const before = corners[(index - 1 + count) % count]
+    const after = corners[(index + 1) % count]
+    return (before.x - corner.x) * (after.x - corner.x) + (before.z - corner.z) * (after.z - corner.z) > EPSILON
+  })
+  if (foldsBack) return false
+
+  // Walls along an axis are their own boxes. Two walls that are not
+  // neighbours stay at least WALL_CLEARANCE apart, so their drawn thickness
+  // never overlaps and a dragged wall stops before another one (J.7.1).
+  const tooClose = (a, b) =>
+    Math.max(a.minX, b.minX) < Math.min(a.maxX, b.maxX) + WALL_CLEARANCE - EPSILON &&
+    Math.max(a.minZ, b.minZ) < Math.min(a.maxZ, b.maxZ) + WALL_CLEARANCE - EPSILON
   for (let i = 0; i < count; i++) {
     for (let j = i + 2; j < count; j++) {
       // The first and the last wall are neighbours.
       if (i === 0 && j === count - 1) continue
-      if (meet(segments[i], segments[j])) return false
+      if (tooClose(segments[i], segments[j])) return false
     }
   }
   return true

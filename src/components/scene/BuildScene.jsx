@@ -3,7 +3,7 @@ import { Html } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import { Plane, Vector3 } from 'three'
 import { WALL_SNAP, draggedRoom, reachableStep, startWallDrag, useRoomStore } from '../../store/roomStore'
-import { cutSpan, cutWall, findWall } from '../../store/roomShape'
+import { MIN_CUT_WALL, cutPoint, findWall, splitWall } from '../../store/roomShape'
 import { BUILD_NOTICES, useUiStore } from '../../store/uiStore'
 import BuildOpenings from './BuildOpenings'
 import { focusIsFree } from '../panel/useObjectShortcuts'
@@ -19,8 +19,11 @@ const BUILD_WALL_COLOR = '#4a463f'
 // The selected wall (J.7): warm clay; a hovered one (J.6): a lighter clay.
 const BUILD_WALL_SELECTED_COLOR = '#b5653d'
 const BUILD_WALL_HOVER_COLOR = '#c98a63'
-// Where a cut would go (J.7): pale sand over the selected wall.
-const CUT_PREVIEW_COLOR = '#f1e3c6'
+// Where a cut would go (J.7.1): a pale sand line across the selected wall,
+// with its distance to each end inside the room.
+const CUT_MARK_COLOR = '#f1e3c6'
+const CUT_MARK_WIDTH = 0.04
+const CUT_LABEL_GAP = 0.35
 // How wide the invisible strip to grab a wall is, in meters.
 const WALL_GRAB = 0.4
 // Drags happen on the floor.
@@ -36,6 +39,9 @@ let wallDragActive = false
 
 const wallSelection = (wall) => ({ a: { ...wall.start }, b: { ...wall.end } })
 
+// A length in meters as shown in Build: "3.50 m".
+const meters = (value) => `${(Math.round(value * 100) / 100).toFixed(2)} m`
+
 // A wall's inside length as text, at its middle just outside the room (J.5,
 // J.5.1). It is typed in the panel, once the wall is selected.
 function WallLength({ wall }) {
@@ -43,7 +49,7 @@ function WallLength({ wall }) {
   const gap = BUILD_WALL_THICKNESS + LABEL_GAP
   return (
     <Html position={[mx + wall.normal[0] * gap, 0, mz + wall.normal[1] * gap]} center>
-      <div className="wall-length">{(Math.round(wall.length * 100) / 100).toFixed(2)} m</div>
+      <div className="wall-length">{meters(wall.length)}</div>
     </Html>
   )
 }
@@ -61,23 +67,23 @@ function alongWall(wall, x, z) {
 //   stop being allowed. The whole drag is one undo step (J.6). A piece cut
 //   out of a longer wall gets side walls as it moves, and is one wall again
 //   once back in line (J.7).
-// - With Cut on, a press on the selected wall cuts a piece out there, shown
-//   while hovering (J.7).
+// - With Cut on, a point follows the pointer on any wall, with its distance
+//   to both ends; a press splits the wall in two there (J.7.1).
 function BuildWall({ index, box, selected, highlighted, cutting }) {
   const getThree = useThree((state) => state.get)
   const [hovered, setHovered] = useState(false)
   const hoveredRef = useRef(false)
-  // Where a cut would go, [from, to] along the wall, while hovering with Cut on.
-  const [cutPreview, setCutPreview] = useState(null)
+  // Where a cut would go, meters along the wall, while hovering with Cut on.
+  const [cutAt, setCutAt] = useState(null)
   // Active drag: { pointerId, room (before the drag), drag (startWallDrag),
   // start: [x, z], step, shown (the corners this drag set last) }. The walls
   // may be renumbered meanwhile, so it keeps all it needs.
   const dragRef = useRef(null)
   const { wall } = box
   const alongX = Math.abs(wall.end.z - wall.start.z) < 1e-9
-  const cuttingHere = cutting && selected
-  // With Cut off, no old preview is kept for the next time it is on.
-  if (!cuttingHere && cutPreview) setCutPreview(null)
+  const cuttingHere = cutting && wall.length >= MIN_CUT_WALL - 1e-9
+  // With Cut off, no old point is kept for the next time it is on.
+  if (!cuttingHere && cutAt !== null) setCutAt(null)
 
   function setControls(enabled) {
     const { controls } = getThree()
@@ -87,7 +93,9 @@ function BuildWall({ index, box, selected, highlighted, cutting }) {
   function hover(on) {
     hoveredRef.current = on
     setHovered(on)
-    document.body.style.cursor = on ? (cuttingHere ? 'crosshair' : alongX ? 'ns-resize' : 'ew-resize') : ''
+    // With Cut on, a wall too short to cut shows it can't be.
+    const cursor = cutting ? (cuttingHere ? 'crosshair' : 'not-allowed') : alongX ? 'ns-resize' : 'ew-resize'
+    document.body.style.cursor = on ? cursor : ''
   }
 
   // Ends the drag: its undo step closes and pan comes back. A wall merged
@@ -121,19 +129,25 @@ function BuildWall({ index, box, selected, highlighted, cutting }) {
   function handlePointerDown(event) {
     if (event.button !== 0 || wallDragActive) return
     event.stopPropagation()
+    // With Cut on, a wall too short to cut ignores the press.
+    if (cutting && !cuttingHere) return
     if (!event.ray.intersectPlane(FLOOR, hit)) return
     const { room } = useRoomStore.getState()
     const ui = useUiStore.getState()
     ui.setBuildNotice(null)
     if (cuttingHere) {
-      // The new piece is selected, ready to be dragged. A cut through a door
-      // or window is refused.
-      const cut = cutWall(room.corners, index, alongWall(wall, hit.x, hit.z))
-      const problem = cut ? useRoomStore.getState().setCorners(cut.corners) : 'shape'
-      if (!problem) ui.selectWall(wallSelection(pieceOf(cut)))
-      else if (problem === 'openings') ui.setBuildNotice(BUILD_NOTICES.cut)
-      setCutPreview(null)
-      // Cut is off again: the pointer shows the wall can be dragged.
+      // Split: Cut is off and nothing is selected, so either piece can be
+      // picked next. A cut through a door or window is refused, Cut stays on.
+      const corners = splitWall(room.corners, index, alongWall(wall, hit.x, hit.z))
+      const problem = corners ? useRoomStore.getState().setCorners(corners) : 'shape'
+      if (problem === 'openings') {
+        ui.setBuildNotice(BUILD_NOTICES.cut)
+        return
+      }
+      if (problem) return
+      ui.selectWall(null)
+      setCutAt(null)
+      // The pointer shows the wall can be dragged.
       document.body.style.cursor = alongX ? 'ns-resize' : 'ew-resize'
       return
     }
@@ -156,7 +170,7 @@ function BuildWall({ index, box, selected, highlighted, cutting }) {
     const current = dragRef.current
     if (!current || current.pointerId !== event.pointerId) {
       if (cuttingHere && event.ray.intersectPlane(FLOOR, hit)) {
-        setCutPreview(cutSpan(useRoomStore.getState().room.corners, index, alongWall(wall, hit.x, hit.z)))
+        setCutAt(cutPoint(useRoomStore.getState().room.corners, index, alongWall(wall, hit.x, hit.z)))
       }
       return
     }
@@ -208,7 +222,7 @@ function BuildWall({ index, box, selected, highlighted, cutting }) {
         <boxGeometry args={box.size} />
         <meshBasicMaterial color={color} />
       </mesh>
-      {cuttingHere && cutPreview && <CutPreview box={box} span={cutPreview} />}
+      {cuttingHere && cutAt !== null && <CutMark wall={wall} at={cutAt} />}
       <mesh
         position={box.position}
         onPointerOver={(event) => {
@@ -218,7 +232,7 @@ function BuildWall({ index, box, selected, highlighted, cutting }) {
         // While dragging the wall stays highlighted; after the release, the
         // next move that leaves it turns it back.
         onPointerOut={() => {
-          setCutPreview(null)
+          setCutAt(null)
           if (!dragRef.current && hoveredRef.current) hover(false)
         }}
         onPointerDown={handlePointerDown}
@@ -236,12 +250,6 @@ function BuildWall({ index, box, selected, highlighted, cutting }) {
   )
 }
 
-// The new piece of a cut (cutWall's result) as a selection.
-function pieceOf(cut) {
-  const next = cut.corners[(cut.index + 1) % cut.corners.length]
-  return { start: cut.corners[cut.index], end: next }
-}
-
 // The dragged wall's ends at `step`, as a selection.
 function draggedWallEnds(current, step) {
   const { corners, index } = current.drag
@@ -251,28 +259,42 @@ function draggedWallEnds(current, step) {
   return { a: shift(corners[index]), b: shift(corners[(index + 1) % corners.length]) }
 }
 
-// Where a cut would go on the selected wall: a pale band over the wall.
-function CutPreview({ box, span }) {
-  const { wall } = box
+// Where a cut would go on the selected wall (J.7.1): a line across the wall
+// `at` meters from its start, and the distance to each end as text, inside
+// the room next to each piece. Clicks go through the text to the view.
+function CutMark({ wall, at }) {
   const [dx, dz] = [(wall.end.x - wall.start.x) / wall.length, (wall.end.z - wall.start.z) / wall.length]
-  const middle = (span[0] + span[1]) / 2
-  const length = span[1] - span[0]
-  const out = BUILD_WALL_THICKNESS / 2
-  const x = wall.start.x + dx * middle + wall.normal[0] * out
-  const z = wall.start.z + dz * middle + wall.normal[1] * out
+  const [nx, nz] = wall.normal
+  const point = (along, out) => [wall.start.x + dx * along + nx * out, wall.start.z + dz * along + nz * out]
+  const [x, z] = point(at, BUILD_WALL_THICKNESS / 2)
   const alongX = Math.abs(dz) < 1e-9
+  const depth = BUILD_WALL_THICKNESS + 0.08
+  const labels = [
+    [at / 2, at],
+    [(at + wall.length) / 2, wall.length - at],
+  ]
   return (
-    <mesh position={[x, WALL_DRAW_HEIGHT + 0.01, z]}>
-      <boxGeometry args={alongX ? [length, 0.01, BUILD_WALL_THICKNESS] : [BUILD_WALL_THICKNESS, 0.01, length]} />
-      <meshBasicMaterial color={CUT_PREVIEW_COLOR} />
-    </mesh>
+    <>
+      <mesh position={[x, WALL_DRAW_HEIGHT + 0.01, z]}>
+        <boxGeometry args={alongX ? [CUT_MARK_WIDTH, 0.01, depth] : [depth, 0.01, CUT_MARK_WIDTH]} />
+        <meshBasicMaterial color={CUT_MARK_COLOR} />
+      </mesh>
+      {labels.map(([along, distance], side) => {
+        const [lx, lz] = point(along, -CUT_LABEL_GAP)
+        return (
+          <Html key={side} position={[lx, 0, lz]} center style={{ pointerEvents: 'none' }}>
+            <div className="wall-distance">{meters(distance)}</div>
+          </Html>
+        )
+      })}
+    </>
   )
 }
 
 // The Build view (J.5): the room from above, flat, with no light or shadow:
 // the floor in its color, the walls dark, each wall's length next to it.
 // Furniture is not shown. Walls can be selected and dragged (J.6), and cut
-// (J.7). Esc stops cutting, then clears the selection.
+// in two at a point (J.7.1). Esc stops cutting, then clears the selection.
 export default function BuildScene() {
   const { corners, openings } = useRoomStore((state) => state.room)
   const selection = useUiStore((state) => state.selectedWall)

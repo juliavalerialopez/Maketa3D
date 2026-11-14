@@ -9,7 +9,7 @@ import {
   tallestOpening,
 } from '../src/store/openings.js'
 import { draggedRoom, reachableStep, startWallDrag, useRoomStore } from '../src/store/roomStore.js'
-import { cutWall, rectangleCorners } from '../src/store/roomShape.js'
+import { rectangleCorners, splitWall } from '../src/store/roomShape.js'
 import { importLayout, layoutData, newLayout } from '../src/store/layoutFile.js'
 import { useHistoryStore } from '../src/store/historyStore.js'
 
@@ -48,21 +48,22 @@ test('a new opening is centred on the chosen wall, or the longest, and needs roo
 
 test('openings stay where they are when walls are renumbered, and move with their own wall', () => {
   const before = rectangleCorners(6, 5)
-  // A cut elsewhere on the back wall: the door (x -2..-1.1) is now on wall 0
-  // still, the window on wall 2 (after the cut piece).
-  const cut = cutWall(before, 0, 3.5).corners
+  // A cut elsewhere on the back wall (at x 0.5): the door (x -2..-1.1) is on
+  // wall 0 still, the window (x 1..2.2) on wall 1, the second piece.
+  const cut = splitWall(before, 0, 3.5)
   const [d, w] = reanchorOpenings(before, cut, [door(), window({ offset: 4 })])
   assert.equal(d.wallIndex, 0)
   close(d.offset, 1)
-  assert.equal(w.wallIndex, 2)
+  assert.equal(w.wallIndex, 1)
+  close(w.offset, 0.5)
   // The back wall moved 1 m out: openings on it go with it.
   const moved = before.map((corner, index) => (index < 2 ? { ...corner, z: corner.z - 1 } : corner))
   const [carried] = reanchorOpenings(before, moved, [door()], 0, [0, -1])
   assert.equal(carried.wallIndex, 0)
   close(carried.offset, 1)
-  // A cut through the door (the piece is x -2.5..-1.5, the door -2..-1.1):
-  // it is on no single wall any more.
-  assert.equal(reanchorOpenings(before, cutWall(before, 0, 1).corners, [door()]), null)
+  // A cut through the door (at x -1.5, the door -2..-1.1): it is on no
+  // single wall any more.
+  assert.equal(reanchorOpenings(before, splitWall(before, 0, 1.5), [door()]), null)
 })
 
 test('a wall stops where a door on the wall next to it would no longer fit', () => {

@@ -12,11 +12,14 @@ import {
   wallsChangedBy,
 } from '../src/store/roomStore.js'
 import {
-  cutSpan,
-  cutWall,
+  boundingBox,
+  cutPoint,
   describeRoom,
+  isValidRoomCorners,
   lCorners,
   rectangleCorners,
+  roomWalls,
+  splitWall,
   tidyCorners,
 } from '../src/store/roomShape.js'
 import { newLayout } from '../src/store/layoutFile.js'
@@ -27,6 +30,7 @@ const room = () => useRoomStore.getState().room
 const params = () => roomParams(room())
 // A room with these corners, 2.6 m high, without doors or windows.
 const roomOf = (corners) => ({ shape: 'custom', height: 2.6, corners, openings: [] })
+const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-9, `${actual} is not ${expected}`)
 
 beforeEach(() => newLayout())
 
@@ -184,26 +188,82 @@ const cutRoom = [
   { x: -3, z: 2.5 },
 ]
 
-test('a cut makes a 1 m piece (a third of a short wall), at least 0.5 m from both ends', () => {
+test('a cut splits a wall in two at a point in 5 cm steps, at least 0.5 m from both ends', () => {
   const room = rectangleCorners(6, 5)
-  // The back wall (wall 0, 6 m) cut at 2 m from its start: x -1.5..-0.5.
-  const cut = cutWall(room, 0, 2)
-  assert.equal(cut.index, 1)
-  assert.deepEqual(cut.corners.slice(1, 3), [
-    { x: -1.5, z: -2.5 },
-    { x: -0.5, z: -2.5 },
-  ])
-  // Cut too near an end: moved in so 0.5 m is left.
-  assert.deepEqual(cutSpan(room, 0, 0.1), [0.5, 1.5])
-  // A 2.1 m wall gives a 0.7 m piece; a 1.5 m wall a 0.5 m one; shorter none.
-  const short = rectangleCorners(2.1, 1.5)
-  const piece = cutSpan(short, 0, 1.05)
-  assert.ok(Math.abs(piece[1] - piece[0] - 0.7) < 1e-9)
-  assert.deepEqual(cutSpan(short, 1, 0.75), [0.5, 1])
-  assert.equal(cutSpan(rectangleCorners(1.4, 3), 0, 0.7), null)
+  // The back wall (wall 0, 6 m, from x -3) cut at 2 m from its start.
+  const split = splitWall(room, 0, 2)
+  assert.equal(split.length, 5)
+  assert.deepEqual(split[1], { x: -1, z: -2.5 })
+  // Each piece is a wall of its own: 2 m and 4 m.
+  const walls = roomWalls(split)
+  close(walls[0].length, 2)
+  close(walls[1].length, 4)
+  assert.ok(isValidRoomCorners(split))
+  // The point snaps to 5 cm and keeps 0.5 m to each end.
+  close(cutPoint(room, 0, 2.43), 2.45)
+  close(cutPoint(room, 0, 0.1), 0.5)
+  close(cutPoint(room, 0, 5.9), 5.5)
+  // A 1 m wall cuts only in its middle; a shorter one not at all.
+  close(cutPoint(rectangleCorners(1, 3), 0, 0.2), 0.5)
+  assert.equal(cutPoint(rectangleCorners(0.95, 3), 0, 0.4), null)
+  assert.equal(splitWall(rectangleCorners(0.95, 3), 0, 0.4), null)
 })
 
-test('a cut piece dragged out gets side walls of at least 0.5 m, and back in line it is one wall again', () => {
+test('a split piece dragged out gets a side wall, and back in line it is one wall again', () => {
+  const split = splitWall(rectangleCorners(6, 5), 0, 2)
+  // The first piece, x -3..-1, dragged 0.5 m out (toward -z).
+  const drag = startWallDrag(roomOf(split), 0)
+  assert.equal(reachableStep(roomOf(split), drag, 0, 10), 10)
+  const bump = draggedCorners(drag, 10)
+  assert.ok(bump.some((corner) => corner.x === -1 && corner.z === -3))
+  assert.ok(isValidRoomCorners(bump))
+  assert.deepEqual(draggedCorners(drag, 0), rectangleCorners(6, 5))
+})
+
+test('a typed length of a piece ending at the cut point slides the point; the other piece follows', () => {
+  const { setRoom, setWallLength } = useRoomStore.getState()
+  setRoom(roomOf(splitWall(rectangleCorners(6, 5), 0, 2)))
+  // The first piece (x -3..-1) ends at the cut point: 2.5 m moves it to -0.5.
+  assert.equal(setWallLength(0, 2.5), null)
+  assert.deepEqual(room().corners[1], { x: -0.5, z: -2.5 })
+  close(roomWalls(room().corners)[1].length, 3.5)
+  // The other piece would get under 0.5 m, or fold back over the first:
+  // refused.
+  assert.equal(setWallLength(0, 5.7), 'shape')
+  assert.equal(setWallLength(0, 6.5), 'shape')
+  // The second piece ends at a real corner: its length moves the right wall.
+  assert.equal(setWallLength(1, 4), null)
+  assert.equal(boundingBox(room().corners).maxX, 3.5)
+})
+
+test('a dragged wall stops 0.5 m before a wall it does not join, and never jumps past it', () => {
+  // A 6 x 5 room with a 1 m slot cut in from the front to z = 0. Wall 4 is
+  // the slot's end, along x at z = 0, facing the back wall (z = -2.5).
+  const slot = [
+    { x: -3, z: -2.5 },
+    { x: 3, z: -2.5 },
+    { x: 3, z: 2.5 },
+    { x: 0.5, z: 2.5 },
+    { x: 0.5, z: 0 },
+    { x: -0.5, z: 0 },
+    { x: -0.5, z: 2.5 },
+    { x: -3, z: 2.5 },
+  ]
+  const drag = startWallDrag(roomOf(slot), 4)
+  // Out of the room is into the slot (+z); the back wall is the other way.
+  assert.deepEqual(drag.normal, [0, 1])
+  // Dragged 5 m toward the back wall, far past it: it stops at z = -2,
+  // 0.5 m before it.
+  const step = reachableStep(roomOf(slot), drag, 0, -100)
+  assert.equal(step, -40)
+  const stopped = draggedCorners(drag, step)
+  assert.ok(stopped.every((corner) => corner.z >= -2.5 - 1e-9))
+  // Two walls that do not meet, closer than 0.5 m: not a room.
+  const near = slot.map((corner) => (corner.z === 0 ? { ...corner, z: -2.2 } : corner))
+  assert.equal(isValidRoomCorners(near), false)
+})
+
+test('a middle piece (two cuts) dragged out gets side walls of at least 0.5 m, and back in line it is one wall again', () => {
   const drag = startWallDrag(roomOf(cutRoom), 1)
   assert.equal(drag.corners.length, 8)
   // 0.2 m out is too shallow for its side walls: it stays in line.

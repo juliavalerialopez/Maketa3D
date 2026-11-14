@@ -9,6 +9,7 @@ import {
   prepareWallDrag,
   rectangleCorners,
   roomWalls,
+  slideCutPoint,
   tidyCorners,
   wallLengthMove,
 } from './roomShape.js'
@@ -269,6 +270,9 @@ export const useRoomStore = create((set, get) => ({
   // setCorners.
   setWallLength: (index, length) => {
     const { corners } = get().room
+    // A piece ending at a cut point: the point slides along the wall (J.7.1).
+    const slid = slideCutPoint(corners, index, length)
+    if (slid) return get().setCorners(slid)
     const { wall, offset } = wallLengthMove(corners, index, length)
     const [nx, nz] = roomWalls(corners)[wall].normal
     return get().setCorners(moveWall(corners, wall, offset), { wall, shift: [nx * offset, nz * offset] })
