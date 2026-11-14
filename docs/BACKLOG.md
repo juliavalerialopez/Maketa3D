@@ -11,6 +11,7 @@ later part already built, or that Part J plans as a task, were left out.
 - Walls drawn freely instead of cut and drag, after testing with real users. (Part J)
 - Angled walls. (Part J, for Part K)
 - Snap to wall. (Part G, from the style mock)
+- (added 2026-11-14) Wall settings: choose how thick a wall is, and select several walls to change their thickness together. (Part J)
 
 ## Placing and moving objects
 - Move objects up and down (Y), for wall items and shelves; decide the floor and ceiling rules then. (Part D)
