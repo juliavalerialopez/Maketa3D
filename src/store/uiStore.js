@@ -49,7 +49,8 @@ export const useUiStore = create((set) => ({
   // so it stays selected when the walls are renumbered; null when none.
   selectedWall: null,
   // Build's wall tool that is on, or null: 'cut' (J.7.1: a click splits a
-  // wall) or 'door' (J.8.1: a click places a door).
+  // wall), 'door' (J.8.1: a click places a door) or 'window' (J.8.2: a
+  // click where it starts, a second where it ends).
   tool: null,
   // Build (J.8): the selected door or window's id, or null. A wall and an
   // opening are never selected together.
@@ -81,13 +82,10 @@ export const useUiStore = create((set) => ({
   toggleFrame: () => set((state) => ({ frameVisible: !state.frameVisible })),
 }))
 
-// Build's messages (J.8): why a wall, a cut or a new door or window did not
-// happen.
+// Build's messages (J.8): why a wall or a cut did not happen.
 export const BUILD_NOTICES = {
   openings: 'A door or window would no longer fit its wall.',
   cut: 'A door or window is in the way of the cut.',
-  short: 'This wall is too short for it.',
-  full: 'There is no room for it on this wall.',
 }
 
 // The notice after `moved` objects were pushed inside the walls, or null.

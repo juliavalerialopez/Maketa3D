@@ -3,14 +3,15 @@ import assert from 'node:assert/strict'
 import {
   fitOpenings,
   nearestWall,
-  newOpening,
+  openingStart,
   openingsProblem,
   placedOpening,
   reanchorOpenings,
+  spannedOpening,
   tallestOpening,
 } from '../src/store/openings.js'
 import { draggedRoom, reachableStep, startWallDrag, useRoomStore } from '../src/store/roomStore.js'
-import { rectangleCorners, splitWall } from '../src/store/roomShape.js'
+import { rectangleCorners, roomWalls, splitWall } from '../src/store/roomShape.js'
 import { importLayout, layoutData, newLayout } from '../src/store/layoutFile.js'
 import { useHistoryStore } from '../src/store/historyStore.js'
 
@@ -20,6 +21,11 @@ const roomWith = (openings) => ({ shape: 'rectangle', height: 2.6, corners: rect
 const door = (props) => ({ id: 'd', type: 'door', wallIndex: 0, offset: 1, width: 0.9, height: 2.05, sill: 0, ...props })
 const window = (props) => ({ id: 'w', type: 'window', wallIndex: 0, offset: 3, width: 1.2, height: 1.2, sill: 0.9, ...props })
 const room = () => useRoomStore.getState().room
+// Adds a new opening of `type` centred on wall `wallIndex` of the store's room.
+const addCentred = (type, wallIndex) => {
+  const { length } = roomWalls(room().corners)[wallIndex]
+  return useRoomStore.getState().addOpening(placedOpening(room(), type, wallIndex, length / 2).opening)
+}
 
 beforeEach(() => newLayout())
 
@@ -31,20 +37,6 @@ test('an opening fits inside its wall with 0.1 m left at each end, under the cei
   assert.equal(openingsProblem(roomWith([door(), window({ offset: 1.5 })])), 'overlap')
   // Touching is fine.
   assert.equal(openingsProblem(roomWith([door(), window({ offset: 1.9 })])), null)
-})
-
-test('a new opening is centred on the chosen wall, or the longest, and needs room', () => {
-  const { opening } = newOpening(roomWith([]), 'door', 1)
-  assert.equal(opening.wallIndex, 1)
-  close(opening.offset, (5 - 0.9) / 2)
-  assert.equal(opening.sill, 0)
-  // No wall chosen: the longest (the 6 m back wall, the first of two).
-  assert.equal(newOpening(roomWith([]), 'window').opening.wallIndex, 0)
-  // A 1.2 m window does not fit on a 1.3 m wall (0.1 m at each end needed).
-  const narrow = { ...roomWith([]), corners: rectangleCorners(6, 1.3) }
-  assert.equal(newOpening(narrow, 'window', 1).problem, 'short')
-  // Where another one already is: no room.
-  assert.equal(newOpening(roomWith([window({ offset: 2.4 })]), 'door', 0).problem, 'full')
 })
 
 test('a door placed with the pointer is centred on it in 5 cm steps, 0.1 m from the wall ends (J.8.1)', () => {
@@ -65,16 +57,47 @@ test('a door placed with the pointer is centred on it in 5 cm steps, 0.1 m from 
   assert.equal(placedOpening(narrow, 'door', 1, 0.5).problem, 'short')
 })
 
-test('placing a door adds it where it can go and nowhere else (J.8.1)', () => {
-  const { placeOpening } = useRoomStore.getState()
-  const { id } = placeOpening('door', 0, 1)
+test('a new opening is added where it can go and nowhere else (J.8.1)', () => {
+  const { addOpening } = useRoomStore.getState()
+  const { id } = addOpening(placedOpening(room(), 'door', 0, 1).opening)
   const placed = room().openings.find((opening) => opening.id === id)
   assert.equal(placed.wallIndex, 0)
   close(placed.offset, 0.55)
   // Over the first one: refused, nothing changes.
   const before = room()
-  assert.deepEqual(placeOpening('door', 0, 1.2), { problem: 'full' })
+  assert.deepEqual(addOpening(placedOpening(room(), 'door', 0, 1.2).opening), { problem: 'full' })
   assert.equal(room(), before)
+})
+
+test('a window starts where the first click is, 0.1 m from the wall ends, not inside another opening (J.8.2)', () => {
+  // The back wall is 6 m long, a window on it from 3 to 4.2.
+  assert.deepEqual(openingStart(roomWith([]), 0, 1.02), { wallIndex: 0, along: 1, problem: null })
+  close(openingStart(roomWith([]), 0, -0.4).along, 0.1)
+  close(openingStart(roomWith([]), 0, 7).along, 5.9)
+  assert.equal(openingStart(roomWith([window()]), 0, 3.5).problem, 'full')
+  // Touching it is fine.
+  assert.equal(openingStart(roomWith([window()]), 0, 4.2).problem, null)
+  const narrow = { ...roomWith([]), corners: rectangleCorners(6, 0.45) }
+  assert.equal(openingStart(narrow, 1, 0.2).problem, 'short')
+})
+
+test('a window spans from the first click to the second, either way, at least 0.3 m wide (J.8.2)', () => {
+  const { opening, problem } = spannedOpening(roomWith([]), 'window', 0, 1, 2.52)
+  assert.equal(problem, null)
+  close(opening.offset, 1)
+  close(opening.width, 1.5)
+  assert.equal(opening.height, 1.2)
+  assert.equal(opening.sill, 0.9)
+  // The second click before the first.
+  const back = spannedOpening(roomWith([]), 'window', 0, 2.5, 1).opening
+  close(back.offset, 1)
+  close(back.width, 1.5)
+  // Past the wall's end it stops 0.1 m before it.
+  close(spannedOpening(roomWith([]), 'window', 0, 5, 9).opening.width, 0.9)
+  assert.equal(spannedOpening(roomWith([]), 'window', 0, 1, 1.2).problem, 'narrow')
+  // Over another opening (3 to 4.2).
+  assert.equal(spannedOpening(roomWith([window()]), 'window', 0, 2, 3.5).problem, 'full')
+  assert.equal(spannedOpening(roomWith([window()]), 'window', 0, 2, 3).problem, null)
 })
 
 test('openings stay where they are when walls are renumbered, and move with their own wall', () => {
@@ -126,12 +149,12 @@ test('after a new shape or size, openings slide or get lower to fit, or are left
 })
 
 test('after a new shape a door stays on the wall facing the same way, nearest to where it was', () => {
-  const { setShape, addOpening, rotateNotch, setRoomSize } = useRoomStore.getState()
+  const { setShape, rotateNotch, setRoomSize } = useRoomStore.getState()
   setShape('rectangle')
   setRoomSize({ width: 6 })
   setRoomSize({ depth: 5 })
   // A door on the front wall (wall 2 of a rectangle, facing +z), at the left.
-  const { id } = addOpening('door', 2)
+  const { id } = addCentred('door', 2)
   useRoomStore.getState().updateOpening(id, { offset: 4 })
   const frontZ = () => {
     const opening = room().openings[0]
@@ -162,8 +185,8 @@ test('the nearest wall to a point on the floor, within reach', () => {
 })
 
 test('adding, changing and removing an opening, each one undo step', () => {
-  const { addOpening, updateOpening, removeOpening } = useRoomStore.getState()
-  const { id } = addOpening('door', 0)
+  const { updateOpening, removeOpening } = useRoomStore.getState()
+  const { id } = addCentred('door', 0)
   assert.equal(room().openings.length, 1)
   assert.equal(updateOpening(id, { width: 1 }), true)
   // Not past the wall's end.
@@ -179,7 +202,7 @@ test('adding, changing and removing an opening, each one undo step', () => {
 })
 
 test('openings are saved in the file and opened again; a file whose opening does not fit is refused', () => {
-  useRoomStore.getState().addOpening('window', 1)
+  addCentred('window', 1)
   const saved = layoutData()
   const [entry] = saved.room.openings
   assert.equal(entry.type, 'window')

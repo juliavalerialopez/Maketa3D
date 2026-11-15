@@ -1346,6 +1346,12 @@ canvas {
   user-select: none;
 }
 
+/* A new window's width while it is placed in Build (J.8.2). */
+.wall-distance-width {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
 /* Undo and Redo at the top left of the scene (I.11). */
 .history-buttons {
   position: absolute;

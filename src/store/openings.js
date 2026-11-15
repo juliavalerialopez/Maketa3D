@@ -145,24 +145,17 @@ function nearestFacingWall(walls, normal, [x, z]) {
   return best
 }
 
-// Where a new opening of `type` goes (J.8): centred on wall `wallIndex`, or
-// on the longest wall when that is -1. Returns the opening (without its id),
-// or a problem: 'short' (the wall is too short for it) or 'full' (it would
-// overlap another opening).
-export function newOpening(room, type, wallIndex = -1) {
-  const walls = roomWalls(room.corners)
-  const index =
-    wallIndex >= 0 ? wallIndex : walls.reduce((best, wall, i) => (wall.length > walls[best].length ? i : best), 0)
-  const { width, height, sill } = OPENING_TYPES[type]
-  const wall = walls[index]
-  if (wall.length < width + 2 * OPENING_EDGE - EPSILON) return { problem: 'short' }
-  const opening = { type, wallIndex: index, offset: (wall.length - width) / 2, width, height: Math.min(height, room.height - sill), sill }
-  if (openingsProblem({ ...room, openings: [...openingsOf(room), opening] })) return { problem: 'full' }
-  return { opening }
-}
-
 // Openings are placed in 5 cm steps, like walls.
 const STEPS_PER_METER = 20
+const snap = (value) => Math.round(value * STEPS_PER_METER) / STEPS_PER_METER
+
+// A new opening's problem, or null when it can go in `room`: 'full' when
+// another opening is in the way.
+const placingProblem = (room, opening) =>
+  openingsProblem({ ...room, openings: [...openingsOf(room), opening] }) ? 'full' : null
+
+// How high a new opening of `type` is: lower in a room too low for it.
+const newHeight = (room, type) => Math.min(OPENING_TYPES[type].height, room.height - OPENING_TYPES[type].sill)
 
 // A new opening of `type` on wall `wallIndex`, centred `along` meters from
 // its first corner as far as the wall allows: in 5 cm steps, stopping 0.1 m
@@ -171,14 +164,49 @@ const STEPS_PER_METER = 20
 // for it, or 'full' when another opening is in the way.
 export function placedOpening(room, type, wallIndex, along) {
   const wall = roomWalls(room.corners)[wallIndex]
-  const { width, height, sill } = OPENING_TYPES[type]
-  const snapped = Math.round((along - width / 2) * STEPS_PER_METER) / STEPS_PER_METER
-  const offset = Math.max(OPENING_EDGE, Math.min(wall.length - OPENING_EDGE - width, snapped))
+  const { width, sill } = OPENING_TYPES[type]
+  const offset = Math.max(OPENING_EDGE, Math.min(wall.length - OPENING_EDGE - width, snap(along - width / 2)))
   // "+ 0" turns -0 into 0.
-  const opening = { type, wallIndex, offset: offset + 0, width, height: Math.min(height, room.height - sill), sill }
+  const opening = { type, wallIndex, offset: offset + 0, width, height: newHeight(room, type), sill }
   if (wall.length < width + 2 * OPENING_EDGE - EPSILON) return { opening, problem: 'short' }
-  if (openingsProblem({ ...room, openings: [...openingsOf(room), opening] })) return { opening, problem: 'full' }
-  return { opening, problem: null }
+  return { opening, problem: placingProblem(room, opening) }
+}
+
+// A point `along` meters along wall `wallIndex` where a new opening can start
+// or end (J.8.2): in 5 cm steps, kept 0.1 m from the wall's ends.
+function edgePoint(wall, along) {
+  return Math.max(OPENING_EDGE, Math.min(wall.length - OPENING_EDGE, snap(along))) + 0
+}
+
+// Where a new window would start (J.8.2), the first click: { wallIndex,
+// along, problem }. problem is null when one can start there, 'short' when
+// the wall is too short for any window, or 'full' when the point is inside
+// another opening.
+export function openingStart(room, wallIndex, along) {
+  const wall = roomWalls(room.corners)[wallIndex]
+  const point = edgePoint(wall, along)
+  const result = { wallIndex, along: point, problem: null }
+  if (wall.length < MIN_OPENING_SIZE + 2 * OPENING_EDGE - EPSILON) return { ...result, problem: 'short' }
+  const inside = openingsOf(room).some(
+    (opening) =>
+      opening.wallIndex === wallIndex && point > opening.offset + EPSILON && point < opening.offset + opening.width - EPSILON,
+  )
+  return inside ? { ...result, problem: 'full' } : result
+}
+
+// A new opening of `type` on wall `wallIndex` between `from` and `to` meters
+// along it, in either order (J.8.2, the second click): in 5 cm steps, kept
+// 0.1 m from the wall's ends. Returns { opening (without its id), problem }:
+// problem is null when it can go there, 'narrow' when it is under 0.3 m wide,
+// or 'full' when it would cover another opening.
+export function spannedOpening(room, type, wallIndex, from, to) {
+  const wall = roomWalls(room.corners)[wallIndex]
+  const [start, end] = [edgePoint(wall, from), edgePoint(wall, to)].sort((a, b) => a - b)
+  // In whole centimeters, so 5 cm steps add up exactly.
+  const width = Math.round((end - start) * 100) / 100
+  const opening = { type, wallIndex, offset: start, width, height: newHeight(room, type), sill: OPENING_TYPES[type].sill }
+  if (width < MIN_OPENING_SIZE - EPSILON) return { opening, problem: 'narrow' }
+  return { opening, problem: placingProblem(room, opening) }
 }
 
 // The nearest wall to the floor point (x, z) within `reach` meters, as

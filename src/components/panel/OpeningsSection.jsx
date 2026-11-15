@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useRoomStore } from '../../store/roomStore'
-import { MIN_CUT_WALL, findWall, roomWalls } from '../../store/roomShape'
+import { MIN_CUT_WALL, roomWalls } from '../../store/roomShape'
 import {
   MIN_OPENING_SIZE,
   OPENING_EDGE,
@@ -8,7 +8,7 @@ import {
   openingLabel,
   openingsOf,
 } from '../../store/openings'
-import { BUILD_NOTICES, useUiStore } from '../../store/uiStore'
+import { useUiStore } from '../../store/uiStore'
 import { editGesture } from '../../store/historyStore'
 import NumberField from '../ui/NumberField'
 import Button from '../ui/Button'
@@ -101,34 +101,23 @@ function removeOpening(id) {
 const TOOL_NOTICES = {
   cut: `Click on a wall where it should be split in two (walls of ${MIN_CUT_WALL} m or more). Esc cancels.`,
   door: 'Click near a wall to place the door. Esc cancels.',
+  window: 'Click on a wall where the window starts, then where it ends. Esc cancels.',
 }
 
-// Build's Wall tools section (J.8, J.7.1, J.8.1). Cut and Door turn a tool
-// on: a click on any wall splits it in two, or places a door; Esc or a
-// second press turns it off. Window adds one, centred on the selected wall
-// (or the longest one). The list selects one, whose details follow.
+// Build's Wall tools section (J.8, J.7.1, J.8.1, J.8.2). Cut, Door and
+// Window turn a tool on, for any wall: a click splits it in two, places a
+// door, or sets where a window starts and then ends. Esc or a second press
+// turns it off. The list selects one, whose details follow.
 export default function OpeningsSection() {
   const room = useRoomStore((state) => state.room)
   const tool = useUiStore((state) => state.tool)
   const selectedId = useUiStore((state) => state.selectedOpening)
-  const selectedWall = useUiStore((state) => state.selectedWall)
   const openings = openingsOf(room)
   const selected = openings.find((opening) => opening.id === selectedId)
 
   function toggle(name) {
     useUiStore.getState().setBuildNotice(null)
     useUiStore.getState().setTool(tool === name ? null : name)
-  }
-
-  function add(type) {
-    const wallIndex = selectedWall ? findWall(room.corners, selectedWall.a, selectedWall.b) : -1
-    const result = useRoomStore.getState().addOpening(type, wallIndex)
-    const ui = useUiStore.getState()
-    if (result.problem) ui.setBuildNotice(BUILD_NOTICES[result.problem])
-    else {
-      ui.setBuildNotice(null)
-      ui.selectOpening(result.id)
-    }
   }
 
   return (
@@ -141,7 +130,9 @@ export default function OpeningsSection() {
         <Button onClick={() => toggle('door')} pressed={tool === 'door'}>
           {OPENING_TYPES.door.label}
         </Button>
-        <Button onClick={() => add('window')}>{OPENING_TYPES.window.label}</Button>
+        <Button onClick={() => toggle('window')} pressed={tool === 'window'}>
+          {OPENING_TYPES.window.label}
+        </Button>
       </div>
       {tool && <p className="panel-notice">{TOOL_NOTICES[tool]}</p>}
       {openings.length > 0 && (

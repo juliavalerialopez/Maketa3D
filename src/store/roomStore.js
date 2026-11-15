@@ -13,7 +13,7 @@ import {
   tidyCorners,
   wallLengthMove,
 } from './roomShape.js'
-import { fitOpenings, newOpening, openingsOf, openingsProblem, placedOpening, reanchorOpenings } from './openings.js'
+import { fitOpenings, openingsOf, openingsProblem, reanchorOpenings } from './openings.js'
 
 // Allowed room size in meters, per dimension: [min, max]. Width and depth are
 // the room's size seen from above (its corners' bounding box). Used by the
@@ -277,26 +277,15 @@ export const useRoomStore = create((set, get) => ({
     const [nx, nz] = roomWalls(corners)[wall].normal
     return get().setCorners(moveWall(corners, wall, offset), { wall, shift: [nx * offset, nz * offset] })
   },
-  // Build (J.8): a new door or window ('door' or 'window') on wall
-  // `wallIndex` (-1: the longest), centred. Returns { id } or { problem }
-  // ('short' or 'full', see newOpening).
-  addOpening: (type, wallIndex = -1) => {
+  // Build (J.8.1, J.8.2): a new door or window, as placedOpening or
+  // spannedOpening make it (without its id). Returns { id }, or { problem:
+  // 'full' } when it does not fit, changing nothing then.
+  addOpening: (opening) => {
     const { room } = get()
-    const result = newOpening(room, type, wallIndex)
-    if (result.problem) return result
     const id = crypto.randomUUID()
-    set({ room: { ...room, openings: [...openingsOf(room), { id, ...result.opening }] } })
-    return { id }
-  },
-  // Build (J.8.1): a new door or window placed with the pointer, centred
-  // `along` meters along wall `wallIndex` as in placedOpening. Returns { id }
-  // or { problem } ('short' or 'full'), changing nothing then.
-  placeOpening: (type, wallIndex, along) => {
-    const { room } = get()
-    const { opening, problem } = placedOpening(room, type, wallIndex, along)
-    if (problem) return { problem }
-    const id = crypto.randomUUID()
-    set({ room: { ...room, openings: [...openingsOf(room), { id, ...opening }] } })
+    const next = { ...room, openings: [...openingsOf(room), { id, ...opening }] }
+    if (openingsProblem(next)) return { problem: 'full' }
+    set({ room: next })
     return { id }
   },
   // Build (J.8): changes opening `id`. Returns false and changes nothing when

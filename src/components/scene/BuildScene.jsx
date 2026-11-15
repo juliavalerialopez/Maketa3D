@@ -280,7 +280,7 @@ function CutMark({ wall, at }) {
 // The Build view (J.5): the room from above, flat, with no light or shadow:
 // the floor in its color, the walls dark, each wall's length next to it.
 // Furniture is not shown. Walls can be selected and dragged (J.6), cut in
-// two at a point (J.7.1), and get a door (J.8.1). Esc turns the tool off,
+// two at a point (J.7.1), and get a door or window (J.8.1, J.8.2). Esc turns the tool off,
 // then clears the selection.
 export default function BuildScene() {
   const { corners, openings } = useRoomStore((state) => state.room)
@@ -344,7 +344,9 @@ export default function BuildScene() {
         <WallLength key={index} wall={box.wall} />
       ))}
       <BuildOpenings thickness={BUILD_WALL_THICKNESS} />
-      {tool === 'door' && <PlaceOpening type="door" thickness={BUILD_WALL_THICKNESS} />}
+      {(tool === 'door' || tool === 'window') && (
+        <PlaceOpening key={tool} type={tool} thickness={BUILD_WALL_THICKNESS} />
+      )}
     </>
   )
 }
