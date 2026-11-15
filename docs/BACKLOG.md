@@ -12,6 +12,7 @@ later part already built, or that Part J plans as a task, were left out.
 - Angled walls. (Part J, for Part K)
 - Snap to wall. (Part G, from the style mock)
 - (added 2026-11-14) Wall settings: choose how thick a wall is, and select several walls to change their thickness together. (Part J)
+- (added 2026-11-15) A front view of a wall while a window is placed or selected in Build, to see how tall it is and how high its sill sits, since Plan cannot change them yet. (Part J)
 
 ## Placing and moving objects
 - Move objects up and down (Y), for wall items and shelves; decide the floor and ceiling rules then. (Part D)
