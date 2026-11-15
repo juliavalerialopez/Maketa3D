@@ -5,6 +5,7 @@ import {
   nearestWall,
   newOpening,
   openingsProblem,
+  placedOpening,
   reanchorOpenings,
   tallestOpening,
 } from '../src/store/openings.js'
@@ -44,6 +45,36 @@ test('a new opening is centred on the chosen wall, or the longest, and needs roo
   assert.equal(newOpening(narrow, 'window', 1).problem, 'short')
   // Where another one already is: no room.
   assert.equal(newOpening(roomWith([window({ offset: 2.4 })]), 'door', 0).problem, 'full')
+})
+
+test('a door placed with the pointer is centred on it in 5 cm steps, 0.1 m from the wall ends (J.8.1)', () => {
+  // Wall 0 is 6 m long: the pointer 2.03 m along it puts the door's near
+  // edge at 1.58, snapped to 1.6.
+  const { opening, problem } = placedOpening(roomWith([]), 'door', 0, 2.03)
+  assert.equal(problem, null)
+  close(opening.offset, 1.6)
+  assert.equal(opening.width, 0.9)
+  assert.equal(opening.sill, 0)
+  // Near an end it stops 0.1 m before it.
+  close(placedOpening(roomWith([]), 'door', 0, 0.2).opening.offset, 0.1)
+  close(placedOpening(roomWith([]), 'door', 0, 5.95).opening.offset, 6 - 0.1 - 0.9)
+  // Over another opening: shown, but it cannot go there.
+  assert.equal(placedOpening(roomWith([window()]), 'door', 0, 3.5).problem, 'full')
+  // A wall too short for it.
+  const narrow = { ...roomWith([]), corners: rectangleCorners(6, 1) }
+  assert.equal(placedOpening(narrow, 'door', 1, 0.5).problem, 'short')
+})
+
+test('placing a door adds it where it can go and nowhere else (J.8.1)', () => {
+  const { placeOpening } = useRoomStore.getState()
+  const { id } = placeOpening('door', 0, 1)
+  const placed = room().openings.find((opening) => opening.id === id)
+  assert.equal(placed.wallIndex, 0)
+  close(placed.offset, 0.55)
+  // Over the first one: refused, nothing changes.
+  const before = room()
+  assert.deepEqual(placeOpening('door', 0, 1.2), { problem: 'full' })
+  assert.equal(room(), before)
 })
 
 test('openings stay where they are when walls are renumbered, and move with their own wall', () => {

@@ -97,17 +97,28 @@ function removeOpening(id) {
   useUiStore.getState().selectOpening(null)
 }
 
-// Build's Wall tools section (J.8, J.7.1). Cut waits for a click on any wall,
-// where it is split in two; Esc or a second press cancels it. Door and Window
-// add one, centred on the selected wall (or the longest one); the list
-// selects one, whose details follow.
+// What to do while a tool is on.
+const TOOL_NOTICES = {
+  cut: `Click on a wall where it should be split in two (walls of ${MIN_CUT_WALL} m or more). Esc cancels.`,
+  door: 'Click near a wall to place the door. Esc cancels.',
+}
+
+// Build's Wall tools section (J.8, J.7.1, J.8.1). Cut and Door turn a tool
+// on: a click on any wall splits it in two, or places a door; Esc or a
+// second press turns it off. Window adds one, centred on the selected wall
+// (or the longest one). The list selects one, whose details follow.
 export default function OpeningsSection() {
   const room = useRoomStore((state) => state.room)
-  const cutting = useUiStore((state) => state.cutting)
+  const tool = useUiStore((state) => state.tool)
   const selectedId = useUiStore((state) => state.selectedOpening)
   const selectedWall = useUiStore((state) => state.selectedWall)
   const openings = openingsOf(room)
   const selected = openings.find((opening) => opening.id === selectedId)
+
+  function toggle(name) {
+    useUiStore.getState().setBuildNotice(null)
+    useUiStore.getState().setTool(tool === name ? null : name)
+  }
 
   function add(type) {
     const wallIndex = selectedWall ? findWall(room.corners, selectedWall.a, selectedWall.b) : -1
@@ -123,21 +134,16 @@ export default function OpeningsSection() {
   return (
     <div className="field-stack">
       <div className="object-details-actions">
-        <Button onClick={() => useUiStore.getState().setCutting(!cutting)} pressed={cutting}>
+        <Button onClick={() => toggle('cut')} pressed={tool === 'cut'}>
           {SCISSORS_ICON}
           Cut
         </Button>
-        {Object.entries(OPENING_TYPES).map(([type, { label }]) => (
-          <Button key={type} onClick={() => add(type)}>
-            {label}
-          </Button>
-        ))}
+        <Button onClick={() => toggle('door')} pressed={tool === 'door'}>
+          {OPENING_TYPES.door.label}
+        </Button>
+        <Button onClick={() => add('window')}>{OPENING_TYPES.window.label}</Button>
       </div>
-      {cutting && (
-        <p className="panel-notice">
-          Click on a wall where it should be split in two (walls of {MIN_CUT_WALL} m or more). Esc cancels.
-        </p>
-      )}
+      {tool && <p className="panel-notice">{TOOL_NOTICES[tool]}</p>}
       {openings.length > 0 && (
         <ul className="ui-list">
           {openings.map((opening) => (

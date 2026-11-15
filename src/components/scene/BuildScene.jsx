@@ -6,6 +6,9 @@ import { WALL_SNAP, draggedRoom, reachableStep, startWallDrag, useRoomStore } fr
 import { MIN_CUT_WALL, cutPoint, findWall, splitWall } from '../../store/roomShape'
 import { BUILD_NOTICES, useUiStore } from '../../store/uiStore'
 import BuildOpenings from './BuildOpenings'
+import PlaceOpening from './PlaceOpening'
+import BuildDistances from './BuildDistances'
+import { meters } from './buildText'
 import { focusIsFree } from '../panel/useObjectShortcuts'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import Floor from './Floor'
@@ -19,11 +22,10 @@ const BUILD_WALL_COLOR = '#4a463f'
 // The selected wall (J.7): warm clay; a hovered one (J.6): a lighter clay.
 const BUILD_WALL_SELECTED_COLOR = '#b5653d'
 const BUILD_WALL_HOVER_COLOR = '#c98a63'
-// Where a cut would go (J.7.1): a pale sand line across the selected wall,
-// with its distance to each end inside the room.
+// Where a cut would go (J.7.1): a pale sand line across the wall, with its
+// distance to each end inside the room.
 const CUT_MARK_COLOR = '#f1e3c6'
 const CUT_MARK_WIDTH = 0.04
-const CUT_LABEL_GAP = 0.35
 // How wide the invisible strip to grab a wall is, in meters.
 const WALL_GRAB = 0.4
 // Drags happen on the floor.
@@ -38,9 +40,6 @@ const LABEL_GAP = 0.45
 let wallDragActive = false
 
 const wallSelection = (wall) => ({ a: { ...wall.start }, b: { ...wall.end } })
-
-// A length in meters as shown in Build: "3.50 m".
-const meters = (value) => `${(Math.round(value * 100) / 100).toFixed(2)} m`
 
 // A wall's inside length as text, at its middle just outside the room (J.5,
 // J.5.1). It is typed in the panel, once the wall is selected.
@@ -259,46 +258,34 @@ function draggedWallEnds(current, step) {
   return { a: shift(corners[index]), b: shift(corners[(index + 1) % corners.length]) }
 }
 
-// Where a cut would go on the selected wall (J.7.1): a line across the wall
-// `at` meters from its start, and the distance to each end as text, inside
-// the room next to each piece. Clicks go through the text to the view.
+// Where a cut would go (J.7.1): a line across the wall `at` meters from its
+// start, and the distance to each end.
 function CutMark({ wall, at }) {
   const [dx, dz] = [(wall.end.x - wall.start.x) / wall.length, (wall.end.z - wall.start.z) / wall.length]
   const [nx, nz] = wall.normal
-  const point = (along, out) => [wall.start.x + dx * along + nx * out, wall.start.z + dz * along + nz * out]
-  const [x, z] = point(at, BUILD_WALL_THICKNESS / 2)
+  const out = BUILD_WALL_THICKNESS / 2
   const alongX = Math.abs(dz) < 1e-9
   const depth = BUILD_WALL_THICKNESS + 0.08
-  const labels = [
-    [at / 2, at],
-    [(at + wall.length) / 2, wall.length - at],
-  ]
   return (
     <>
-      <mesh position={[x, WALL_DRAW_HEIGHT + 0.01, z]}>
+      <mesh position={[wall.start.x + dx * at + nx * out, WALL_DRAW_HEIGHT + 0.01, wall.start.z + dz * at + nz * out]}>
         <boxGeometry args={alongX ? [CUT_MARK_WIDTH, 0.01, depth] : [depth, 0.01, CUT_MARK_WIDTH]} />
         <meshBasicMaterial color={CUT_MARK_COLOR} />
       </mesh>
-      {labels.map(([along, distance], side) => {
-        const [lx, lz] = point(along, -CUT_LABEL_GAP)
-        return (
-          <Html key={side} position={[lx, 0, lz]} center style={{ pointerEvents: 'none' }}>
-            <div className="wall-distance">{meters(distance)}</div>
-          </Html>
-        )
-      })}
+      <BuildDistances wall={wall} from={at} to={at} />
     </>
   )
 }
 
 // The Build view (J.5): the room from above, flat, with no light or shadow:
 // the floor in its color, the walls dark, each wall's length next to it.
-// Furniture is not shown. Walls can be selected and dragged (J.6), and cut
-// in two at a point (J.7.1). Esc stops cutting, then clears the selection.
+// Furniture is not shown. Walls can be selected and dragged (J.6), cut in
+// two at a point (J.7.1), and get a door (J.8.1). Esc turns the tool off,
+// then clears the selection.
 export default function BuildScene() {
   const { corners, openings } = useRoomStore((state) => state.room)
   const selection = useUiStore((state) => state.selectedWall)
-  const cutting = useUiStore((state) => state.cutting)
+  const tool = useUiStore((state) => state.tool)
   const highlightedWalls = useUiStore((state) => state.highlightedWalls)
   // Height: seen from above, a wall's top edge is the whole wall.
   const highlightedTop = useUiStore((state) => state.highlightedTop)
@@ -321,7 +308,7 @@ export default function BuildScene() {
         return
       }
       if (event.key !== 'Escape' || typing) return
-      if (ui.cutting) ui.setCutting(false)
+      if (ui.tool) ui.setTool(null)
       else if (ui.selectedWall) ui.selectWall(null)
       else if (ui.selectedOpening) ui.selectOpening(null)
     }
@@ -350,13 +337,14 @@ export default function BuildScene() {
           box={box}
           selected={index === selectedIndex}
           highlighted={highlightedTop || highlightedWalls.includes(index)}
-          cutting={cutting}
+          cutting={tool === 'cut'}
         />
       ))}
       {walls.map((box, index) => (
         <WallLength key={index} wall={box.wall} />
       ))}
       <BuildOpenings thickness={BUILD_WALL_THICKNESS} />
+      {tool === 'door' && <PlaceOpening type="door" thickness={BUILD_WALL_THICKNESS} />}
     </>
   )
 }

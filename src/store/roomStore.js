@@ -13,7 +13,7 @@ import {
   tidyCorners,
   wallLengthMove,
 } from './roomShape.js'
-import { fitOpenings, newOpening, openingsOf, openingsProblem, reanchorOpenings } from './openings.js'
+import { fitOpenings, newOpening, openingsOf, openingsProblem, placedOpening, reanchorOpenings } from './openings.js'
 
 // Allowed room size in meters, per dimension: [min, max]. Width and depth are
 // the room's size seen from above (its corners' bounding box). Used by the
@@ -286,6 +286,17 @@ export const useRoomStore = create((set, get) => ({
     if (result.problem) return result
     const id = crypto.randomUUID()
     set({ room: { ...room, openings: [...openingsOf(room), { id, ...result.opening }] } })
+    return { id }
+  },
+  // Build (J.8.1): a new door or window placed with the pointer, centred
+  // `along` meters along wall `wallIndex` as in placedOpening. Returns { id }
+  // or { problem } ('short' or 'full'), changing nothing then.
+  placeOpening: (type, wallIndex, along) => {
+    const { room } = get()
+    const { opening, problem } = placedOpening(room, type, wallIndex, along)
+    if (problem) return { problem }
+    const id = crypto.randomUUID()
+    set({ room: { ...room, openings: [...openingsOf(room), { id, ...opening }] } })
     return { id }
   },
   // Build (J.8): changes opening `id`. Returns false and changes nothing when

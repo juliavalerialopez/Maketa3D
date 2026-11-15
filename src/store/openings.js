@@ -161,6 +161,26 @@ export function newOpening(room, type, wallIndex = -1) {
   return { opening }
 }
 
+// Openings are placed in 5 cm steps, like walls.
+const STEPS_PER_METER = 20
+
+// A new opening of `type` on wall `wallIndex`, centred `along` meters from
+// its first corner as far as the wall allows: in 5 cm steps, stopping 0.1 m
+// before each end (J.8.1). Returns { opening (without its id), problem }:
+// problem is null when it can go there, 'short' when the wall is too short
+// for it, or 'full' when another opening is in the way.
+export function placedOpening(room, type, wallIndex, along) {
+  const wall = roomWalls(room.corners)[wallIndex]
+  const { width, height, sill } = OPENING_TYPES[type]
+  const snapped = Math.round((along - width / 2) * STEPS_PER_METER) / STEPS_PER_METER
+  const offset = Math.max(OPENING_EDGE, Math.min(wall.length - OPENING_EDGE - width, snapped))
+  // "+ 0" turns -0 into 0.
+  const opening = { type, wallIndex, offset: offset + 0, width, height: Math.min(height, room.height - sill), sill }
+  if (wall.length < width + 2 * OPENING_EDGE - EPSILON) return { opening, problem: 'short' }
+  if (openingsProblem({ ...room, openings: [...openingsOf(room), opening] })) return { opening, problem: 'full' }
+  return { opening, problem: null }
+}
+
 // The nearest wall to the floor point (x, z) within `reach` meters, as
 // { wallIndex, along } (how far along it from its first corner), or null.
 export function nearestWall(corners, x, z, reach) {

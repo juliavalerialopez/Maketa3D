@@ -12,7 +12,7 @@ import { FLOOR_COLOR } from './roomColors'
 const LINE_COLOR = '#4a463f'
 const WINDOW_FILL = '#eef3f5'
 // A selected door or window: the selected wall's clay, lighter.
-const SELECTED_FILL = '#e7c3a9'
+export const SELECTED_FILL = '#e7c3a9'
 // Just above the walls (drawn up to 0.02 m).
 const SYMBOL_Y = 0.03
 const LINE = 0.015
@@ -54,10 +54,11 @@ function FlatBox({ box, color }) {
 }
 
 // A door: a gap in the wall, the door leaf standing open into the room and
-// the arc it swings along. A window: a pale gap with two thin lines.
-function OpeningSymbol({ opening, wall, thickness, selected }) {
+// the arc it swings along. A window: a pale gap with two thin lines. `color`
+// replaces the gap's own (a placing preview, J.8.1).
+export function OpeningSymbol({ opening, wall, thickness, selected, color }) {
   const { offset, width } = opening
-  const fill = selected ? SELECTED_FILL : opening.type === 'door' ? FLOOR_COLOR : WINDOW_FILL
+  const fill = color ?? (selected ? SELECTED_FILL : opening.type === 'door' ? FLOOR_COLOR : WINDOW_FILL)
   const gap = wallBox(wall, offset, offset + width, 0, thickness)
   if (opening.type === 'window') {
     return (

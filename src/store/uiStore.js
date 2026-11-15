@@ -48,9 +48,9 @@ export const useUiStore = create((set) => ({
   // Build (J.7): the selected wall as its two corners, { a: { x, z }, b },
   // so it stays selected when the walls are renumbered; null when none.
   selectedWall: null,
-  // Build (J.7): the Cut button is on; the next click on the selected wall
-  // cuts a piece out of it there.
-  cutting: false,
+  // Build's wall tool that is on, or null: 'cut' (J.7.1: a click splits a
+  // wall) or 'door' (J.8.1: a click places a door).
+  tool: null,
   // Build (J.8): the selected door or window's id, or null. A wall and an
   // opening are never selected together.
   selectedOpening: null,
@@ -64,14 +64,14 @@ export const useUiStore = create((set) => ({
 
   setMoving: (moving) => set({ moving }),
   selectWall: (selectedWall) =>
-    set((state) => ({ selectedWall, cutting: false, selectedOpening: selectedWall ? null : state.selectedOpening })),
+    set((state) => ({ selectedWall, tool: null, selectedOpening: selectedWall ? null : state.selectedOpening })),
   selectOpening: (selectedOpening) =>
-    set((state) => ({ selectedOpening, selectedWall: selectedOpening ? null : state.selectedWall, cutting: false })),
+    set((state) => ({ selectedOpening, selectedWall: selectedOpening ? null : state.selectedWall, tool: null })),
   setBuildNotice: (buildNotice) => set({ buildNotice }),
   // The highlight for a Room configuration field (J.4.2): the walls it moves,
   // and whether the walls' top edge lights up (Height).
   setHighlight: (highlightedWalls, highlightedTop = false) => set({ highlightedWalls, highlightedTop }),
-  setCutting: (cutting) => set({ cutting }),
+  setTool: (tool) => set({ tool }),
   setRoomNotice: (roomNotice) => set({ roomNotice }),
   setSceneView: (sceneView) => set({ sceneView }),
   setPlanPercent: (planPercent) => set({ planPercent }),
