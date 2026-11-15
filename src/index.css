@@ -1346,6 +1346,17 @@ canvas {
   user-select: none;
 }
 
+/* The selected wall's options in Build (J.8.3): Cut, Door and Window. */
+.wall-bar {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 99px;
+  background: var(--surface);
+  box-shadow: var(--shadow-out-small);
+  white-space: nowrap;
+}
+
 /* A new window's width while it is placed in Build (J.8.2). */
 .wall-distance-width {
   background: var(--accent);

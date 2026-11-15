@@ -7,6 +7,7 @@ import { MIN_CUT_WALL, cutPoint, findWall, splitWall } from '../../store/roomSha
 import { BUILD_NOTICES, useUiStore } from '../../store/uiStore'
 import BuildOpenings from './BuildOpenings'
 import PlaceOpening from './PlaceOpening'
+import WallBar from './WallBar'
 import BuildDistances from './BuildDistances'
 import { meters } from './buildText'
 import { focusIsFree } from '../panel/useObjectShortcuts'
@@ -68,7 +69,7 @@ function alongWall(wall, x, z) {
 //   once back in line (J.7).
 // - With Cut on, a point follows the pointer on any wall, with its distance
 //   to both ends; a press splits the wall in two there (J.7.1).
-function BuildWall({ index, box, selected, highlighted, cutting }) {
+function BuildWall({ index, box, selected, highlighted, cutting, onDragChange }) {
   const getThree = useThree((state) => state.get)
   const [hovered, setHovered] = useState(false)
   const hoveredRef = useRef(false)
@@ -102,6 +103,7 @@ function BuildWall({ index, box, selected, highlighted, cutting }) {
   function stopDrag() {
     dragRef.current = null
     wallDragActive = false
+    onDragChange(false)
     endGesture()
     setControls(true)
     const { selectedWall, selectWall } = useUiStore.getState()
@@ -118,11 +120,12 @@ function BuildWall({ index, box, selected, highlighted, cutting }) {
       if (!dragRef.current) return
       dragRef.current = null
       wallDragActive = false
+      onDragChange(false)
       endGesture()
       const { controls } = getThree()
       if (controls) controls.enabled = true
     },
-    [getThree],
+    [getThree, onDragChange],
   )
 
   function handlePointerDown(event) {
@@ -160,6 +163,7 @@ function BuildWall({ index, box, selected, highlighted, cutting }) {
       shown: room.corners,
     }
     wallDragActive = true
+    onDragChange(true)
     beginGesture()
     event.target.setPointerCapture(event.pointerId)
     setControls(false)
@@ -280,8 +284,10 @@ function CutMark({ wall, at }) {
 // The Build view (J.5): the room from above, flat, with no light or shadow:
 // the floor in its color, the walls dark, each wall's length next to it.
 // Furniture is not shown. Walls can be selected and dragged (J.6), cut in
-// two at a point (J.7.1), and get a door or window (J.8.1, J.8.2). Esc turns the tool off,
-// then clears the selection.
+// two at a point (J.7.1), and get a door or window (J.8.1, J.8.2); the
+// selected wall shows a bar with those tools (J.8.3), except while it is
+// dragged or a tool is on. Esc turns the tool off, then clears the
+// selection.
 export default function BuildScene() {
   const { corners, openings } = useRoomStore((state) => state.room)
   const selection = useUiStore((state) => state.selectedWall)
@@ -291,6 +297,8 @@ export default function BuildScene() {
   const highlightedTop = useUiStore((state) => state.highlightedTop)
   const walls = wallBoxes(corners, WALL_DRAW_HEIGHT, BUILD_WALL_THICKNESS)
   const selectedIndex = selection ? findWall(corners, selection.a, selection.b) : -1
+  // A wall is being dragged (J.8.3: the bar hides meanwhile).
+  const [dragging, setDragging] = useState(false)
 
   useEffect(() => {
     function handleKeyDown(event) {
@@ -338,12 +346,14 @@ export default function BuildScene() {
           selected={index === selectedIndex}
           highlighted={highlightedTop || highlightedWalls.includes(index)}
           cutting={tool === 'cut'}
+          onDragChange={setDragging}
         />
       ))}
       {walls.map((box, index) => (
         <WallLength key={index} wall={box.wall} />
       ))}
       <BuildOpenings thickness={BUILD_WALL_THICKNESS} />
+      {selectedIndex !== -1 && !tool && !dragging && <WallBar wall={walls[selectedIndex].wall} />}
       {(tool === 'door' || tool === 'window') && (
         <PlaceOpening key={tool} type={tool} thickness={BUILD_WALL_THICKNESS} />
       )}
