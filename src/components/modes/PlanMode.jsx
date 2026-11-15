@@ -19,13 +19,15 @@ import { useModeStore } from '../../store/modeStore'
 import { useUiStore } from '../../store/uiStore'
 import { isWidgetActive } from '../scene/widgetState'
 
-// A click that hits no object (empty floor, walls, outside the room) deselects.
-// Fiber only calls this for real clicks, not for orbit drags. Floor and walls
-// have no pointer handlers, so they never count as hits. Widget handles aren't
-// hits either, so a click on a handle is ignored here.
+// A click that hits no object (empty floor, walls, outside the room) deselects
+// the furniture or the door or window (J.9.1). Fiber only calls this for real
+// clicks, not for orbit drags. Floor and walls have no pointer handlers, so
+// they never count as hits. Widget handles aren't hits either, so a click on
+// a handle is ignored here.
 function handlePointerMissed() {
   if (isWidgetActive()) return
   useObjectsStore.getState().selectObject(null)
+  useUiStore.getState().selectOpening(null)
 }
 
 // A press in the 3D view takes the focus off a panel field or button (J0.5),

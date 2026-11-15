@@ -5,6 +5,7 @@ import { roomWalls } from '../../store/roomShape'
 import { openingsOf } from '../../store/openings'
 import { showWallFor } from './wallVisibility'
 import { DOOR_COLOR, WINDOW_COLOR } from './roomColors'
+import { openingPlacement } from './openingPlacement'
 
 // How far in front of the wall's inside face an opening sits, in meters.
 const IN_FRONT = 0.005
@@ -25,18 +26,13 @@ export default function Openings() {
   return openingsOf(room).map((opening, index) => {
     const wall = walls[opening.wallIndex]
     if (!wall) return null
-    const [dx, dz] = [(wall.end.x - wall.start.x) / wall.length, (wall.end.z - wall.start.z) / wall.length]
     const [nx, nz] = wall.normal
-    const middle = opening.offset + opening.width / 2
-    const x = wall.start.x + dx * middle - nx * IN_FRONT
-    const z = wall.start.z + dz * middle - nz * IN_FRONT
-    // A plane faces +z; turned to face into the room (-normal).
-    const turn = Math.atan2(-nx, -nz)
+    const { position, turn } = openingPlacement(wall, opening, IN_FRONT)
     return (
       <mesh
         key={opening.id}
         ref={(mesh) => (meshRefs.current[index] = mesh)}
-        position={[x, opening.sill + opening.height / 2, z]}
+        position={position}
         rotation={[0, turn, 0]}
         userData={{ wallNormal: [nx, 0, nz] }}
         receiveShadow

@@ -435,6 +435,14 @@ canvas {
   font-size: 0.9em;
 }
 
+/* A group's name inside a section, e.g. Openings under the furniture (J.9.1). */
+.panel-group-title {
+  margin: 14px 0 6px;
+  color: var(--muted);
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
 /* Personalize: Reference section. Clear All on top, then the cards. */
 .reference-section-actions {
   display: flex;

@@ -78,8 +78,24 @@ function nudge(event, object) {
   return true
 }
 
+// For the selected door or window in Plan (J.9.1): Escape lets it go, Delete
+// or Backspace removes it.
+function openingKeys(event) {
+  const ui = useUiStore.getState()
+  const { room, removeOpening } = useRoomStore.getState()
+  const opening = room.openings?.find((item) => item.id === ui.selectedOpening)
+  if (!opening) return
+  if (event.key === 'Escape') ui.selectOpening(null)
+  if (event.key === 'Delete' || event.key === 'Backspace') {
+    event.preventDefault()
+    removeOpening(opening.id)
+    ui.selectOpening(null)
+  }
+}
+
 // Keyboard shortcuts in Plan: undo and redo (also from a field being typed
-// in), and for the selected object Delete, Escape, the arrow keys and Ctrl+D. Plan mode only: in Personalize the scene
+// in), for the selected object Delete, Escape, the arrow keys and Ctrl+D, and
+// for the selected door or window Delete and Escape. Plan mode only: in Personalize the scene
 // is not visible, so nothing may be changed, deleted or deselected there.
 // Ctrl+S and Ctrl+O are in ProjectMenu (all modes).
 export default function useObjectShortcuts() {
@@ -114,7 +130,10 @@ export default function useObjectShortcuts() {
       if (useUiStore.getState().sceneView === 'walk') return
       const { selectedId, selectObject, removeObject, duplicateObject } = useObjectsStore.getState()
       const object = useObjectsStore.getState().objects.find((item) => item.id === selectedId)
-      if (!object) return
+      if (!object) {
+        if (!duplicate) openingKeys(event)
+        return
+      }
 
       if (duplicate) {
         endNudge()
