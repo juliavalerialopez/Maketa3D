@@ -66,7 +66,9 @@ function OrbitCanvas() {
 
 // 2D (J.1): straight from above with no perspective, the front wall at the
 // bottom (up on screen is -z). Dragging empty space pans, the wheel zooms
-// toward the pointer, no turning (TopCamera keeps the view).
+// toward the pointer, no turning (TopCamera keeps the view). Flat like Build,
+// with no shading or shadows (J.1.3, Scene.jsx); `shadows` stays on for the
+// Room renders taken from here.
 function TopCanvas() {
   return (
     <Canvas
