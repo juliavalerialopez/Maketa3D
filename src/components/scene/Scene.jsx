@@ -4,6 +4,7 @@ import Openings from './Openings'
 import Objects from './Objects'
 import ObjectNames from './ObjectNames'
 import OpeningMarks from './OpeningMarks'
+import RoomDimensions from './RoomDimensions'
 import SelectionBox from './SelectionBox'
 import OpeningOutline from './OpeningOutline'
 import OpeningDistances from './OpeningDistances'
@@ -16,6 +17,9 @@ import { useUiStore } from '../../store/uiStore'
 // that shows each color as it is, so nothing is shaded and nothing casts a
 // shadow, like Build.
 const FLAT_LIGHT = Math.PI
+// How far outside the room's back and left edges the 2D view's dimension lines
+// start (J.5.3), past the thin walls.
+const DIMENSION_GAP_2D = 0.5
 
 export default function Scene() {
   // Walk is for looking only (J.1.2): no selection, widget or measurements.
@@ -36,6 +40,7 @@ export default function Scene() {
       <Objects />
       {flat && <ObjectNames />}
       {flat && <OpeningMarks />}
+      {flat && <RoomDimensions gap={DIMENSION_GAP_2D} />}
       {editing && (
         <>
           <SelectionBox />

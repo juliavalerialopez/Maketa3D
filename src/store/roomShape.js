@@ -131,6 +131,47 @@ function doubleArea(corners) {
   }, 0)
 }
 
+// The room's floor area in square meters.
+export const roomArea = (corners) => Math.abs(doubleArea(corners)) / 2
+
+// The distinct x values and z values of the corners where a wall turns, each
+// sorted: where a chain of dimension lines along the room has its ticks
+// (J.5.3). Values that differ by less than a millimeter are one.
+export function axisStops(corners) {
+  // Only corners where the wall turns: a corner in the middle of a straight
+  // wall (where it was cut, J.7.1) is no stop.
+  const turns = corners.filter((corner, index) => {
+    const before = corners[(index + corners.length - 1) % corners.length]
+    const after = corners[(index + 1) % corners.length]
+    const cross = (corner.x - before.x) * (after.z - corner.z) - (corner.z - before.z) * (after.x - corner.x)
+    return Math.abs(cross) > 1e-9
+  })
+  const stops = (values) =>
+    [...values]
+      .sort((a, b) => a - b)
+      .filter((value, index, sorted) => index === 0 || value - sorted[index - 1] > 1e-3)
+  return { xs: stops(turns.map((corner) => corner.x)), zs: stops(turns.map((corner) => corner.z)) }
+}
+
+// Where the room's area is written (J.5.3): the middle of the floor, [x, z].
+// For an L whose middle falls in the cut away corner, the middle of the
+// bounding box, or failing that the middle of the floor anyway.
+export function areaLabelPoint(corners) {
+  const twice = doubleArea(corners)
+  let cx = 0
+  let cz = 0
+  corners.forEach((corner, index) => {
+    const next = corners[(index + 1) % corners.length]
+    const cross = corner.x * next.z - next.x * corner.z
+    cx += (corner.x + next.x) * cross
+    cz += (corner.z + next.z) * cross
+  })
+  const centroid = [cx / (3 * twice), cz / (3 * twice)]
+  if (containsPoint(corners, ...centroid)) return centroid
+  const box = boundingBox(corners)
+  return containsPoint(corners, box.centerX, box.centerZ) ? [box.centerX, box.centerZ] : centroid
+}
+
 // The walls, one per pair of corners: { start, end, length, normal,
 // startConvex, endConvex }. `normal` is the [x, z] unit vector pointing out
 // of the room. A corner is convex when the room turns around it the usual

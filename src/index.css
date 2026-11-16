@@ -1341,6 +1341,29 @@ canvas {
   pointer-events: none;
 }
 
+/* The room's sizes (J.5.3): a dimension line's length, and the area in the
+   middle of the floor. Plain text on the canvas or the floor; clicks go
+   through. */
+.dimension-label {
+  padding: 0 4px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+}
+
+.room-area {
+  color: #5c4f3a;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+}
+
 /* A door's or window's name in 2D (J.9.5): the floor's dark brown. */
 .opening-name {
   color: #5c4f3a;
@@ -1348,17 +1371,6 @@ canvas {
 
 .object-name-faded {
   opacity: 0.6;
-}
-
-/* Build (J.5.1): a wall's length next to it, as plain text. Clicks go
-   through to the view. */
-.wall-length {
-  color: var(--text);
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-  user-select: none;
-  pointer-events: none;
 }
 
 /* The distance from the selected object to each wall, on the floor (J0.4). */

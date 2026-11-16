@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { Html } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import { Plane, Vector3 } from 'three'
 import { WALL_SNAP, draggedRoom, reachableStep, startWallDrag, useRoomStore } from '../../store/roomStore'
@@ -9,10 +8,12 @@ import BuildOpenings from './BuildOpenings'
 import PlaceOpening from './PlaceOpening'
 import WallBar from './WallBar'
 import BuildDistances from './BuildDistances'
-import { meters } from './buildText'
 import { focusIsFree } from '../panel/useObjectShortcuts'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import Floor from './Floor'
+import RoomGrid from './RoomGrid'
+import RoomDimensions from './RoomDimensions'
+import WallDimensions from './WallDimensions'
 import { wallBoxes } from './wallBoxes'
 
 // Build draws the walls flat and dark, thicker than in 3D so they read from
@@ -34,25 +35,15 @@ const FLOOR = new Plane(new Vector3(0, 1, 0), 0)
 const hit = new Vector3()
 // Just above the floor, flat.
 const WALL_DRAW_HEIGHT = 0.02
-// How far outside a wall its length sits, in meters.
-const LABEL_GAP = 0.45
+// How far outside a wall its dimension line (its length, J.5.3) sits, in
+// meters, beyond the wall's own thickness. The length is typed in the panel,
+// once the wall is selected (J.5.1).
+const DIMENSION_GAP = 0.35
 
 // One wall is dragged at a time; meanwhile the others ignore the pointer.
 let wallDragActive = false
 
 const wallSelection = (wall) => ({ a: { ...wall.start }, b: { ...wall.end } })
-
-// A wall's inside length as text, at its middle just outside the room (J.5,
-// J.5.1). It is typed in the panel, once the wall is selected.
-function WallLength({ wall }) {
-  const [mx, mz] = [(wall.start.x + wall.end.x) / 2, (wall.start.z + wall.end.z) / 2]
-  const gap = BUILD_WALL_THICKNESS + LABEL_GAP
-  return (
-    <Html position={[mx + wall.normal[0] * gap, 0, mz + wall.normal[1] * gap]} center>
-      <div className="wall-length">{meters(wall.length)}</div>
-    </Html>
-  )
-}
 
 // How far along `wall` the floor point (x, z) is, from its start.
 function alongWall(wall, x, z) {
@@ -338,6 +329,9 @@ export default function BuildScene() {
   return (
     <>
       <Floor flat />
+      <RoomGrid />
+      {/* Only the area: each wall's length is already written next to it. */}
+      <RoomDimensions gap={0} withLines={false} />
       {walls.map((box, index) => (
         <BuildWall
           key={index}
@@ -349,9 +343,7 @@ export default function BuildScene() {
           onDragChange={setDragging}
         />
       ))}
-      {walls.map((box, index) => (
-        <WallLength key={index} wall={box.wall} />
-      ))}
+      <WallDimensions offset={BUILD_WALL_THICKNESS + DIMENSION_GAP} />
       <BuildOpenings thickness={BUILD_WALL_THICKNESS} />
       {selectedIndex !== -1 && !tool && !dragging && <WallBar wall={walls[selectedIndex].wall} />}
       {(tool === 'door' || tool === 'window') && (

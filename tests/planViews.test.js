@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  TOP_DIMENSION_MARGIN,
   TOP_MAX_ZOOM,
   TOP_MIN_ZOOM,
   TOP_NUDGE_VIEW,
@@ -29,11 +30,18 @@ const lRoom = {
   ],
 }
 
-test('the 2D view fits the whole room, centered, with space around it', () => {
-  // A wide view: the room's depth decides. 5 m deep in 500 px, filling 80%.
-  assert.deepEqual(fitTopView(rect(6, 5), 1000, 500), { center: [0, 0], zoom: 80 })
+test('the 2D view fits the whole room and the dimension lines beyond its back and left, centered, with space around it', () => {
+  const margin = TOP_DIMENSION_MARGIN
+  // The view reaches `margin` further to the back and the left, so its middle moves there.
+  const center = [-margin / 2, -margin / 2]
+  // A wide view: the depth decides. 5 m + margin deep in 500 px, filling 80%.
+  const wide = fitTopView(rect(6, 5), 1000, 500)
+  assert.deepEqual(wide.center, center)
+  close([wide.zoom], [(500 * 0.8) / (5 + margin)])
   // A tall view: the width decides.
-  assert.deepEqual(fitTopView(rect(6, 5), 600, 2000), { center: [0, 0], zoom: 80 })
+  const tall = fitTopView(rect(6, 5), 600, 2000)
+  assert.deepEqual(tall.center, center)
+  close([tall.zoom], [(600 * 0.8) / (6 + margin)])
 })
 
 test('the 2D zoom stays inside its limits, also before the view has a size', () => {
@@ -99,9 +107,9 @@ test('in an L room the inner walls stop the walk too', () => {
   close(walkStep(lRoom, [-1, -1], [1, 0], [1, 0], 1), [0, -1])
 })
 
-test('the 2D view of a room off the middle is centred on it', () => {
+test('the 2D view of a room off the middle is centred on it (and its dimension lines)', () => {
   const room = { height: 2.6, corners: rectangleCorners(4, 2, 1, -2) }
-  assert.deepEqual(fitTopView(room, 1000, 1000).center, [1, -2])
+  assert.deepEqual(fitTopView(room, 1000, 1000).center, [1 - TOP_DIMENSION_MARGIN / 2, -2 - TOP_DIMENSION_MARGIN / 2])
 })
 
 test('dragging the view turns the head with the room following the pointer', () => {

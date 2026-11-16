@@ -37,13 +37,21 @@ export function topCameraSettings(topView) {
 // roomBounds.js). Up on screen is the back of the room (-z).
 export const TOP_NUDGE_VIEW = { position: [0, 0, 0], target: [0, 0, -1] }
 
-// The 2D view that shows the whole room (its corners' bounding box),
-// centered, in a view `width` x `height` pixels: { center: [x, z], zoom }
-// (zoom in pixels per meter).
+// How far beyond the room's back and left edges the 2D view reaches, in
+// meters, so the dimension lines there (J.5.3) are in view too.
+export const TOP_DIMENSION_MARGIN = 1.6
+
+// The 2D view that shows the whole room (its corners' bounding box, and the
+// dimension lines beyond its back and left edges), centered, in a view `width`
+// x `height` pixels: { center: [x, z], zoom } (zoom in pixels per meter).
 export function fitTopView(room, width, height) {
   const box = boundingBox(room.corners)
-  const zoom = width > 0 && height > 0 ? Math.min((width * TOP_FILL) / box.width, (height * TOP_FILL) / box.depth) : 50
-  return { center: [box.centerX, box.centerZ], zoom: Math.min(TOP_MAX_ZOOM, Math.max(TOP_MIN_ZOOM, zoom)) }
+  const [fitWidth, fitDepth] = [box.width + TOP_DIMENSION_MARGIN, box.depth + TOP_DIMENSION_MARGIN]
+  const zoom = width > 0 && height > 0 ? Math.min((width * TOP_FILL) / fitWidth, (height * TOP_FILL) / fitDepth) : 50
+  return {
+    center: [box.centerX - TOP_DIMENSION_MARGIN / 2, box.centerZ - TOP_DIMENSION_MARGIN / 2],
+    zoom: Math.min(TOP_MAX_ZOOM, Math.max(TOP_MIN_ZOOM, zoom)),
+  }
 }
 
 // Walk (J.1.2): eye height and the field of view, wider than 3D's so the

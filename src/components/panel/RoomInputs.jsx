@@ -57,9 +57,8 @@ const FIELDS = {
 // In Plan, objects move inside the walls once a size is final (I.1), never
 // while typing, and right after a new shape or a turned notch; after a shape
 // change a short notice says how many moved. A shape change and the moves it
-// causes are one undo step. In Build (`inBuild`, J.5) only the shape buttons
-// and Height show (the walls carry their lengths), and objects are moved
-// when Build closes.
+// causes are one undo step. In Build (`inBuild`, J.5) the same buttons and
+// sizes show (J.5.4); objects are not moved there but when Build closes.
 export default function RoomInputs({ inBuild = false }) {
   const room = useRoomStore((state) => state.room)
   const { setRoomSize, setShape, rotateNotch } = useRoomStore.getState()
@@ -118,7 +117,7 @@ export default function RoomInputs({ inBuild = false }) {
     else changeRoom(() => setShape(shape))
   }
 
-  const fields = inBuild ? [] : FIELDS[params.shape]
+  const fields = FIELDS[params.shape]
   // Never lower than the tallest door or window (J.8), as it was before this
   // edit.
   const heightLimits = [Math.max(ROOM_LIMITS.height[0], tallestOpening(base ?? room)), ROOM_LIMITS.height[1]]

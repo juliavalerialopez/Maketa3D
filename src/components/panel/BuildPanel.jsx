@@ -6,9 +6,9 @@ import RoomInputs from './RoomInputs'
 import WallLengthField from './WallLengthField'
 import OpeningsSection from './OpeningsSection'
 
-// Build's control panel (J.5, J.7, J.8): Room configuration (shape buttons
-// and Height), with a wall selected its length, and Wall tools (Cut, Door,
-// Window and the doors and windows, J.7.1).
+// Build's control panel (J.5, J.7, J.8): Room configuration (shape buttons and
+// all the room's sizes, as in Plan, J.5.4), with a wall selected its length,
+// and Wall tools (Cut, Door, Window and the doors and windows, J.7.1).
 export default function BuildPanel() {
   const corners = useRoomStore((state) => state.room.corners)
   const selected = useUiStore((state) => state.selectedWall)
