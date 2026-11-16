@@ -1330,6 +1330,21 @@ canvas {
   user-select: none;
 }
 
+/* A piece's name over it in Plan's 2D view (J.1.4). Clicks go through. */
+.object-name {
+  /* Plain text, no card. Its color is set per piece (ObjectNames.jsx): a
+     variant of the piece's own color. */
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+}
+
+.object-name-faded {
+  opacity: 0.6;
+}
+
 /* Build (J.5.1): a wall's length next to it, as plain text. Clicks go
    through to the view. */
 .wall-length {

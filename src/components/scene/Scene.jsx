@@ -2,6 +2,7 @@ import Floor from './Floor'
 import Walls from './Walls'
 import Openings from './Openings'
 import Objects from './Objects'
+import ObjectNames from './ObjectNames'
 import SelectionBox from './SelectionBox'
 import OpeningOutline from './OpeningOutline'
 import OpeningDistances from './OpeningDistances'
@@ -32,6 +33,7 @@ export default function Scene() {
       <Walls />
       <Openings />
       <Objects />
+      {flat && <ObjectNames />}
       {editing && (
         <>
           <SelectionBox />

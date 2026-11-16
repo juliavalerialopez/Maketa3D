@@ -144,7 +144,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
   - ✅ J.1.1 The 2D · 3D · Walk switch and the 2D top view, with furniture editing; Walk shown but disabled until J.1.2 (added 2026-11-12)
   - ✅ J.1.2 Walk: drag to look, W A S D and arrow keys, eye height 1.6 m, stopped by the walls (added 2026-11-12)
   - ✅ J.1.3 Bug: furniture casts shadows in 3D but none in 2D (added 2026-11-12, found by Julia). (changed 2026-11-16, Julia) Not a bug any more: 2D has no shadows and no shading, flat like Build but with the furniture
-  - ⬜ J.1.4 In 2D, each piece of furniture shows its name ("Sofa 1") over it (added 2026-11-16, Julia)
+  - ✅ J.1.4 In 2D, each piece of furniture shows its name ("Sofa 1") over it (added 2026-11-16, Julia)
   - ⬜ J.8.4 In Build, the selected door or window shows its distances to the nearest walls, as in Plan (added 2026-11-16, Julia)
 - ✅ J.2 Room as corners: store, floor, walls, camera-facing wall fade, Room render, clamping, save and open with old files.
   - ✅ J.2.1 Geometry helpers for a room of corners (`src/store/roomShape.js`): rectangle, bounding box, walls with their outward side, validity, point inside, where a footprint fits, distance to a wall; tests only, no visible change (added 2026-11-11)
