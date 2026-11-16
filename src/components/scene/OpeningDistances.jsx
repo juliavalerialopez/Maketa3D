@@ -56,10 +56,11 @@ function measure(room, id, topView) {
 // floor and to the ceiling, with the distance in meters. Follows it while it
 // moves. A helper, so it is hidden in the Room render; it hides with its wall
 // when the camera is outside it. The numbers are HTML over the canvas.
-export default function OpeningDistances() {
+export default function OpeningDistances({ fromAbove = false }) {
   const room = useRoomStore((state) => state.room)
   const selectedId = useUiStore((state) => state.selectedOpening)
-  const topView = useUiStore((state) => state.sceneView === '2d')
+  // Plan's 2D view, or Build (`fromAbove`), which always looks from above.
+  const topView = useUiStore((state) => state.sceneView === '2d') || fromAbove
   const color = themeColor('--selection', useUiStore((state) => state.theme))
   const groupRef = useRef(null)
   const labelRefs = useRef([])

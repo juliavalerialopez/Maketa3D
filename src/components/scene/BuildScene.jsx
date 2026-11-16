@@ -8,6 +8,7 @@ import BuildOpenings from './BuildOpenings'
 import PlaceOpening from './PlaceOpening'
 import WallBar from './WallBar'
 import BuildDistances from './BuildDistances'
+import OpeningDistances from './OpeningDistances'
 import { focusIsFree } from '../panel/useObjectShortcuts'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import Floor from './Floor'
@@ -345,6 +346,7 @@ export default function BuildScene() {
       ))}
       <WallDimensions offset={BUILD_WALL_THICKNESS + DIMENSION_GAP} />
       <BuildOpenings thickness={BUILD_WALL_THICKNESS} />
+      <OpeningDistances fromAbove />
       {selectedIndex !== -1 && !tool && !dragging && <WallBar wall={walls[selectedIndex].wall} />}
       {(tool === 'door' || tool === 'window') && (
         <PlaceOpening key={tool} type={tool} thickness={BUILD_WALL_THICKNESS} />
