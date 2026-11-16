@@ -5,6 +5,8 @@ import { useRoomStore } from '../../store/roomStore'
 import { useUiStore } from '../../store/uiStore'
 import { beginGesture, endGesture, useHistoryStore } from '../../store/historyStore'
 import { clampPosition, nudgeOffset } from '../../store/roomBounds'
+import { roomWalls } from '../../store/roomShape'
+import { nudgedOpening, openingNudge } from '../../store/openings'
 import { currentView } from '../scene/snapshot'
 import { TOP_NUDGE_VIEW } from '../scene/planViews'
 
@@ -40,7 +42,7 @@ export function focusIsFree() {
 
 // The open arrow-key burst: its undo step is open (I.11) and the moved-distance
 // label shows (J0.3.1) until the keys rest for NUDGE_BURST_MS. nudgeId is the
-// object it moves.
+// object it moves, or the door or window (J.9.3, which has no label).
 let nudgeTimer = null
 let nudgeId = null
 
@@ -78,8 +80,31 @@ function nudge(event, object) {
   return true
 }
 
+// Moves the selected door or window one 5 cm step for an arrow key (J.9.3),
+// following the screen: along its wall, and up and down for a window in 3D.
+// A burst of presses is one undo step, like furniture. Returns false for
+// other keys.
+function nudgeOpening(event, room, opening) {
+  const topView = useUiStore.getState().sceneView === '2d'
+  const view = topView ? TOP_NUDGE_VIEW : currentView()
+  const wall = roomWalls(room.corners)[opening.wallIndex]
+  const move = view && wall && openingNudge(view, wall, event.key, !topView && opening.type === 'window')
+  if (!move) return false
+  if (!move.along && !move.up) return true
+  // Another one selected mid-burst starts a burst of its own.
+  if (nudgeTimer && nudgeId !== opening.id) endNudge()
+  if (!nudgeTimer) {
+    beginGesture()
+    nudgeId = opening.id
+  }
+  clearTimeout(nudgeTimer)
+  nudgeTimer = setTimeout(endNudge, NUDGE_BURST_MS)
+  useRoomStore.getState().updateOpening(opening.id, nudgedOpening(room, opening, move))
+  return true
+}
+
 // For the selected door or window in Plan (J.9.1): Escape lets it go, Delete
-// or Backspace removes it.
+// or Backspace removes it, the arrow keys move it (J.9.3).
 function openingKeys(event) {
   const ui = useUiStore.getState()
   const { room, removeOpening } = useRoomStore.getState()
@@ -88,15 +113,20 @@ function openingKeys(event) {
   if (event.key === 'Escape') ui.selectOpening(null)
   if (event.key === 'Delete' || event.key === 'Backspace') {
     event.preventDefault()
+    endNudge()
     removeOpening(opening.id)
     ui.selectOpening(null)
+    return
   }
+  // Arrow keys would otherwise scroll the page.
+  if (nudgeOpening(event, room, opening)) event.preventDefault()
 }
 
 // Keyboard shortcuts in Plan: undo and redo (also from a field being typed
 // in), for the selected object Delete, Escape, the arrow keys and Ctrl+D, and
-// for the selected door or window Delete and Escape. Plan mode only: in Personalize the scene
-// is not visible, so nothing may be changed, deleted or deselected there.
+// for the selected door or window Delete, Escape and the arrow keys. Plan
+// mode only: in Personalize the scene is not visible, so nothing may be
+// changed, deleted or deselected there.
 // Ctrl+S and Ctrl+O are in ProjectMenu (all modes).
 export default function useObjectShortcuts() {
   useEffect(() => {

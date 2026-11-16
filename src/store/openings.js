@@ -287,6 +287,50 @@ export function openingGaps(room, opening) {
   }
 }
 
+// A wall seen more end-on than this (the share of its length that shows along
+// a screen direction, about 22°) does not follow that direction's keys.
+const NUDGE_FACING = 0.38
+
+// An arrow key on the selected opening (J.9.3), following the screen:
+// { along, up }, each -1, 0 or 1 step: `along` its wall toward the wall's last
+// corner, `up` off the floor. Left and Right move it along its wall the way
+// the wall runs on screen. Up and Down move it up and down when `vertical` (a
+// window in 3D); otherwise along its wall, away from the camera or toward it
+// (in 2D, up the screen or down). A key across the wall moves nothing. `view`
+// is the Plan view ({ position, target }); null for other keys.
+export function openingNudge(view, wall, key, vertical) {
+  const [fx, fz] = [view.target[0] - view.position[0], view.target[2] - view.position[2]]
+  const length = Math.hypot(fx, fz) || 1
+  const ahead = [fx / length, fz / length]
+  // To the right of ahead: looking along -z, the right is +x.
+  const right = [-ahead[1], ahead[0]]
+  const [dx, dz] = direction(wall)
+  const toward = ([x, z]) => {
+    const share = dx * x + dz * z
+    return Math.abs(share) > NUDGE_FACING ? Math.sign(share) : 0
+  }
+  const sideways = (sign) => ({ along: sign * toward(right) + 0, up: 0 })
+  const upward = (sign) => (vertical ? { along: 0, up: sign } : { along: sign * toward(ahead) + 0, up: 0 })
+  if (key === 'ArrowRight') return sideways(1)
+  if (key === 'ArrowLeft') return sideways(-1)
+  if (key === 'ArrowUp') return upward(1)
+  if (key === 'ArrowDown') return upward(-1)
+  return null
+}
+
+// `opening` moved by `move` (openingNudge's { along, up }) in 5 cm steps
+// (J.9.3): { offset, sill }, kept 0.1 m from its wall's ends, on or above the
+// floor and under the ceiling. Other openings are checked separately
+// (openingsProblem).
+export function nudgedOpening(room, opening, move) {
+  const wall = roomWalls(room.corners)[opening.wallIndex]
+  const within = (value, min, max) => Math.min(max, Math.max(min, value)) + 0
+  return {
+    offset: within(snap(opening.offset + move.along / STEPS_PER_METER), OPENING_EDGE, wall.length - OPENING_EDGE - opening.width),
+    sill: within(snap(opening.sill + move.up / STEPS_PER_METER), 0, room.height - opening.height),
+  }
+}
+
 // The tallest opening's top (sill + height), 0 without openings: the room
 // cannot be lower than this.
 export const tallestOpening = (room) => Math.max(0, ...openingsOf(room).map((opening) => opening.sill + opening.height))

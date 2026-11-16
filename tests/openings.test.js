@@ -6,6 +6,8 @@ import {
   openingGaps,
   freeSpan,
   nearestWall,
+  nudgedOpening,
+  openingNudge,
   openingStart,
   openingsProblem,
   placedOpening,
@@ -107,6 +109,51 @@ test('an opening measures to the walls on each side, past a cut point, and to th
   const pieceGaps = openingGaps(cut, onPiece)
   close(pieceGaps.before, 4)
   close(pieceGaps.after, 0.8)
+})
+
+test('the arrow keys move an opening along its wall the way it runs on screen, a window in 3D up and down (J.9.3)', () => {
+  // Wall 0, the back wall, runs toward +x.
+  const wall = roomWalls(rectangleCorners(6, 5))[0]
+  // 2D: up on screen is the back of the room, so the wall runs left to right.
+  const top = { position: [0, 0, 0], target: [0, 0, -1] }
+  assert.deepEqual(openingNudge(top, wall, 'ArrowRight', false), { along: 1, up: 0 })
+  assert.deepEqual(openingNudge(top, wall, 'ArrowLeft', false), { along: -1, up: 0 })
+  // Across the wall: nothing moves.
+  assert.deepEqual(openingNudge(top, wall, 'ArrowUp', false), { along: 0, up: 0 })
+  assert.equal(openingNudge(top, wall, 'Enter', false), null)
+  // 3D, facing the wall: a window goes up and down, a door stays.
+  const facing = { position: [0, 4, 5], target: [0, 0, 0] }
+  assert.deepEqual(openingNudge(facing, wall, 'ArrowUp', true), { along: 0, up: 1 })
+  assert.deepEqual(openingNudge(facing, wall, 'ArrowDown', true), { along: 0, up: -1 })
+  assert.deepEqual(openingNudge(facing, wall, 'ArrowDown', false), { along: 0, up: 0 })
+  // 3D, from the default corner: the wall runs to the right and toward the
+  // camera, so Right moves a door along it and Up moves it away, back.
+  const corner = { position: [4, 4, 4], target: [0, 0, 0] }
+  assert.deepEqual(openingNudge(corner, wall, 'ArrowRight', false), { along: 1, up: 0 })
+  assert.deepEqual(openingNudge(corner, wall, 'ArrowUp', false), { along: -1, up: 0 })
+  // Looking along the wall: Left and Right are across it.
+  const alongIt = { position: [-4, 4, 0], target: [0, 0, 0] }
+  assert.deepEqual(openingNudge(alongIt, wall, 'ArrowRight', false), { along: 0, up: 0 })
+  assert.deepEqual(openingNudge(alongIt, wall, 'ArrowUp', false), { along: 1, up: 0 })
+})
+
+test('a nudged opening moves 5 cm and stops at its wall ends, the floor and the ceiling (J.9.3)', () => {
+  const room = roomWith([window()])
+  const moved = nudgedOpening(room, window(), { along: 1, up: 1 })
+  close(moved.offset, 3.05)
+  close(moved.sill, 0.95)
+  // The 6 m wall's far end: 6 - 0.1 - 1.2. The 2.6 m ceiling: 2.6 - 1.2.
+  const atEnd = nudgedOpening(room, window({ offset: 4.7, sill: 1.4 }), { along: 1, up: 1 })
+  close(atEnd.offset, 4.7)
+  close(atEnd.sill, 1.4)
+  const atStart = nudgedOpening(room, window({ offset: 0.1, sill: 0 }), { along: -1, up: -1 })
+  close(atStart.offset, 0.1)
+  close(atStart.sill, 0)
+  // Into another opening: the store refuses it and nothing changes.
+  useRoomStore.getState().setRoom(roomWith([door(), window({ offset: 1.9 })]))
+  const blocked = nudgedOpening(room, door(), { along: 1, up: 0 })
+  assert.equal(useRoomStore.getState().updateOpening('d', blocked), false)
+  close(useRoomStore.getState().room.openings[0].offset, 1)
 })
 
 test('a door placed with the pointer is centred on it in 5 cm steps, 0.1 m from the wall ends (J.8.1)', () => {
