@@ -7,6 +7,7 @@ import {
   defaultSized,
   freeSpan,
   openingLabel,
+  hingeOf,
   openingsOf,
   swingOf,
   widenedOpening,
@@ -134,6 +135,13 @@ export default function OpeningDetails({ id }) {
             size="small"
             stretch
           />
+          <Button
+            onClick={() =>
+              useRoomStore.getState().updateOpening(opening.id, { hinge: hingeOf(opening) === 'end' ? 'start' : 'end' })
+            }
+          >
+            Flip
+          </Button>
         </FieldGroup>
       )}
       {/* A door always stands on the floor. */}

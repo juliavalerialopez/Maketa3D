@@ -3,7 +3,7 @@ import { useThree } from '@react-three/fiber'
 import { Plane, Vector3 } from 'three'
 import { useRoomStore } from '../../store/roomStore'
 import { roomWalls } from '../../store/roomShape'
-import { OPENING_EDGE, nearestWall, openingsOf, swingOf } from '../../store/openings'
+import { OPENING_EDGE, nearestWall, openingsOf, hingeOf, swingOf } from '../../store/openings'
 import { useUiStore } from '../../store/uiStore'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import { FLOOR_COLOR } from './roomColors'
@@ -68,10 +68,13 @@ export function OpeningSymbol({ opening, wall, thickness, selected, color, acros
   // Which way it opens: into the room (against the wall's outward side) or out.
   const sign = swingOf(opening) === 'out' ? 1 : -1
   const [ox, oz] = [sign * nx, sign * nz]
-  // The hinge at the door's near end, on the wall's inside line.
-  const hinge = [wall.start.x + dx * offset, wall.start.z + dz * offset]
-  // The arc from the closed door (along the wall) to the open one, a quarter turn.
-  const closed = flatAngle(dx, dz)
+  // The hinge at one end of the door (J.8.6), on the wall's inside line; the
+  // closed door lies from it along the wall.
+  const atEnd = hingeOf(opening) === 'end'
+  const hingeAt = atEnd ? offset + width : offset
+  const hinge = [wall.start.x + dx * hingeAt, wall.start.z + dz * hingeAt]
+  // The arc from the closed door to the open one, a quarter turn.
+  const closed = atEnd ? flatAngle(-dx, -dz) : flatAngle(dx, dz)
   const open = flatAngle(ox, oz)
   const turn = Math.atan2(Math.sin(open - closed), Math.cos(open - closed))
   const thetaStart = turn > 0 ? closed : open

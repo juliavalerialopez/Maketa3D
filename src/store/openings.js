@@ -31,6 +31,11 @@ export const openingsOf = (room) => room.openings ?? []
 // `swing` on the door; a door without one, as before J.8.5, opens in.
 export const swingOf = (opening) => (opening.swing === 'out' ? 'out' : 'in')
 
+// Which end of its width a door is hinged at (J.8.6): 'start' (the end nearer
+// its wall's first corner) or 'end'. Stored as `hinge` on the door; a door
+// without one hinges at its start, as before J.8.6.
+export const hingeOf = (opening) => (opening.hinge === 'end' ? 'end' : 'start')
+
 // Wall `wall`'s direction from its first corner, [x, z], 1 m long.
 const direction = (wall) => [(wall.end.x - wall.start.x) / wall.length, (wall.end.z - wall.start.z) / wall.length]
 

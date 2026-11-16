@@ -1,6 +1,6 @@
 import { DEFAULT_ROOM, ROOM_LIMITS, roomSize, shapeFor, useRoomStore } from './roomStore.js'
 import { isValidRoomCorners, rectangleCorners } from './roomShape.js'
-import { MIN_OPENING_SIZE, OPENING_TYPES, openingsOf, openingsProblem, swingOf } from './openings.js'
+import { MIN_OPENING_SIZE, OPENING_TYPES, openingsOf, openingsProblem, hingeOf, swingOf } from './openings.js'
 import { useObjectsStore } from './objectsStore.js'
 import { useModeStore } from './modeStore.js'
 import { useHistoryStore } from './historyStore.js'
@@ -62,7 +62,7 @@ export function layoutData() {
         height: roundMeters(opening.height),
         sill: roundMeters(opening.sill),
         // Which way a door opens (J.8.5); a window has none.
-        ...(opening.type === 'door' ? { swing: swingOf(opening) } : {}),
+        ...(opening.type === 'door' ? { swing: swingOf(opening), hinge: hingeOf(opening) } : {}),
       })),
     },
     objects: objects.map((object) => ({
@@ -226,7 +226,9 @@ function isValidOpening(item, wallCount) {
     item.width >= MIN_OPENING_SIZE &&
     item.height >= MIN_OPENING_SIZE &&
     // Which way a door opens (J.8.5): optional, as in files from before.
-    (item.swing === undefined || item.swing === 'in' || item.swing === 'out')
+    (item.swing === undefined || item.swing === 'in' || item.swing === 'out') &&
+    // Which end it is hinged at (J.8.6): optional too.
+    (item.hinge === undefined || item.hinge === 'start' || item.hinge === 'end')
   )
 }
 
@@ -291,7 +293,7 @@ function parseLayout(text) {
     shape: shapeFor(corners),
     height: data.room.height,
     corners,
-    openings: openings.map(({ type, wall, offset, width, height, sill, swing }) => ({
+    openings: openings.map(({ type, wall, offset, width, height, sill, swing, hinge }) => ({
       id: crypto.randomUUID(),
       type,
       wallIndex: wall,
@@ -299,7 +301,7 @@ function parseLayout(text) {
       width,
       height,
       sill: type === 'door' ? 0 : sill,
-      ...(type === 'door' ? { swing: swing === 'out' ? 'out' : 'in' } : {}),
+      ...(type === 'door' ? { swing: swing === 'out' ? 'out' : 'in', hinge: hinge === 'end' ? 'end' : 'start' } : {}),
     })),
   }
   if (openingsProblem(room)) return { problem: 'invalid' }

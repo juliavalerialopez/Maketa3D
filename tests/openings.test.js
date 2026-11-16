@@ -5,6 +5,7 @@ import {
   fitOpenings,
   openingGaps,
   freeSpan,
+  hingeOf,
   nearestWall,
   nudgedOpening,
   openingNudge,
@@ -342,6 +343,29 @@ test('a door opens in unless set to open out; the file keeps it, and a window ha
   assert.equal(swingOf(room().openings[0]), 'in')
   const wrong = structuredClone(saved)
   wrong.room.openings[0].swing = 'sideways'
+  assert.equal(importLayout(JSON.stringify(wrong)), 'invalid')
+})
+
+test('a door is hinged at its start unless flipped; the file keeps it, and a wrong value is refused (J.8.6)', () => {
+  assert.equal(hingeOf(door()), 'start')
+  assert.equal(hingeOf(door({ hinge: 'end' })), 'end')
+  const id = addCentred('door', 0).id
+  useHistoryStore.getState().clear()
+  assert.equal(useRoomStore.getState().updateOpening(id, { hinge: 'end' }), true)
+  assert.equal(useHistoryStore.getState().past.length, 1)
+  addCentred('window', 1)
+  const saved = layoutData()
+  assert.equal(saved.room.openings[0].hinge, 'end')
+  assert.equal('hinge' in saved.room.openings[1], false)
+  newLayout()
+  assert.equal(importLayout(JSON.stringify(saved)), 'done')
+  assert.equal(hingeOf(room().openings[0]), 'end')
+  const old = structuredClone(saved)
+  delete old.room.openings[0].hinge
+  assert.equal(importLayout(JSON.stringify(old)), 'done')
+  assert.equal(hingeOf(room().openings[0]), 'start')
+  const wrong = structuredClone(saved)
+  wrong.room.openings[0].hinge = 'middle'
   assert.equal(importLayout(JSON.stringify(wrong)), 'invalid')
 })
 
