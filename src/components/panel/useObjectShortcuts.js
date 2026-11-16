@@ -40,6 +40,22 @@ export function focusIsFree() {
   return !element || element === document.body || element.tagName === 'CANVAS'
 }
 
+// Undo and redo for the key press, in Plan and in Build (J.10), also from a
+// field being typed in. Returns true when the key was one of them.
+export function runHistoryKey(event) {
+  const action = historyAction(event)
+  if (!action) return false
+  event.preventDefault()
+  // In a field, the browser's own text undo would set the room to a
+  // half-typed size (J0.5): the field is finished first (limited, like a
+  // blur, its change one step), then the app's undo runs.
+  if (isTyping(document.activeElement)) document.activeElement.blur()
+  // A burst of arrow presses ends first, so it can be undone at once.
+  endNudge()
+  useHistoryStore.getState()[action]()
+  return true
+}
+
 // The open arrow-key burst: its undo step is open (I.11) and the moved-distance
 // label shows (J0.3.1) until the keys rest for NUDGE_BURST_MS. nudgeId is the
 // object it moves, or the door or window (J.9.3, which has no label).
@@ -135,20 +151,9 @@ export default function useObjectShortcuts() {
       // Keys for an open menu or a modal dialog.
       if (event.defaultPrevented || document.querySelector('dialog[open], [role="menu"]')) return
 
-      const action = historyAction(event)
+      if (runHistoryKey(event)) return
       // Other keys stay with a field being typed in.
-      if (!action && isTyping(document.activeElement)) return
-      if (action) {
-        event.preventDefault()
-        // In a field, the browser's own text undo would set the room to a
-        // half-typed size (J0.5): the field is finished first (limited, like
-        // a blur, its change one step), then the app's undo runs.
-        if (isTyping(document.activeElement)) document.activeElement.blur()
-        // A burst of arrow presses ends first, so it can be undone at once.
-        endNudge()
-        useHistoryStore.getState()[action]()
-        return
-      }
+      if (isTyping(document.activeElement)) return
 
       // Esc turns a door or window placing tool off (J.9.4), also with the
       // focus on its button.

@@ -4,6 +4,7 @@ import ContextLossGuard from '../scene/ContextLossGuard'
 import BuildNotice from '../scene/BuildNotice'
 import MeterScale from '../scene/MeterScale'
 import ScaleLegend from '../scene/ScaleLegend'
+import HistoryButtons from '../scene/HistoryButtons'
 import { TopControls } from '../scene/TopCamera'
 import { topCameraSettings } from '../scene/planViews'
 import SplitLayout from '../layout/SplitLayout'
@@ -50,6 +51,7 @@ export default function BuildMode() {
               <MeterScale />
             </Canvas>
             <ScaleLegend />
+            <HistoryButtons />
             <BuildNotice />
           </ErrorBoundary>
         </div>

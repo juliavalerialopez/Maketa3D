@@ -9,7 +9,7 @@ import PlaceOpening from './PlaceOpening'
 import WallBar from './WallBar'
 import BuildDistances from './BuildDistances'
 import OpeningDistances from './OpeningDistances'
-import { focusIsFree } from '../panel/useObjectShortcuts'
+import { focusIsFree, runHistoryKey } from '../panel/useObjectShortcuts'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import Floor from './Floor'
 import RoomGrid from './RoomGrid'
@@ -294,6 +294,8 @@ export default function BuildScene() {
 
   useEffect(() => {
     function handleKeyDown(event) {
+      // Undo and redo (J.10), as in Plan, unless a menu or dialog is open.
+      if (!event.defaultPrevented && !document.querySelector('dialog[open], [role="menu"]') && runHistoryKey(event)) return
       // A field being typed in keeps Esc; a focused button (Cut) does not.
       const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)
       const ui = useUiStore.getState()

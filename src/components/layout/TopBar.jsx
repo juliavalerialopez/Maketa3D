@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useEffectEvent, useState } from 'react'
 import SegmentedSwitch from '../ui/SegmentedSwitch'
 import Toggle from '../ui/Toggle'
 import Dialog from '../ui/Dialog'
@@ -15,6 +15,9 @@ const MODES = [
   { value: 'plan', label: 'Plan' },
   { value: 'personalize', label: 'Personalize' },
 ]
+
+// The keys that go to each mode (J.10).
+const MODE_KEYS = { 1: 'build', 2: 'plan', 3: 'personalize' }
 
 // Leaving Personalize clears the versions, so it asks first when there is
 // something to lose: a version, or a request still running.
@@ -53,6 +56,24 @@ export default function TopBar() {
     }
     switchMode(next)
   }
+
+  // 1, 2 and 3 switch mode (J.10), the same way the switch does (so leaving
+  // Personalize asks first), except while typing in a field or with a menu or
+  // dialog open.
+  const handleModeKey = useEffectEvent((event) => {
+    const next = MODE_KEYS[event.key]
+    if (!next || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || event.repeat) return
+    const active = document.activeElement
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(active?.tagName) || active?.isContentEditable) return
+    if (event.defaultPrevented || document.querySelector('dialog[open], [role="menu"]')) return
+    handleModeChange(next)
+  })
+
+  useEffect(() => {
+    const listener = (event) => handleModeKey(event)
+    window.addEventListener('keydown', listener)
+    return () => window.removeEventListener('keydown', listener)
+  }, [])
 
   function leavePersonalize() {
     const next = confirmingLeave

@@ -53,6 +53,7 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 | 1, 2, 3 | Build, Plan, Personalize | new (J.10) |
 | W, A, S, D, arrow keys in Walk | Walk forward, left, back, right | new (J.1.2) |
 
+- (as built 2026-11-16, J.10) Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y work in Build the same way as in Plan, also from a field being typed in, with the wall, cut and opening changes one step each; Build shows the Undo and Redo buttons at the top left of its view, as Plan does. 1, 2 and 3 go to Build, Plan and Personalize like the mode switch does (leaving Personalize still asks first when there are versions); they are ignored while typing in a field and while a menu or dialog is open, and work with the focus on a button.
 - Arrow keys move relative to the screen: Left and Right move to the left and right on screen, Up moves away from the camera, Down toward it, each snapped to the nearest room axis. A move is clamped inside the walls like a drag. One held key or burst of presses is one undo step.
 - Known gap fixed here: with focus on the color input or a button, Backspace and Delete must not delete the object.
 
@@ -185,7 +186,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
   - ✅ J.9.2 Select and drag a door or window on its wall in Plan's 2D and 3D views, with its distances to the walls, floor and ceiling (added 2026-11-15, Julia)
   - ✅ J.9.3 Arrow keys move the selected door or window (added 2026-11-15, Julia)
   - ✅ J.9.4 Add doors and windows in Plan with the placing tools, in 2D and 3D (added 2026-11-15, Julia)
-- ⬜ J.10 Undo and redo in Build, and the 1, 2, 3 mode shortcuts.
+- ✅ J.10 Undo and redo in Build, and the 1, 2, 3 mode shortcuts.
 - ⬜ J.11 Personalize with openings: check the AI keeps doors and windows, adjust the prompt if not. Update docs and run the verifier.
 
 ## Acceptance criteria
