@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {
   defaultSized,
   fitOpenings,
+  openingGaps,
   freeSpan,
   nearestWall,
   openingStart,
@@ -89,6 +90,23 @@ test('Default size puts the standard width and height back, growing like Width, 
   const squeezed = door({ offset: 2.2, width: 0.6 })
   const between = roomWith([window({ offset: 1, width: 1.2 }), squeezed, window({ id: 'w2', offset: 2.8 })])
   assert.equal(defaultSized(between, squeezed), null)
+})
+
+test('an opening measures to the walls on each side, past a cut point, and to the floor and ceiling (J.9.2)', () => {
+  // Wall 0 is 6 m long; the window is 3 to 4.2, sill 0.9, 1.2 high, in 2.6 m.
+  const gaps = openingGaps(roomWith([window()]), window())
+  close(gaps.before, 3)
+  close(gaps.after, 1.8)
+  close(gaps.floor, 0.9)
+  close(gaps.ceiling, 0.5)
+  // The back wall cut at x 0.5 (3.5 m along): the window is on the second
+  // piece, 0.5 m from the cut, and still 3 m from the wall on that side.
+  const corners = splitWall(rectangleCorners(6, 5), 0, 3.5)
+  const cut = { shape: 'custom', height: 2.6, corners, openings: [] }
+  const onPiece = window({ wallIndex: 1, offset: 0.5 })
+  const pieceGaps = openingGaps(cut, onPiece)
+  close(pieceGaps.before, 4)
+  close(pieceGaps.after, 0.8)
 })
 
 test('a door placed with the pointer is centred on it in 5 cm steps, 0.1 m from the wall ends (J.8.1)', () => {

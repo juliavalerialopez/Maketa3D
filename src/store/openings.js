@@ -260,6 +260,33 @@ export function defaultSized(room, opening) {
   return openingsProblem({ ...room, openings }) ? null : sized
 }
 
+// How far `opening` is from what is around it (J.9.2), in meters: `before`
+// and `after` along its wall to the nearest wall on each side, toward its
+// wall's first corner and its last, looking past walls in line with it (a
+// cut point is no wall); `floor` and `ceiling` from its bottom and its top.
+export function openingGaps(room, opening) {
+  const walls = roomWalls(room.corners)
+  const own = walls[opening.wallIndex]
+  const inLine = (wall) =>
+    Math.abs(wall.normal[0] - own.normal[0]) < EPSILON && Math.abs(wall.normal[1] - own.normal[1]) < EPSILON
+  // The lengths of the walls in line with its own, going `step` (-1 or 1) round the room.
+  const extra = (step) => {
+    let length = 0
+    for (let i = 1; i < walls.length; i++) {
+      const wall = walls[(opening.wallIndex + step * i + walls.length) % walls.length]
+      if (!inLine(wall)) break
+      length += wall.length
+    }
+    return length
+  }
+  return {
+    before: opening.offset + extra(-1),
+    after: own.length - opening.offset - opening.width + extra(1),
+    floor: opening.sill,
+    ceiling: room.height - opening.sill - opening.height,
+  }
+}
+
 // The tallest opening's top (sill + height), 0 without openings: the room
 // cannot be lower than this.
 export const tallestOpening = (room) => Math.max(0, ...openingsOf(room).map((opening) => opening.sill + opening.height))

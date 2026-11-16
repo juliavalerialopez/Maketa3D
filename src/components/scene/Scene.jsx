@@ -4,6 +4,7 @@ import Openings from './Openings'
 import Objects from './Objects'
 import SelectionBox from './SelectionBox'
 import OpeningOutline from './OpeningOutline'
+import OpeningDistances from './OpeningDistances'
 import ObjectWidget from './ObjectWidget'
 import MoveReadout from './MoveReadout'
 import WallDistances from './WallDistances'
@@ -25,6 +26,7 @@ export default function Scene() {
         <>
           <SelectionBox />
           <OpeningOutline />
+          <OpeningDistances />
           <WallDistances />
           <ObjectWidget />
           <MoveReadout />
