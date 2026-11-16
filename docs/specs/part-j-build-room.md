@@ -185,14 +185,14 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
     - ✅ J.8.1.1 A Default size button in a door's or window's details puts its width and height back to the standard size (added 2026-11-15, changed 2026-11-16, Julia)
   - ✅ J.8.2 Place a window with two clicks: where it starts, then where it ends, with a preview of its size, on any wall (added 2026-11-13, Julia)
   - ✅ J.8.3 Wall options: a click on a wall shows a small bar next to it with Cut, Door and Window (added 2026-11-13, Julia)
-- ⬜ J.9 Doors and windows in Plan: list group, details, move and resize.
+- ✅ J.9 Doors and windows in Plan: list group, details, move and resize.
   - ✅ J.9.1 Openings group in Plan's Objects section: select one, its details and Delete, an outline in the view (added 2026-11-15, Julia)
     - ✅ J.9.1.1 A door or window's fields change it while typing or stepping, not only once final (added 2026-11-15, found by Julia)
   - ✅ J.9.2 Select and drag a door or window on its wall in Plan's 2D and 3D views, with its distances to the walls, floor and ceiling (added 2026-11-15, Julia)
   - ✅ J.9.3 Arrow keys move the selected door or window (added 2026-11-15, Julia)
   - ✅ J.9.4 Add doors and windows in Plan with the placing tools, in 2D and 3D (added 2026-11-15, Julia)
 - ✅ J.10 Undo and redo in Build, and the 1, 2, 3 mode shortcuts.
-- ⬜ J.11 Personalize with openings: check the AI keeps doors and windows, adjust the prompt if not. Update docs and run the verifier.
+- ✅ J.11 Personalize with openings: check the AI keeps doors and windows, adjust the prompt if not. Update docs and run the verifier.
   - ✅ J.11.1 The request sends each door's and window's rectangle in the Room render, and the prompt (v10) lists them, so they keep their place and size (added 2026-11-16, from Julia's check with v9)
   - ✅ J.11.2 Reference cards for doors and windows in Personalize: a photo or Creative for each, like the furniture (added 2026-11-16, Julia)
 
