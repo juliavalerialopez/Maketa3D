@@ -223,6 +223,31 @@ export function nearestWall(corners, x, z, reach) {
   return best && { wallIndex: best.wallIndex, along: best.along }
 }
 
+// The stretch of its wall that `opening` can use (J.9.1.1): between the
+// wall's ends (0.1 m kept at each) and the openings next to it on the same
+// wall. { from, to }, in meters from the wall's first corner.
+export function freeSpan(room, opening) {
+  const wall = roomWalls(room.corners)[opening.wallIndex]
+  let [from, to] = [OPENING_EDGE, wall.length - OPENING_EDGE]
+  for (const other of openingsOf(room)) {
+    if (other.id === opening.id || other.wallIndex !== opening.wallIndex) continue
+    if (other.offset + other.width <= opening.offset + EPSILON) from = Math.max(from, other.offset + other.width)
+    else if (other.offset >= opening.offset + opening.width - EPSILON) to = Math.min(to, other.offset)
+  }
+  return { from, to }
+}
+
+// `opening` made `width` wide (J.9.1.1): it keeps its place and grows past
+// its far edge; where its free span ends there, it grows back toward the
+// wall's start instead. Returns { offset, width }, which does not fit
+// (openingsProblem) when `width` is wider than the free span.
+export function widenedOpening(room, opening, width) {
+  const { from, to } = freeSpan(room, opening)
+  const offset = Math.min(Math.max(opening.offset, from), to - width)
+  // In millimeters, so no rounding error is stored; "+ 0" turns -0 into 0.
+  return { offset: Math.round(offset * 1000) / 1000 + 0, width }
+}
+
 // The tallest opening's top (sill + height), 0 without openings: the room
 // cannot be lower than this.
 export const tallestOpening = (room) => Math.max(0, ...openingsOf(room).map((opening) => opening.sill + opening.height))

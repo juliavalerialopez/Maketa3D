@@ -2,6 +2,7 @@ import { beforeEach, test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   fitOpenings,
+  freeSpan,
   nearestWall,
   openingStart,
   openingsProblem,
@@ -9,6 +10,7 @@ import {
   reanchorOpenings,
   spannedOpening,
   tallestOpening,
+  widenedOpening,
 } from '../src/store/openings.js'
 import { draggedRoom, reachableStep, startWallDrag, useRoomStore } from '../src/store/roomStore.js'
 import { rectangleCorners, roomWalls, splitWall } from '../src/store/roomShape.js'
@@ -37,6 +39,37 @@ test('an opening fits inside its wall with 0.1 m left at each end, under the cei
   assert.equal(openingsProblem(roomWith([door(), window({ offset: 1.5 })])), 'overlap')
   // Touching is fine.
   assert.equal(openingsProblem(roomWith([door(), window({ offset: 1.9 })])), null)
+})
+
+test('an opening is free between its wall ends, 0.1 m in, and its neighbours on the same wall (J.9.1.1)', () => {
+  // Wall 0 is 6 m long.
+  assert.deepEqual(freeSpan(roomWith([door()]), door()), { from: 0.1, to: 5.9 })
+  // The window (3 to 4.2) is past the door; one on another wall does not count.
+  const three = roomWith([door(), window(), window({ id: 'w2', wallIndex: 1, offset: 0.5 })])
+  assert.deepEqual(freeSpan(three, door()), { from: 0.1, to: 3 })
+  assert.deepEqual(freeSpan(three, window()), { from: 1.9, to: 5.9 })
+})
+
+test('a wider opening grows past its far edge, then back toward the wall start (J.9.1.1)', () => {
+  // Room past its far edge: it stays where it is.
+  assert.deepEqual(widenedOpening(roomWith([door()]), door(), 1.2), { offset: 1, width: 1.2 })
+  // Against the wall's end (5.9): it grows back toward the start.
+  const atEnd = door({ offset: 5 })
+  assert.deepEqual(widenedOpening(roomWith([atEnd]), atEnd, 1.2), { offset: 4.7, width: 1.2 })
+  // Against another opening: the same, and too wide for the span it does not fit.
+  const beforeWindow = door({ offset: 2.1 })
+  const withWindow = roomWith([beforeWindow, window()])
+  const wider = widenedOpening(withWindow, beforeWindow, 1.5)
+  assert.deepEqual(wider, { offset: 1.5, width: 1.5 })
+  assert.equal(openingsProblem(roomWith([{ ...beforeWindow, ...wider }, window()])), null)
+  const tooWide = widenedOpening(withWindow, beforeWindow, 3)
+  assert.notEqual(openingsProblem(roomWith([{ ...beforeWindow, ...tooWide }, window()])), null)
+  // Narrower: it keeps its near edge.
+  assert.deepEqual(widenedOpening(roomWith([atEnd]), atEnd, 0.6), { offset: 5, width: 0.6 })
+  // Through the store: a door at the wall's end gets wider.
+  useRoomStore.getState().setRoom(roomWith([atEnd]))
+  assert.ok(useRoomStore.getState().updateOpening('d', widenedOpening(room(), atEnd, 1.2)))
+  close(useRoomStore.getState().room.openings[0].offset, 4.7)
 })
 
 test('a door placed with the pointer is centred on it in 5 cm steps, 0.1 m from the wall ends (J.8.1)', () => {
