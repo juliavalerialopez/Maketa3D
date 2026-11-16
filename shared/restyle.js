@@ -16,6 +16,11 @@ export const MAX_BODY = 4_000_000
 // The browser keeps its request body under this, a little below MAX_BODY.
 export const BODY_BUDGET = 3_900_000
 
+// Doors and windows per request, and their kinds (J.11.1). Each is sent with
+// the rectangle it covers in the Room render.
+export const MAX_OPENINGS = 40
+export const OPENING_KINDS = ['door', 'window']
+
 // Which way an object's front faces in the Room render (I.19), one of eight:
 // toward the camera, the right or left of the image, or away from the camera,
 // and the four in between. Sent only for types with a front.

@@ -1,11 +1,12 @@
 // Live restyle prompt. Must match the latest version in docs/prompts/restyle.md.
-// v9 (I.19): v3 (H.8), built per request from the Reference Room card and
+// v10 (J.11.1): v3 (H.8), built per request from the Reference Room card and
 // the objects, plus the room-only line (v7) and the plain-walls line (v8) when
 // there is a room photo and an object photo, plus which way each piece with a
-// front faces (v9). Images are sent in this order: 1 = Room render, then the
+// front faces (v9), plus the doors and windows of the Room render with their
+// rectangles (v10). Images are sent in this order: 1 = Room render, then the
 // room photo (if the room is in Reference mode), then the object photos in
 // list order.
-export const PROMPT_VERSION = 'v9'
+export const PROMPT_VERSION = 'v10'
 
 // The kind of item from its list name: "Coffee table 2" -> "coffee table".
 const kindOf = (name) => name.replace(/\s+\d+$/, '').toLowerCase()
@@ -37,12 +38,38 @@ const FACING_SENTENCES = {
 
 export const facingSentence = (facing) => FACING_SENTENCES[facing] ?? null
 
+// v10 (J.11.1): the doors and windows in image 1, each with the rectangle it
+// covers, so they become real ones of the same size at the same place. The
+// render shows a door as a flat brown rectangle and a window as a pale blue
+// one. `roomImage` is the room photo's image number, or null. Empty with no
+// openings.
+function openingsPart(openings, roomImage) {
+  if (openings.length === 0) return ''
+  const fromPhoto = roomImage
+    ? ` Image ${roomImage} may show doors and windows too: take only their style from it (frame, color, glazing), never their number, size or place.`
+    : ''
+  const lines = openings.map(
+    (opening) =>
+      `- ${opening.name} (${withArticle(opening.type)}): its rectangle spans from ${opening.left}% to ${opening.right}% from the left and from ${opening.top}% to ${opening.bottom}% from the top of image 1.`,
+  )
+  return `The doors and windows:
+The flat colored rectangles on the walls of image 1 are placeholders: a brown one is a door, a pale blue one is a window. Make each a real door or window that fills its rectangle exactly: on the same wall, at the same place, with the same width and height. Do not move, resize, add or remove any.${fromPhoto}
+${lines.join('\n')}
+
+`
+}
+
 // room: { mode, photo? }; objects: [{ name, mode, x, y, facing?, photo? }] (x
-// and y in percent of the image from the left and from the top). Returns the
+// and y in percent of the image from the left and from the top); openings:
+// [{ type, name, left, right, top, bottom }] (percent, J.11.1). Returns the
 // prompt text; image numbers follow the order above.
-export function buildPrompt({ room, objects }) {
+export function buildPrompt({ room, objects, openings = [] }) {
   let nextImage = 2
   const roomImage = room.photo ? nextImage++ : null
+  // The doors and windows of image 1 are the only ones allowed.
+  const noOpenings = openings.length
+    ? 'Do not add windows, doors, beams, baseboards or openings other than the doors and windows listed below.'
+    : 'Do not add windows, doors, beams, baseboards or openings.'
 
   const roomLines = roomImage
     ? [
@@ -75,7 +102,7 @@ Make image 1 look like a real photograph of the same room, with real furniture i
 
 Keep exactly as in image 1:
 - The camera: same viewpoint, height, angle, lens and framing. Do not rotate, zoom or move the view. The result must line up with image 1 when laid over it: every wall corner and floor edge stays at the same place in the frame.
-- The room's shape: the same walls, corners and floor edges. Do not add windows, doors, beams, baseboards or openings.
+- The room's shape: the same walls, corners and floor edges. ${noOpenings}
 - Every piece of furniture listed below: the same place on the floor, about the same size, and the same orientation as its grey shape. Each must be seen from the same side and at the same angle. Do not turn any piece to face the camera.
 
 The grey shapes only mark where each piece stands, how big it is and which way it faces; they are not its design. A piece with a reference photo takes its form from that photo, even when it differs from the grey shape (for example a round table on a rectangular shape, or a sofa with a chaise on a straight shape).
@@ -83,7 +110,7 @@ The grey shapes only mark where each piece stands, how big it is and which way i
 The room (walls, floor, light):
 ${roomLines.join('\n')}
 
-The furniture:
+${openingsPart(openings, roomImage)}The furniture:
 ${objectLines.join('\n')}
 
 Do not add anything else: no plants, rugs, shelves, wall slats, beams, artwork, lamps, tables, chairs or other furniture. Every object in the result must be one of the pieces listed above.

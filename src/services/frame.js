@@ -65,12 +65,46 @@ export function viewCamera({ position, target, fov }, camera = new PerspectiveCa
 // size, so the frame is the whole image). Changes
 // `point`.
 export function framePosition(point, camera, width, height) {
+  const [x, y] = frameShare(point, camera, width, height)
+  return { x: percent(x), y: percent(y) }
+}
+
+// A share of the frame (0 to 1) as a percent with one decimal, clamped to it.
+const percent = (value) => Math.round(Math.min(1, Math.max(0, value)) * 1000) / 10
+
+// Where a point shows in the frame, as shares of its width and height (0 to
+// 1 inside it, not clamped). Changes `point`.
+function frameShare(point, camera, width, height) {
   point.project(camera)
   const rect = frameRect(width, height)
-  const x = (((point.x + 1) / 2) * width - rect.x) / rect.width
-  const y = (((1 - point.y) / 2) * height - rect.y) / rect.height
-  const percent = (value) => Math.round(Math.min(1, Math.max(0, value)) * 1000) / 10
-  return { x: percent(x), y: percent(y) }
+  return [(((point.x + 1) / 2) * width - rect.x) / rect.width, (((1 - point.y) / 2) * height - rect.y) / rect.height]
+}
+
+// The rectangle a door or window covers in the Room render (J.11.1), in
+// percent of the frame: { left, right } from the left, { top, bottom } from
+// the top, clamped to the frame. `wall` is its roomWalls entry. Null when it
+// does not show: its wall is hidden (the camera is on the wall's outer side,
+// wallVisibility.js), it is behind the camera, or it is outside the frame.
+export function openingFrame(wall, opening, camera, width, height) {
+  const [nx, nz] = wall.normal
+  if ((camera.position.x - wall.start.x) * nx + (camera.position.z - wall.start.z) * nz > 0) return null
+  const [dx, dz] = [(wall.end.x - wall.start.x) / wall.length, (wall.end.z - wall.start.z) / wall.length]
+  camera.updateMatrixWorld()
+  let [left, right, top, bottom] = [Infinity, -Infinity, Infinity, -Infinity]
+  for (const along of [opening.offset, opening.offset + opening.width]) {
+    for (const up of [opening.sill, opening.sill + opening.height]) {
+      point.set(wall.start.x + dx * along, up, wall.start.z + dz * along)
+      // In front of the camera, which looks down its own -z.
+      if (corner.copy(point).applyMatrix4(camera.matrixWorldInverse).z >= 0) return null
+      const [x, y] = frameShare(point, camera, width, height)
+      left = Math.min(left, x)
+      right = Math.max(right, x)
+      top = Math.min(top, y)
+      bottom = Math.max(bottom, y)
+    }
+  }
+  if (right <= 0 || left >= 1 || bottom <= 0 || top >= 1) return null
+  return { left: percent(left), right: percent(right), top: percent(top), bottom: percent(bottom) }
 }
 
 // The camera as plain numbers, stored with the Room render so later checks
@@ -112,6 +146,7 @@ const viewMatrix = new Matrix4()
 const viewProjection = new Matrix4()
 const euler = new Euler()
 const point = new Vector3()
+const corner = new Vector3()
 
 // The 8 corners of the object's box in world space. The origin is the middle
 // of the base: x and z go ±half the size, y from 0 to the height. Placed like

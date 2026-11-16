@@ -145,34 +145,35 @@ function errorFor(status, body) {
   return new RestyleError(MESSAGES.failed)
 }
 
-// The JSON body: the render, the room card and each object, with the photos
-// as base64 JPEG. room: { mode, photo? }; objects: [{ id, type, name, mode,
-// x, y, photo? }]; photo values here are data URLs.
-function bodyFor(render, room, objects) {
+// The JSON body: the render, the room card, each object and the doors and
+// windows, with the photos as base64 JPEG. room: { mode, photo? }; objects:
+// [{ id, type, name, mode, x, y, photo? }]; photo values here are data URLs;
+// openings: [{ type, name, left, right, top, bottom }] (J.11.1).
+function bodyFor(render, room, objects, openings) {
   const withPhoto = ({ photo, ...rest }) => (photo ? { ...rest, photo: base64Of(photo) } : rest)
-  return JSON.stringify({ render: base64Of(render), room: withPhoto(room), objects: objects.map(withPhoto) })
+  return JSON.stringify({ render: base64Of(render), room: withPhoto(room), objects: objects.map(withPhoto), openings })
 }
 
 // The body, with the photos made smaller step by step while it is over
 // budget. Rejects with tooLarge if it still does not fit.
-async function fittingBody(render, room, objects) {
-  let body = bodyFor(render, room, objects)
+async function fittingBody(render, room, objects, openings) {
+  let body = bodyFor(render, room, objects, openings)
   for (let step = 0; body.length > BODY_BUDGET; step++) {
     if (step === SHRINK_STEPS) throw new RestyleError(MESSAGES.tooLarge)
     const shrink = async (item) => (item.photo ? { ...item, photo: await shrinkPhoto(item.photo, SHRINK_SCALE) } : item)
     room = await shrink(room)
     objects = await Promise.all(objects.map(shrink))
-    body = bodyFor(render, room, objects)
+    body = bodyFor(render, room, objects, openings)
   }
   return body
 }
 
-// Sends the Room render, the room card and the objects in the frame (see
-// bodyFor). Resolves { image, count } (see countOf); rejects with a
-// RestyleError for the panel.
-export async function requestRestyle({ snapshot, room, objects }) {
+// Sends the Room render, the room card, the objects in the frame and the
+// doors and windows in it (see bodyFor). Resolves { image, count } (see
+// countOf); rejects with a RestyleError for the panel.
+export async function requestRestyle({ snapshot, room, objects, openings = [] }) {
   const render = await renderToJpeg(snapshot)
-  const body = await fittingBody(render, room, objects)
+  const body = await fittingBody(render, room, objects, openings)
   let response
   try {
     response = await fetch(ENDPOINT, {

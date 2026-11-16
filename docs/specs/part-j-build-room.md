@@ -140,6 +140,11 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
   - **J.9.3** The arrow keys move the selected one 5 cm per press, along its wall (and up and down for a window in 3D), following the screen like furniture; a burst of presses is one undo step. (added 2026-11-16, as built, Julia to confirm) Left and Right move it along its wall the way the wall runs on screen. Up and Down move a window up and down in 3D; a door in 3D, and both in 2D, go along the wall when it runs away from the camera (up the screen in 2D). A key across the wall does nothing. Shift changes nothing: the step is always 5 cm.
   - **J.9.4** **Door** and **Window** buttons in Plan's Objects section start the same placing tools as in Build, in the 2D view (near a wall on the floor) and in 3D (pointing at a wall's inside face). Esc cancels.
 
+### Doors and windows in the AI image (J.11)
+- A door and a window in the Room render (flat rectangles: brown, pale blue) must be a real door and window in the AI image, on the same wall, at the same place and size, and none added (test T13 in `docs/prompts/restyle.md`).
+- (added 2026-11-16, J.11.1, from Julia's check: the window was kept but not at its size) The request also sends the doors and windows that show in the Room render, each with its list name and the rectangle it covers there (percent from the left and from the top; one on a hidden wall, behind the camera or outside the frame is left out). The prompt (v10) lists them with those rectangles and allows only them. A request without any gets the v9 prompt.
+- (added 2026-11-16, J.11.2, Julia) Personalize has no reference card for a door or a window, so their kind cannot be chosen. To do: a card per door and window in the Room render, Reference (photo) or Creative, like the furniture.
+
 ## Tasks
 Order: fixes first, then the room data, then what I see. Each one follows the checkpoint workflow.
 
@@ -188,6 +193,8 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
   - ✅ J.9.4 Add doors and windows in Plan with the placing tools, in 2D and 3D (added 2026-11-15, Julia)
 - ✅ J.10 Undo and redo in Build, and the 1, 2, 3 mode shortcuts.
 - ⬜ J.11 Personalize with openings: check the AI keeps doors and windows, adjust the prompt if not. Update docs and run the verifier.
+  - ✅ J.11.1 The request sends each door's and window's rectangle in the Room render, and the prompt (v10) lists them, so they keep their place and size (added 2026-11-16, from Julia's check with v9)
+  - ⬜ J.11.2 Reference cards for doors and windows in Personalize: a photo or Creative for each, like the furniture (added 2026-11-16, Julia)
 
 ## Acceptance criteria
 - [ ] J0.1: with the divider dragged fully left, at 1280 px and at a wide window, every number in Room configuration and Object details is fully visible.
@@ -233,5 +240,6 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - 2026-11-16: From Julia's check of J.9.3: Plan's 2D view is flat, with no shadows or shading (J.1.3, changed from a shadows bug); Build shows the selected door or window's distances to the walls like Plan (J.8.4, new); 2D shows each piece's name (J.1.4, new). From Julia's check of J.1.4: 2D shows every door and window, as they only showed when selected (J.9.5, new), as the floor-plan symbol Build draws plus its name, from Julia's reference (a window as thin lines in a gap in the wall, a door with a faint swing); a door gets an Opens switch, inside or outside (J.8.5, new).
 - 2026-11-16: From Julia's check of J.8.5 and J.9.5: a door can be flipped to the other hinge side (J.8.6, new).
 - 2026-11-16: From Julia's check of J.5.2 and J.5.3: Build's wall lengths become dimension lines like Plan's (J.5.3), and Build's Room configuration shows all the room's sizes, not only Height (J.5.4, new). The grid is dotted lines, not single dots (J.5.2).
+- 2026-11-16: J.11, Julia's first Generate with a window (prompt v9): it became a real window on its wall, but taller than its rectangle. So the app now sends each door's and window's rectangle and the prompt lists them (J.11.1, new, prompt v10). Julia also noted there is no reference card for a door or window (J.11.2, new).
 - 2026-11-16: From Julia's check of the grid: Build shows a scale legend, a dotted square of 1 m² in its bottom left corner (J.5.5, new).
 - 2026-11-16: From Julia's floor plan reference: a grid floor in Build, dots every meter and a line every 5 m instead of 10 (J.5.2, new), and the room's sizes as dimension lines plus its area, in Build and 2D (J.5.3, new; an area label was out of scope before).

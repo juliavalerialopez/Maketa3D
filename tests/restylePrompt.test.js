@@ -42,6 +42,30 @@ test('the wall-shades line (I.15 test only) goes before the last line, and the l
   assert.equal(lines.at(-3), WALL_SHADES_LINE)
 })
 
+test('doors and windows (v10) are listed with their rectangles, and are the only ones allowed', () => {
+  const openings = [
+    { type: 'door', name: 'Door 1', left: 12, right: 20.5, top: 35, bottom: 80 },
+    { type: 'window', name: 'Window 1', left: 68, right: 85, top: 37, bottom: 54 },
+  ]
+  const plain = buildPrompt({ room: { mode: 'creative' }, objects })
+  // Without any, the prompt is as before v10.
+  assert.equal(buildPrompt({ room: { mode: 'creative' }, objects, openings: [] }), plain)
+  assert.ok(plain.includes('baseboards or openings.'))
+  assert.ok(!plain.includes('The doors and windows:'))
+
+  const prompt = buildPrompt({ room: { mode: 'creative' }, objects, openings })
+  assert.ok(prompt.includes('openings other than the doors and windows listed below.'))
+  assert.match(prompt, /- Door 1 \(a door\): its rectangle spans from 12% to 20\.5% from the left and from 35% to 80% from the top of image 1\./)
+  assert.match(prompt, /- Window 1 \(a window\): its rectangle spans from 68% to 85% from the left and from 37% to 54% from the top/)
+  // Between the room and the furniture.
+  assert.ok(prompt.indexOf('The room (walls') < prompt.indexOf('The doors and windows:'))
+  assert.ok(prompt.indexOf('The doors and windows:') < prompt.indexOf('The furniture:'))
+  // Only a room photo can show doors and windows of its own.
+  assert.ok(!prompt.includes('may show doors and windows too'))
+  const withRoom = buildPrompt({ room: { mode: 'reference', photo: 'room' }, objects, openings })
+  assert.match(withRoom, /Image 2 may show doors and windows too: take only their style from it/)
+})
+
 test('the facing sentence (v9) follows the position, only for pieces with a facing', () => {
   const facing = [{ ...objects[0], facing: 'left' }, objects[1], { ...objects[2], facing: 'front-right' }]
   assert.doesNotMatch(buildPrompt({ room: { mode: 'creative' }, objects }), /Its front|Its back/)

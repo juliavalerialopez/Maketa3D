@@ -119,7 +119,8 @@ function requestContent(references) {
       const side = facing ? { facing } : {}
       return { id: object.id, type: object.type, name: objectLabel(object), x, y, ...side, ...card(object.id) }
     })
-  return { room: card(ROOM_REFERENCE), objects }
+  // The doors and windows in the Room render, with their rectangles (J.11.1).
+  return { room: card(ROOM_REFERENCE), objects, openings: currentRoomRender()?.openings ?? [] }
 }
 
 // AI restyle state (Part F, H.2), memory only: kept across mode switches,

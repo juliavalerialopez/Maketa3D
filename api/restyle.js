@@ -1,8 +1,10 @@
-// Restyle function (Part F, H.7): POST { render, room, objects } returns
-// { image, remaining } with the AI image as a data URL. render is a base64
-// JPEG; room is { mode, photo? }; objects is [{ id, type, name, mode, x, y,
-// facing?, photo? }] (see readInput); photos are base64 JPEG; facing is one
-// of FACINGS, only for types with a front (I.19). GET returns
+// Restyle function (Part F, H.7): POST { render, room, objects, openings? }
+// returns { image, remaining } with the AI image as a data URL. render is a
+// base64 JPEG; room is { mode, photo? }; objects is [{ id, type, name, mode,
+// x, y, facing?, photo? }] (see readInput); photos are base64 JPEG; facing is
+// one of FACINGS, only for types with a front (I.19); openings is [{ type,
+// name, left, right, top, bottom }], the doors and windows in the render
+// (J.11.1). GET returns
 // { remaining } without counting. When remaining is 0, `limit` says which
 // limit was reached ('total' | 'visitor'). Every answer also carries the
 // current limits, visitorLimit and totalLimit (H.1). Errors are { error: code }:
@@ -13,7 +15,7 @@ import { restyleImage } from './_gemini.js'
 import { limits, release, remaining, reserve } from './_limits.js'
 import { buildPrompt, promptImages } from './_restyle-prompt.js'
 // Limits shared with the browser (I.8).
-import { FACINGS, MAX_BODY, MAX_OBJECTS, MAX_PHOTOS } from '../shared/restyle.js'
+import { FACINGS, MAX_BODY, MAX_OBJECTS, MAX_OPENINGS, MAX_PHOTOS, OPENING_KINDS } from '../shared/restyle.js'
 
 const MODES = ['reference', 'creative']
 const ID = /^[A-Za-z0-9-]{1,64}$/
@@ -57,8 +59,23 @@ function isValidObject(object) {
   )
 }
 
-// The checked { render, room, objects }, or { error: Response }. At least
-// one photo (H.6.1) and at most MAX_PHOTOS.
+// A door or window in the Room render (J.11.1): its kind, its list name and
+// the rectangle it covers, in percent from the left and from the top.
+function isValidOpening(opening) {
+  return (
+    Boolean(opening) &&
+    typeof opening === 'object' &&
+    OPENING_KINDS.includes(opening.type) &&
+    NAME.test(opening.name ?? '') &&
+    [opening.left, opening.right, opening.top, opening.bottom].every(isPercent) &&
+    opening.left <= opening.right &&
+    opening.top <= opening.bottom
+  )
+}
+
+// The checked { render, room, objects, openings }, or { error: Response }. At
+// least one photo (H.6.1) and at most MAX_PHOTOS. A request without openings
+// (from before J.11.1) has none.
 async function readInput(request) {
   if (Number(request.headers.get('content-length')) > MAX_BODY) return { error: fail(413, 'too_large') }
   const text = await request.text()
@@ -69,17 +86,20 @@ async function readInput(request) {
   } catch {
     return { error: fail(400, 'bad_input') }
   }
-  const { render, room, objects } = body ?? {}
+  const { render, room, objects, openings = [] } = body ?? {}
   const valid =
     isJpegBase64(render) &&
     isValidCard(room) &&
     Array.isArray(objects) &&
     objects.length <= MAX_OBJECTS &&
-    objects.every(isValidObject)
+    objects.every(isValidObject) &&
+    Array.isArray(openings) &&
+    openings.length <= MAX_OPENINGS &&
+    openings.every(isValidOpening)
   if (!valid) return { error: fail(400, 'bad_input') }
   const photos = [room, ...objects].filter((card) => card.photo).length
   if (photos < 1 || photos > MAX_PHOTOS) return { error: fail(400, 'bad_input') }
-  return { render, room, objects }
+  return { render, room, objects, openings }
 }
 
 export async function GET(request) {

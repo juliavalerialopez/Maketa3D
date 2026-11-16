@@ -19,9 +19,14 @@ Output: 1K, 16:9.
 - v6 – candidate, not kept: the I.15 wall-shades line ("Wall shades test").
 - v7 – 2026-11-10 (I.18.2): v3 plus the I.18 room-only line before the last line, when there is a room photo and an object photo ("Room reference test").
 - v8 – 2026-11-10 (I.18.3): v7 plus the plain-walls line after the room-only line, under the same condition ("Room reference test").
-- v9 – 2026-11-10 (live, I.19): v8 plus a facing sentence per piece with a front ("Facing test").
+- v9 – 2026-11-10 (I.19): v8 plus a facing sentence per piece with a front ("Facing test").
+- v10 – 2026-11-16 (live, J.11.1): v9 plus, when the Room render shows doors or windows, a part that lists each with the rectangle it covers ("Openings test").
 
-## v9 (2026-11-10, live)
+## v10 (2026-11-16, live)
+
+Built by `buildPrompt` in `api/_restyle-prompt.js`: v9, and when the request has `openings` (the doors and windows that show in the Room render), the two changes in "Openings test": the room-shape rule lets the listed ones through, and a "The doors and windows:" part sits between the room and the furniture. With no door or window in the render, v10 is the same as v9.
+
+## v9 (2026-11-10)
 
 Built by `buildPrompt` in `api/_restyle-prompt.js`: the v3 text below, plus:
 - when the request has a room photo and at least one object photo, two lines before the last line: the room-only line (`roomOnlyLine`, v7) and the plain-walls line (`PLAIN_WALLS_LINE`, v8). Both texts are in "Room reference test";
@@ -279,6 +284,54 @@ The grey shapes in the Room render look the same from the front and the back (a 
 Outside these: the sofa is sometimes straight instead of L-shaped (both versions); v9 run 1 adds a sloped ceiling on the right; v9 run 4 gives the Creative coffee table a glass top.
 
 Decision (Julia, 2026-11-10, I.19): v9 goes live (the spec rule: at least 5 of 6, nothing worse).
+
+## Openings test (Part J, J.11)
+Since Part J the Room render can show doors and windows: a door is a flat warm-brown rectangle on its wall that reaches the floor, a window a flat pale blue one above the floor (no hole, no frame). v9 does not mention them and says "Do not add windows, doors, beams, baseboards or openings", so the model may paint over them, turn them into something else, or move them. New test **T13**: every door and window in the Room render is a real door or window in the result, on the same wall, at the same place and about the same size, and none is added.
+
+**v10** (J.11.1): the browser works out the rectangle each door and window covers in the Room render (`openingFrame` in `src/services/frame.js`; one on a hidden wall, behind the camera or outside the frame is left out) and sends them as `openings`: `[{ type, name, left, right, top, bottom }]`, in percent of the image from the left and from the top. With at least one, `buildPrompt` changes two things. The room-shape rule ends:
+
+```text
+Do not add windows, doors, beams, baseboards or openings other than the doors and windows listed below.
+```
+
+And this part goes between the room and the furniture (the second sentence block only with a room photo, image `<n>`):
+
+```text
+The doors and windows:
+The flat colored rectangles on the walls of image 1 are placeholders: a brown one is a door, a pale blue one is a window. Make each a real door or window that fills its rectangle exactly: on the same wall, at the same place, with the same width and height. Do not move, resize, add or remove any. Image <n> may show doors and windows too: take only their style from it (frame, color, glazing), never their number, size or place.
+<per door or window:>
+- <Name> (<a door / a window>): its rectangle spans from <left>% to <right>% from the left and from <top>% to <bottom>% from the top of image 1.
+```
+
+### Steps
+1. Start the app with `npx vercel dev` (real Gemini calls: each Generate is one paid image).
+2. In Plan, set up one room with a door and a window on walls the camera sees, and some furniture. Frame them and save Camera 1.
+3. In Personalize, press Generate (go to Plan and back first, so the Room render is taken again). Compare the door and the window in the AI image with their rectangles in the Room render: same wall, same place, same width and height.
+4. For scripted runs, save the restyle request body from DevTools (Network, Payload) as `scratch/openings.json`; it now carries `openings`. Then, 3 paid images per command:
+   - v10: `node --env-file=.env.local scripts/try-restyle.mjs scratch/openings.json`
+   - as v9, the doors and windows left out of the prompt: `node --env-file=.env.local scripts/try-restyle.mjs scratch/openings.json --no-openings`
+
+Pass rule: 2 of 3 runs.
+
+### Results
+| Check | v9 | v10 |
+|---|---|---|
+| T13 door kept as a real door | 3/3 | 3/3 |
+| T13 window kept as a real window | 0/3 (a painting, a big opening into another room, a blue panel) | 3/3 |
+| T13 same wall and place (within a few percent) | door 3/3, window 0/3 | door 2/3, window 3/3 |
+| T13 same size | not measured | door a little taller 3/3; window too tall 3/3 (top at 24% to 28% instead of 37%) |
+| T13 none added | 3/3 | 3/3 |
+| T1, T3 (Part F): furniture and room shape kept | | not scored |
+
+2026-11-16, v9, one Generate in the app by Julia ("simple corner2": a bookshelf, floor lamp, sofa, coffee table and TV stand, one window on the right wall, no door; room photo of an empty carpeted room that has a window of its own; all pieces Creative). The pale blue rectangle became a real window on the same wall, but not at its size: in the render it spans about 68% to 85% from the left and 37% to 54% from the top, in the result about 70% to 87% and 23% to 51%, so about the same width and much taller, as a double window like the room photo's. Julia: "window didn't respect the dimensions I gave it". No door was in this render.
+
+2026-11-16, `scratch/openings.json`, saved from the app (v10 request): "simple corner2" from a new camera, with Door 3 (58.8% to 62.1% from the left, 29.9% to 57.8% from the top) and Window 1 (67.8% to 84.9%, 36.6% to 54.7%) in the render, a room photo of an empty carpeted room with windows of its own, Floor lamp 1 with a photo and the other four pieces Creative. I checked both rectangles against the render image: they match. 3 runs each, run and scored by Claude. The "v9" column is the same request with `--no-openings` (the prompt then has no list and the old room-shape rule). Windows are 3/3 with v10 and each is a real window with glazing; without the list the blue rectangle became a painting, a large opening into another room (copied from the room photo) and a plain blue panel. v10 puts the window in the right place (width within a few percent in all 3, one run 8% to the right) but always taller than its rectangle: its top edge is near 25% where the rectangle's is at 37%. Doors are in the right place in 2 of 3 v10 runs (run 1 is 5% to the right) and about 10% taller. A door and a window in the same render were both kept; the model added no others.
+
+Earlier in the app (Julia, same day): a render with a window and a door, and a v10 request: the door was kept and the window was left out. The saved request above has both, so the window is dropped now and then even with the list (1 miss in 4 v10 images).
+
+Decision (Julia): open. Claude's reading: v10 stays, it is clearly better than v9 (real window 3/3 against 0/3 here, the door unchanged), and the size overshoot is a candidate for a v11 line that says the opening must not be taller than its rectangle.
+
+Known gap (J.11.2, open): Personalize has no reference card for a door or a window, so their kind cannot be chosen; the AI picks one, or copies the room photo's.
 
 ## Test cases
 See `docs/specs/part-f-restyle.md` (T1 to T6, pass rule: at least 2 of 3 runs on all three fixtures).

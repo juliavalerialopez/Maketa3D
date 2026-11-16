@@ -50,8 +50,8 @@ function callBridge(name, ...args) {
   }
 }
 
-// The Room render of a camera slot's `view`: { image, objects, view }, one
-// entry of modeStore.roomRenders, or null.
+// The Room render of a camera slot's `view`: { image, objects, openings,
+// view }, one entry of modeStore.roomRenders, or null.
 export const takeSnapshot = (view) => callBridge('capture', view)
 
 // A camera slot's thumbnail (JPEG data URL) from `view`, or null.

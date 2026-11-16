@@ -10,9 +10,13 @@ import {
   facingOf,
   framePosition,
   frameView,
+  openingFrame,
   viewCamera,
 } from '../../services/frame'
 import { useObjectsStore } from '../../store/objectsStore'
+import { useRoomStore } from '../../store/roomStore'
+import { roomWalls } from '../../store/roomShape'
+import { openingLabel, openingsOf } from '../../store/openings'
 import { useCameraSlotsStore } from '../../store/cameraSlotsStore'
 import { useModeStore } from '../../store/modeStore'
 import { useUiStore } from '../../store/uiStore'
@@ -32,6 +36,19 @@ function objectPositions(scene, camera, width, height) {
     box.setFromObject(group).getCenter(centre)
     const facing = facingOf(object, camera)
     return [{ id: object.id, ...framePosition(centre, camera, width, height), facing }]
+  })
+}
+
+// The doors and windows that show in the Room render, each with its list name
+// and the rectangle it covers there (J.11.1), so the AI keeps their place and
+// size: [{ type, name, left, right, top, bottom }].
+function openingFrames(camera, width, height) {
+  const { room } = useRoomStore.getState()
+  const walls = roomWalls(room.corners)
+  return openingsOf(room).flatMap((opening) => {
+    const wall = walls[opening.wallIndex]
+    const frame = wall && openingFrame(wall, opening, camera, width, height)
+    return frame ? [{ type: opening.type, name: openingLabel(room, opening), ...frame }] : []
   })
 }
 
@@ -109,6 +126,7 @@ export default function SnapshotBridge() {
       renderView(gl, scene, camera, view, (canvas, renderCamera) => ({
         image: canvasToPng(canvas),
         objects: objectPositions(scene, renderCamera, RENDER_WIDTH, RENDER_HEIGHT),
+        openings: openingFrames(renderCamera, RENDER_WIDTH, RENDER_HEIGHT),
         view: cameraView(renderCamera, RENDER_WIDTH, RENDER_HEIGHT),
       }))
     snapshotBridge.thumbnail = (view) => renderView(gl, scene, camera, view, canvasToThumbnail)

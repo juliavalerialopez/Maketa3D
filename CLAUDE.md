@@ -79,7 +79,8 @@ first.
   it (e.g. `restyle.js`: image resizing, `/api/restyle` requests, error
   messages; `frame.js`: the 1920 × 1080 Room render size, the frame camera
   and the projection onto it, whether an object shows in the Room render,
-  using the camera stored with it, and which way each object faces in it;
+  using the camera stored with it, which way each object faces in it, and the
+  rectangle each door and window covers in it;
   `zip.js`: the ZIP of all AI
   versions; `download.js`: saving files and data URL helpers;
   `projectFile.js`: the browser's Open and Save as windows for the project
@@ -87,7 +88,8 @@ first.
   message helpers only. Exception: the scene's render code
   (`scene/SnapshotBridge.jsx`) uses the `frame.js` camera math directly.
 - `shared/`: plain JS with no imports, used by both the browser and `api/`
-  (`restyle.js`: photo, object and body limits, and the facing values), so
+  (`restyle.js`: photo, object, opening and body limits, the facing values
+  and the opening kinds), so
   each is defined once.
 - `api/`: Vercel functions. Files starting with `_` are helpers, not routes
   (`_gemini.js`, `_limits.js`, `_restyle-prompt.js`). API keys and secrets

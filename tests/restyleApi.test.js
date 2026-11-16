@@ -1,7 +1,7 @@
 import { after, before, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { POST } from '../api/restyle.js'
-import { MAX_BODY, MAX_PHOTOS } from '../shared/restyle.js'
+import { MAX_BODY, MAX_OPENINGS, MAX_PHOTOS } from '../shared/restyle.js'
 
 // Mock mode (RESTYLE_MOCK=1): the function checks the request and echoes the
 // render back, with no Gemini call and no counting. Bad requests are refused
@@ -38,6 +38,27 @@ test(`more than ${MAX_PHOTOS} photos are refused`, async () => {
 test('an unknown facing is refused', async () => {
   for (const facing of ['up', '', null, 3]) {
     const response = await post({ render: jpeg, room: { mode: 'creative' }, objects: [{ ...object(1), facing }] })
+    assert.equal(response.status, 400)
+    assert.equal((await response.json()).error, 'bad_input')
+  }
+})
+
+test('doors and windows with their rectangles are accepted; a wrong one is refused (J.11.1)', async () => {
+  const opening = { type: 'window', name: 'Window 1', left: 68, right: 85, top: 37, bottom: 54 }
+  const request = (openings) => post({ render: jpeg, room: { mode: 'creative' }, objects: [object(1)], openings })
+  assert.equal((await request([opening, { ...opening, type: 'door', name: 'Door 1' }])).status, 200)
+  const wrong = [
+    'no list',
+    [{ ...opening, type: 'gate' }],
+    [{ ...opening, name: 'Window <1>' }],
+    [{ ...opening, right: 120 }],
+    [{ ...opening, left: 90 }],
+    [{ ...opening, top: undefined }],
+    [null],
+    Array.from({ length: MAX_OPENINGS + 1 }, () => opening),
+  ]
+  for (const openings of wrong) {
+    const response = await request(openings)
     assert.equal(response.status, 400)
     assert.equal((await response.json()).error, 'bad_input')
   }
