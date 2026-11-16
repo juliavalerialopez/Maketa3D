@@ -43,6 +43,8 @@ function leaveBuild(showNotice) {
 export function switchMode(next) {
   const { mode, setMode } = useModeStore.getState()
   if (next === mode) return
+  // A placing tool (J.8, J.9.4) or Cut does not carry over to another mode.
+  useUiStore.getState().setTool(null)
   // A switch still waiting for the Plan canvas is dropped: this one wins.
   cancelPlanCanvasWait()
   if (mode === 'build') leaveBuild(next === 'plan')

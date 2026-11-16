@@ -26,7 +26,8 @@ import { isWidgetActive } from '../scene/widgetState'
 // either (Openings.jsx). Widget handles aren't hits, so a click on a handle
 // is ignored here.
 function handlePointerMissed() {
-  if (isWidgetActive()) return
+  // A door or window placing tool (J.9.4) stays on until it places or Esc.
+  if (isWidgetActive() || useUiStore.getState().tool) return
   useObjectsStore.getState().selectObject(null)
   useUiStore.getState().selectOpening(null)
 }

@@ -150,6 +150,14 @@ export default function useObjectShortcuts() {
         return
       }
 
+      // Esc turns a door or window placing tool off (J.9.4), also with the
+      // focus on its button.
+      const ui = useUiStore.getState()
+      if (event.key === 'Escape' && ui.tool) {
+        ui.setTool(null)
+        return
+      }
+
       // Ctrl+D duplicates (J0.6); the browser's bookmark key is blocked.
       const duplicate = (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'd'
       if (duplicate) event.preventDefault()

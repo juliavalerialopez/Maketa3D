@@ -53,7 +53,8 @@ function SceneObject({ id }) {
   if (!object) return null
 
   function handlePointerDown(event) {
-    if (event.button !== 0) return
+    // With a door or window placing tool on, a press is for placing.
+    if (event.button !== 0 || useUiStore.getState().tool) return
     event.stopPropagation()
     // A press on a widget handle belongs to the widget.
     if (isWidgetActive()) return

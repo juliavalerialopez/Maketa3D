@@ -1,9 +1,9 @@
-import { MIN_CUT_WALL } from '../../store/roomShape'
 import { OPENING_TYPES } from '../../store/openings'
 import { useUiStore } from '../../store/uiStore'
 import Button from '../ui/Button'
 import OpeningList from './OpeningList'
 import OpeningDetails from './OpeningDetails'
+import { TOOL_NOTICES } from './toolNotices'
 
 const SCISSORS_ICON = (
   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -12,13 +12,6 @@ const SCISSORS_ICON = (
     <path d="M8.1 8.1L20 20M8.1 15.9L20 4" />
   </svg>
 )
-
-// What to do while a tool is on.
-const TOOL_NOTICES = {
-  cut: `Click on a wall where it should be split in two (walls of ${MIN_CUT_WALL} m or more). Esc cancels.`,
-  door: 'Click near a wall to place the door. Esc cancels.',
-  window: 'Click on a wall where the window starts, then where it ends. Esc cancels.',
-}
 
 // Build's Wall tools section (J.8, J.7.1, J.8.1, J.8.2). Cut, Door and
 // Window turn a tool on, for any wall: a click splits it in two, places a

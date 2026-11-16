@@ -11,6 +11,7 @@ import OpeningDistances from './OpeningDistances'
 import ObjectWidget from './ObjectWidget'
 import MoveReadout from './MoveReadout'
 import WallDistances from './WallDistances'
+import PlaceOpening from './PlaceOpening'
 import { useUiStore } from '../../store/uiStore'
 
 // The 2D view's only light (J.1.3): even from every side, at the strength
@@ -25,6 +26,8 @@ export default function Scene() {
   // Walk is for looking only (J.1.2): no selection, widget or measurements.
   const editing = useUiStore((state) => state.sceneView !== 'walk')
   const flat = useUiStore((state) => state.sceneView === '2d')
+  const sceneView = useUiStore((state) => state.sceneView)
+  const tool = useUiStore((state) => state.tool)
 
   return (
     <>
@@ -49,6 +52,7 @@ export default function Scene() {
           <WallDistances />
           <ObjectWidget />
           <MoveReadout />
+          {(tool === 'door' || tool === 'window') && <PlaceOpening key={tool} type={tool} view={sceneView} />}
         </>
       )}
     </>

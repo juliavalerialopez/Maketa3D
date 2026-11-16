@@ -74,7 +74,8 @@ export const useUiStore = create((set) => ({
   setHighlight: (highlightedWalls, highlightedTop = false) => set({ highlightedWalls, highlightedTop }),
   setTool: (tool) => set({ tool }),
   setRoomNotice: (roomNotice) => set({ roomNotice }),
-  setSceneView: (sceneView) => set({ sceneView }),
+  // Walk is for looking only (J.1.2): a placing tool (J.9.4) ends there.
+  setSceneView: (sceneView) => set((state) => ({ sceneView, tool: sceneView === 'walk' ? null : state.tool })),
   setPlanPercent: (planPercent) => set({ planPercent }),
   setPersonalizePercent: (personalizePercent) => set({ personalizePercent }),
   setSectionOpen: (id, open) =>

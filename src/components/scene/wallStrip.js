@@ -1,6 +1,10 @@
 // Just above the walls in Build (drawn up to 0.02 m): where its flat symbols sit.
 export const SYMBOL_Y = 0.03
 
+// How wide a door or window symbol is across the thin walls of Plan's 2D view,
+// a little wider than the wall so its lines read.
+export const PLAN_BAND = 0.12
+
 // A flat box along `wall` from `from` to `to` (meters along it), `across` from
 // its inside line outward to `across + depth`, 1 cm high at height `y`:
 // { position, size }. Plain JS, no React: Build's door and window symbols and

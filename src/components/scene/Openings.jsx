@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Mesh, Plane, Vector3 } from 'three'
+import { Plane, Vector3 } from 'three'
 import { useShallow } from 'zustand/react/shallow'
 import { useRoomStore } from '../../store/roomStore'
 import { roomWalls } from '../../store/roomShape'
@@ -12,6 +12,7 @@ import { showWallFor } from './wallVisibility'
 import { DOOR_COLOR, WINDOW_COLOR } from './roomColors'
 import { openingPlacement } from './openingPlacement'
 import { isWidgetActive } from './widgetState'
+import { raycastWhenShown } from './raycastWhenShown'
 
 // How far in front of the wall's inside face an opening sits, in meters.
 const IN_FRONT = 0.005
@@ -26,12 +27,6 @@ const snap = (value) => Math.round(value / SNAP) * SNAP
 
 const FLOOR = new Plane(new Vector3(0, 1, 0), 0)
 const hit = new Vector3()
-
-// Hidden with its wall (camera outside it), an opening is not hit at all, so
-// a click through it on empty space still lets the selection go.
-function raycastWhenShown(raycaster, intersects) {
-  if (this.parent?.visible) Mesh.prototype.raycast.call(this, raycaster, intersects)
-}
 
 // Where the pointer is on `wall`: { along (meters from its first corner),
 // height (meters above the floor, null in 2D) }, or null when the ray misses.
@@ -87,7 +82,8 @@ function SceneOpening({ id }) {
     // Hidden with its wall, or in Walk (for looking only): not pressed.
     if (event.button !== 0 || !groupRef.current?.visible) return
     const ui = useUiStore.getState()
-    if (ui.sceneView === 'walk' || isWidgetActive()) return
+    // With a placing tool on, a press is for placing (PlaceOpening).
+    if (ui.sceneView === 'walk' || ui.tool || isWidgetActive()) return
     event.stopPropagation()
     useObjectsStore.getState().selectObject(null)
     ui.selectOpening(id)
