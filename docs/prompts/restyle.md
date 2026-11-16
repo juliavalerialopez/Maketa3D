@@ -20,9 +20,15 @@ Output: 1K, 16:9.
 - v7 – 2026-11-10 (I.18.2): v3 plus the I.18 room-only line before the last line, when there is a room photo and an object photo ("Room reference test").
 - v8 – 2026-11-10 (I.18.3): v7 plus the plain-walls line after the room-only line, under the same condition ("Room reference test").
 - v9 – 2026-11-10 (I.19): v8 plus a facing sentence per piece with a front ("Facing test").
-- v10 – 2026-11-16 (live, J.11.1): v9 plus, when the Room render shows doors or windows, a part that lists each with the rectangle it covers ("Openings test").
+- v11 – candidate, tried and not kept: v10 plus a sentence against taller openings ("Openings test").
+- v10 – 2026-11-16 (J.11.1): v9 plus, when the Room render shows doors or windows, a part that lists each with the rectangle it covers ("Openings test").
+- v12 – 2026-11-16 (live, J.11.2): v10 plus a reference line for each door or window that has a photo ("Openings test"). Without such a photo, v12 is the same as v10.
 
-## v10 (2026-11-16, live)
+## v12 (2026-11-16, live)
+
+Built by `buildPrompt` in `api/_restyle-prompt.js`: v10 below, and for each door or window with a photo, two lines after its rectangle line (see "Openings test"). The photos are sent after the object photos, so their image numbers follow the objects'.
+
+## v10 (2026-11-16)
 
 Built by `buildPrompt` in `api/_restyle-prompt.js`: v9, and when the request has `openings` (the doors and windows that show in the Room render), the two changes in "Openings test": the room-shape rule lets the listed ones through, and a "The doors and windows:" part sits between the room and the furniture. With no door or window in the render, v10 is the same as v9.
 
@@ -303,6 +309,15 @@ The flat colored rectangles on the walls of image 1 are placeholders: a brown on
 - <Name> (<a door / a window>): its rectangle spans from <left>% to <right>% from the left and from <top>% to <bottom>% from the top of image 1.
 ```
 
+**v12** (J.11.2): Personalize has a card for each door and window in the Room render ("Reference Door 1"), Reference (a photo) or Creative, like the furniture. Each opening in the request carries `mode` and, in Reference mode, its `photo`. The photos count toward the 8-photo limit and go after the object photos (`promptImages`). For an opening with a photo, two lines follow its rectangle line (the image number `<n>` counts on from the last object photo):
+
+```text
+  Image <n> is its reference. Take only the style of the <door / window> from image <n>: its frame, material, color, glazing or panels and handle. Its size and place stay those of its rectangle.
+  Ignore everything else in image <n>: other doors and windows, walls, floor and furniture.
+```
+
+A Creative opening gets no extra line (as v10). A request whose openings have no `mode` (from before v12) counts as Creative.
+
 ### Steps
 1. Start the app with `npx vercel dev` (real Gemini calls: each Generate is one paid image).
 2. In Plan, set up one room with a door and a window on walls the camera sees, and some furniture. Frame them and save Camera 1.
@@ -329,7 +344,9 @@ Pass rule: 2 of 3 runs.
 
 Earlier in the app (Julia, same day): a render with a window and a door, and a v10 request: the door was kept and the window was left out. The saved request above has both, so the window is dropped now and then even with the list (1 miss in 4 v10 images).
 
-Decision (Julia): open. Claude's reading: v10 stays, it is clearly better than v9 (real window 3/3 against 0/3 here, the door unchanged), and the size overshoot is a candidate for a v11 line that says the opening must not be taller than its rectangle.
+v11 candidate, tried and not kept (2026-11-16, Julia: "next" after the v10 results): v10 plus, in the doors and windows part, the sentence "Its outer edge, frame included, is the edge of the rectangle: no part of it may reach above, below or past the rectangle, so none is taller or wider than its rectangle, even when the windows and doors of a reference image are." Same request, 3 runs, scored by Claude: windows 3/3 real and in the right place, but taller, not shorter: their top edge at about 12%, 16% and 22% from the top (v10: 23%, 28%, 24%; the rectangle: 37%), and one 7% to the right. Doors in the right place 3/3, one taller (top at 19% against 30%). So the extra sentence does not reduce the overshoot, and v10 stays. The height is probably the model's own idea of a window (tall, like the room photo's), more than a wording gap.
+
+Decision (Julia): open. Claude's reading: v10 stays, it is clearly better than v9 (real window 3/3 against 0/3 here, the door unchanged), and the size overshoot stays: a v11 line against it did not help (above).
 
 Known gap (J.11.2, open): Personalize has no reference card for a door or a window, so their kind cannot be chosen; the AI picks one, or copies the room photo's.
 

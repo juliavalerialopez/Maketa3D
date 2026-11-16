@@ -60,6 +60,18 @@ test('doors and windows (v10) are listed with their rectangles, and are the only
   // Between the room and the furniture.
   assert.ok(prompt.indexOf('The room (walls') < prompt.indexOf('The doors and windows:'))
   assert.ok(prompt.indexOf('The doors and windows:') < prompt.indexOf('The furniture:'))
+  // An opening with a photo gets a reference line; one without gets none (J.11.2).
+  assert.ok(!prompt.includes('is its reference. Take only the style'))
+  const photographed = [{ ...openings[0], mode: 'reference', photo: 'door' }, { ...openings[1], mode: 'creative' }]
+  const styled = buildPrompt({ room: { mode: 'reference', photo: 'room' }, objects, openings: photographed })
+  // Images: 1 render, 2 room, 3 and 4 the object photos, 5 the door's.
+  assert.match(styled, /- Door 1 \(a door\)[^\n]*\n {2}Image 5 is its reference\. Take only the style of the door from image 5/)
+  assert.match(styled, /Ignore everything else in image 5: other doors and windows/)
+  assert.ok(!styled.includes('Image 6'))
+  assert.deepEqual(
+    promptImages({ render: 'render', room: { mode: 'reference', photo: 'room' }, objects, openings: photographed }).map((image) => image.data),
+    ['render', 'room', 'sofa', 'armchair', 'door'],
+  )
   // Only a room photo can show doors and windows of its own.
   assert.ok(!prompt.includes('may show doors and windows too'))
   const withRoom = buildPrompt({ room: { mode: 'reference', photo: 'room' }, objects, openings })

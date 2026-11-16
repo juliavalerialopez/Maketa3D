@@ -148,10 +148,16 @@ function errorFor(status, body) {
 // The JSON body: the render, the room card, each object and the doors and
 // windows, with the photos as base64 JPEG. room: { mode, photo? }; objects:
 // [{ id, type, name, mode, x, y, photo? }]; photo values here are data URLs;
-// openings: [{ type, name, left, right, top, bottom }] (J.11.1).
+// openings: [{ type, name, left, right, top, bottom, mode, photo? }] (J.11.1,
+// J.11.2: a card each, with a data URL photo like an object's).
 function bodyFor(render, room, objects, openings) {
   const withPhoto = ({ photo, ...rest }) => (photo ? { ...rest, photo: base64Of(photo) } : rest)
-  return JSON.stringify({ render: base64Of(render), room: withPhoto(room), objects: objects.map(withPhoto), openings })
+  return JSON.stringify({
+    render: base64Of(render),
+    room: withPhoto(room),
+    objects: objects.map(withPhoto),
+    openings: openings.map(withPhoto),
+  })
 }
 
 // The body, with the photos made smaller step by step while it is over
@@ -163,6 +169,7 @@ async function fittingBody(render, room, objects, openings) {
     const shrink = async (item) => (item.photo ? { ...item, photo: await shrinkPhoto(item.photo, SHRINK_SCALE) } : item)
     room = await shrink(room)
     objects = await Promise.all(objects.map(shrink))
+    openings = await Promise.all(openings.map(shrink))
     body = bodyFor(render, room, objects, openings)
   }
   return body

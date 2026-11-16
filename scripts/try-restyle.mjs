@@ -105,8 +105,17 @@ const input = {
       return { name: object.name, x: object.x, y: object.y, ...side, ...(await loadCard(object, object.name)) }
     }),
   ),
-  // The doors and windows of the render, as the app sends them (J.11.1).
-  openings: noOpenings ? [] : (testCase.openings ?? []),
+  // The doors and windows of the render, as the app sends them (J.11.1), each
+  // with an optional photo like an object (J.11.2): { type, name, left, right,
+  // top, bottom, photo? }.
+  openings: noOpenings
+    ? []
+    : await Promise.all(
+        (testCase.openings ?? []).map(async (opening) => {
+          const { mode, photo, ...frame } = opening
+          return { ...frame, ...(await loadCard({ mode, photo }, opening.name)) }
+        }),
+      ),
 }
 
 const images = promptImages(input).map((image) => ({ ...image, mimeType: mimeTypes.get(image.data) ?? image.mimeType }))

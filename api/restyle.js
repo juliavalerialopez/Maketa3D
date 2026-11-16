@@ -3,8 +3,8 @@
 // base64 JPEG; room is { mode, photo? }; objects is [{ id, type, name, mode,
 // x, y, facing?, photo? }] (see readInput); photos are base64 JPEG; facing is
 // one of FACINGS, only for types with a front (I.19); openings is [{ type,
-// name, left, right, top, bottom }], the doors and windows in the render
-// (J.11.1). GET returns
+// name, left, right, top, bottom, mode?, photo? }], the doors and windows in
+// the render (J.11.1), with a card like an object's (J.11.2). GET returns
 // { remaining } without counting. When remaining is 0, `limit` says which
 // limit was reached ('total' | 'visitor'). Every answer also carries the
 // current limits, visitorLimit and totalLimit (H.1). Errors are { error: code }:
@@ -60,11 +60,14 @@ function isValidObject(object) {
 }
 
 // A door or window in the Room render (J.11.1): its kind, its list name and
-// the rectangle it covers, in percent from the left and from the top.
+// the rectangle it covers, in percent from the left and from the top. With a
+// card (J.11.2): the mode and, in Reference mode, its photo, like an object's;
+// without a mode (a request from before J.11.2) it is Creative.
 function isValidOpening(opening) {
   return (
     Boolean(opening) &&
     typeof opening === 'object' &&
+    (opening.mode === undefined ? opening.photo === undefined : isValidCard(opening)) &&
     OPENING_KINDS.includes(opening.type) &&
     NAME.test(opening.name ?? '') &&
     [opening.left, opening.right, opening.top, opening.bottom].every(isPercent) &&
@@ -97,7 +100,7 @@ async function readInput(request) {
     openings.length <= MAX_OPENINGS &&
     openings.every(isValidOpening)
   if (!valid) return { error: fail(400, 'bad_input') }
-  const photos = [room, ...objects].filter((card) => card.photo).length
+  const photos = [room, ...objects, ...openings].filter((card) => card.photo).length
   if (photos < 1 || photos > MAX_PHOTOS) return { error: fail(400, 'bad_input') }
   return { render, room, objects, openings }
 }

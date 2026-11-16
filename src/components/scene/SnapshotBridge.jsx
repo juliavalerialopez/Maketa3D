@@ -41,14 +41,15 @@ function objectPositions(scene, camera, width, height) {
 
 // The doors and windows that show in the Room render, each with its list name
 // and the rectangle it covers there (J.11.1), so the AI keeps their place and
-// size: [{ type, name, left, right, top, bottom }].
+// size: [{ id, type, name, left, right, top, bottom }]. The id keeps its
+// reference card (J.11.2); it is not sent.
 function openingFrames(camera, width, height) {
   const { room } = useRoomStore.getState()
   const walls = roomWalls(room.corners)
   return openingsOf(room).flatMap((opening) => {
     const wall = walls[opening.wallIndex]
     const frame = wall && openingFrame(wall, opening, camera, width, height)
-    return frame ? [{ type: opening.type, name: openingLabel(room, opening), ...frame }] : []
+    return frame ? [{ id: opening.id, type: opening.type, name: openingLabel(room, opening), ...frame }] : []
   })
 }
 

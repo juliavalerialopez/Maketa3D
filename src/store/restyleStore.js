@@ -4,6 +4,8 @@ import { fetchRemaining, loadPhoto, requestRestyle } from '../services/restyle.j
 import { MAX_PHOTOS } from '../../shared/restyle.js'
 import { selectRoomRender, useModeStore } from './modeStore.js'
 import { useObjectsStore } from './objectsStore.js'
+import { useRoomStore } from './roomStore.js'
+import { openingsOf } from './openings.js'
 import { useHistoryStore } from './historyStore.js'
 import { objectLabel } from '../components/objects/catalog.js'
 import { isInFrame } from '../services/frame.js'
@@ -38,9 +40,14 @@ function withReference(references, key, update) {
   return { ...references, [key]: { ...DEFAULT_REFERENCE, ...references[key], ...update } }
 }
 
-// True for the room card and for objects that still exist.
+// True for the room card, for objects that still exist and for doors and
+// windows that still exist.
 function referenceKeyExists(key) {
-  return key === ROOM_REFERENCE || useObjectsStore.getState().objects.some((object) => object.id === key)
+  return (
+    key === ROOM_REFERENCE ||
+    useObjectsStore.getState().objects.some((object) => object.id === key) ||
+    openingsOf(useRoomStore.getState().room).some((opening) => opening.id === key)
+  )
 }
 
 // The chosen camera's Room render (selectRoomRender), or null.
@@ -59,10 +66,16 @@ function showCameraOf(version) {
   if (version) useModeStore.getState().setRenderSlot(version.slot)
 }
 
+// The doors and windows in the chosen Room render (J.11.2), as the render
+// stored them: [{ id, type, name, left, right, top, bottom }].
+const renderOpenings = (render) => render?.openings ?? []
+
 // The cards that are sent, in panel order: the room, then `referenceObjects`,
-// the objects with a card (selectReferenceObjects), in list order (H.7.1).
+// the objects with a card (selectReferenceObjects), in list order (H.7.1), then
+// the doors and windows in the Room render (J.11.2).
 function sentKeys(referenceObjects) {
-  return [ROOM_REFERENCE, ...referenceObjects.map((object) => object.id)]
+  const openings = renderOpenings(currentRoomRender()).map((opening) => opening.id)
+  return [ROOM_REFERENCE, ...referenceObjects.map((object) => object.id), ...openings]
 }
 
 // The objects with a card right now, read from both stores. For actions;
@@ -119,8 +132,10 @@ function requestContent(references) {
       const side = facing ? { facing } : {}
       return { id: object.id, type: object.type, name: objectLabel(object), x, y, ...side, ...card(object.id) }
     })
-  // The doors and windows in the Room render, with their rectangles (J.11.1).
-  return { room: card(ROOM_REFERENCE), objects, openings: currentRoomRender()?.openings ?? [] }
+  // The doors and windows in the Room render, with their rectangles (J.11.1)
+  // and their cards (J.11.2). The id stays in the browser.
+  const openings = renderOpenings(currentRoomRender()).map(({ id, ...opening }) => ({ ...opening, ...card(id) }))
+  return { room: card(ROOM_REFERENCE), objects, openings }
 }
 
 // AI restyle state (Part F, H.2), memory only: kept across mode switches,
@@ -294,22 +309,33 @@ export function useReferenceObjects() {
   return useMemo(() => selectReferenceObjects(objects, view), [objects, view])
 }
 
+// The doors and windows with a reference card (J.11.2), for components: the
+// ones in the chosen Room render. Re-renders when the render changes.
+export function useRenderOpenings() {
+  return useModeStore((state) => renderOpenings(selectRoomRender(state)))
+}
+
 // A card's reference: its stored value, or the default when untouched.
 export const selectReference = (key) => (state) => state.references[key] ?? DEFAULT_REFERENCE
 
-// A deleted object loses its card and its photo once it can no longer come
-// back: references are dropped for ids that are neither in the objects nor
-// in an undo or redo step (I.11). New Project and Open Project clear the
-// history, so their old objects' photos go then. Every change to the objects
-// updates the history, at the latest when its gesture ends (every gesture is
-// ended, also when cut short), so checking on history changes is enough.
+// A deleted object, door or window loses its card and its photo once it can
+// no longer come back: references are dropped for ids that are neither in the
+// objects and the room's openings nor in an undo or redo step (I.11). New
+// Project and Open Project clear the history, so their old photos go then.
+// Every change to the objects or the room updates the history, at the latest
+// when its gesture ends (every gesture is ended, also when cut short), so
+// checking on history changes is enough.
 useHistoryStore.subscribe(() => {
   const { past, future } = useHistoryStore.getState()
-  const ids = new Set(
-    [useObjectsStore.getState().objects, ...[...past, ...future].map((step) => step.objects)].flatMap((objects) =>
+  const steps = [...past, ...future]
+  const ids = new Set([
+    ...[useObjectsStore.getState().objects, ...steps.map((step) => step.objects)].flatMap((objects) =>
       objects.map((object) => object.id),
     ),
-  )
+    ...[useRoomStore.getState().room, ...steps.map((step) => step.room)].flatMap((room) =>
+      openingsOf(room).map((opening) => opening.id),
+    ),
+  ])
   const { references } = useRestyleStore.getState()
   const stale = Object.keys(references).filter((key) => key !== ROOM_REFERENCE && !ids.has(key))
   if (stale.length === 0) return

@@ -3,9 +3,10 @@ import ReferenceCard from './ReferenceCard'
 import Button from '../ui/Button'
 import { objectLabel } from '../objects/catalog'
 import { useObjectsStore } from '../../store/objectsStore'
-import { ROOM_REFERENCE, useReferenceObjects, useRestyleStore } from '../../store/restyleStore'
+import { ROOM_REFERENCE, useReferenceObjects, useRenderOpenings, useRestyleStore } from '../../store/restyleStore'
 
 const ROOM_CREATIVE_TEXT = 'The AI will choose walls, floor and light to suit the pieces.'
+const OPENING_CREATIVE_TEXT = 'The AI will choose its style to match the room. Its size and place stay as in the render.'
 
 // "Hidden: Sofa 2." from a list of objects; null when there are none.
 const namesLine = (title, objects) => (objects.length > 0 ? `${title}: ${objects.map(objectLabel).join(', ')}.` : null)
@@ -13,7 +14,8 @@ const namesLine = (title, objects) => (objects.length > 0 ? `${title}: ${objects
 // The "Reference" group, the only group in the Personalize panel: Clear All,
 // the Reference Room card (walls, floor, light), then one card per object
 // that is shown and in the Room render (useReferenceObjects), titled
-// "Reference <name>", in the Objects list order. Under the cards, one line
+// "Reference <name>", in the Objects list order, then one per door and window
+// in the Room render (J.11.2: its style, from a photo). Under the cards, one line
 // each for hidden objects and for objects outside the Room render (H.6.2),
 // then the privacy notice. A card's photo stays in memory while its object
 // has no card, and comes back with it.
@@ -21,6 +23,7 @@ export default function ReferenceSection() {
   // Objects only change in Plan, so reading the whole list costs nothing here.
   const objects = useObjectsStore((state) => state.objects)
   const withCard = useReferenceObjects()
+  const openings = useRenderOpenings()
   const clearReferencePhotos = useRestyleStore((state) => state.clearReferencePhotos)
   const notice = useRestyleStore((state) => state.notice)
 
@@ -38,6 +41,14 @@ export default function ReferenceSection() {
         <ReferenceCard referenceKey={ROOM_REFERENCE} title="Reference Room" creativeText={ROOM_CREATIVE_TEXT} />
         {withCard.map((object) => (
           <ReferenceCard key={object.id} referenceKey={object.id} title={`Reference ${objectLabel(object)}`} />
+        ))}
+        {openings.map((opening) => (
+          <ReferenceCard
+            key={opening.id}
+            referenceKey={opening.id}
+            title={`Reference ${opening.name}`}
+            creativeText={OPENING_CREATIVE_TEXT}
+          />
         ))}
       </div>
       {objects.length === 0 && <p className="panel-placeholder">Add objects in Plan to give them a reference.</p>}

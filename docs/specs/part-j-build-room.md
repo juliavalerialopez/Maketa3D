@@ -143,7 +143,7 @@ Plan mode only unless stated. Cmd replaces Ctrl on Mac. Shortcuts are ignored wh
 ### Doors and windows in the AI image (J.11)
 - A door and a window in the Room render (flat rectangles: brown, pale blue) must be a real door and window in the AI image, on the same wall, at the same place and size, and none added (test T13 in `docs/prompts/restyle.md`).
 - (added 2026-11-16, J.11.1, from Julia's check: the window was kept but not at its size) The request also sends the doors and windows that show in the Room render, each with its list name and the rectangle it covers there (percent from the left and from the top; one on a hidden wall, behind the camera or outside the frame is left out). The prompt (v10) lists them with those rectangles and allows only them. A request without any gets the v9 prompt.
-- (added 2026-11-16, J.11.2, Julia) Personalize has no reference card for a door or a window, so their kind cannot be chosen. To do: a card per door and window in the Room render, Reference (photo) or Creative, like the furniture.
+- (added 2026-11-16, J.11.2, Julia, as built) Personalize has a reference card for each door and window in the chosen Room render, titled "Reference Door 1", after the object cards: Reference (a photo) or Creative, like the furniture, with Upload, Replace, Remove, drops and Clear All. The photo sets its style (frame, material, color, glazing or panels, handle), never its size or place, which stay those of its rectangle (J.11.1). A Reference card with no photo is sent as Creative; the photos count toward the 8-photo limit (later cards become Creative first, with the notice) and one on a door or window counts as the photo Generate needs. A door or window outside the frame has no card. The photo stays with the door or window while it exists, also when it is out of the frame, and goes with it when it can no longer come back (after Delete and its undo steps are gone). Prompt v12 (`docs/prompts/restyle.md`).
 
 ## Tasks
 Order: fixes first, then the room data, then what I see. Each one follows the checkpoint workflow.
@@ -194,7 +194,7 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - ✅ J.10 Undo and redo in Build, and the 1, 2, 3 mode shortcuts.
 - ⬜ J.11 Personalize with openings: check the AI keeps doors and windows, adjust the prompt if not. Update docs and run the verifier.
   - ✅ J.11.1 The request sends each door's and window's rectangle in the Room render, and the prompt (v10) lists them, so they keep their place and size (added 2026-11-16, from Julia's check with v9)
-  - ⬜ J.11.2 Reference cards for doors and windows in Personalize: a photo or Creative for each, like the furniture (added 2026-11-16, Julia)
+  - ✅ J.11.2 Reference cards for doors and windows in Personalize: a photo or Creative for each, like the furniture (added 2026-11-16, Julia)
 
 ## Acceptance criteria
 - [ ] J0.1: with the divider dragged fully left, at 1280 px and at a wide window, every number in Room configuration and Object details is fully visible.

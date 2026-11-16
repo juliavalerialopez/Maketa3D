@@ -1,12 +1,14 @@
 // Live restyle prompt. Must match the latest version in docs/prompts/restyle.md.
-// v10 (J.11.1): v3 (H.8), built per request from the Reference Room card and
+// v12 (J.11.2): v3 (H.8), built per request from the Reference Room card and
 // the objects, plus the room-only line (v7) and the plain-walls line (v8) when
 // there is a room photo and an object photo, plus which way each piece with a
 // front faces (v9), plus the doors and windows of the Room render with their
-// rectangles (v10). Images are sent in this order: 1 = Room render, then the
-// room photo (if the room is in Reference mode), then the object photos in
-// list order.
-export const PROMPT_VERSION = 'v10'
+// rectangles (v10), plus the style of each door or window taken from its own
+// photo when it has one (v12; v11 was tried and not kept). Images are sent in
+// this order: 1 = Room render, then the room photo (if the room is in
+// Reference mode), then the object photos in list order, then the door and
+// window photos.
+export const PROMPT_VERSION = 'v12'
 
 // The kind of item from its list name: "Coffee table 2" -> "coffee table".
 const kindOf = (name) => name.replace(/\s+\d+$/, '').toLowerCase()
@@ -14,11 +16,12 @@ const kindOf = (name) => name.replace(/\s+\d+$/, '').toLowerCase()
 const withArticle = (kind) => (/^[aeiou]/.test(kind) ? `an ${kind}` : `a ${kind}`)
 
 // The images in the order the prompt names them: the render, the room photo,
-// then the object photos in list order. Shared by /api/restyle and the
-// prompt test script. render and photos are base64 JPEG.
-export function promptImages({ render, room, objects }) {
+// the object photos in list order, then the door and window photos (v12).
+// Shared by /api/restyle and the prompt test script. render and photos are
+// base64 JPEG.
+export function promptImages({ render, room, objects, openings = [] }) {
   const jpeg = (data) => ({ data, mimeType: 'image/jpeg' })
-  const photos = [room, ...objects].filter((card) => card.photo).map((card) => jpeg(card.photo))
+  const photos = [room, ...objects, ...openings].filter((card) => card.photo).map((card) => jpeg(card.photo))
   return [jpeg(render), ...photos]
 }
 
@@ -41,17 +44,24 @@ export const facingSentence = (facing) => FACING_SENTENCES[facing] ?? null
 // v10 (J.11.1): the doors and windows in image 1, each with the rectangle it
 // covers, so they become real ones of the same size at the same place. The
 // render shows a door as a flat brown rectangle and a window as a pale blue
-// one. `roomImage` is the room photo's image number, or null. Empty with no
-// openings.
-function openingsPart(openings, roomImage) {
+// one. `roomImage` is the room photo's image number, or null; `takeImage()`
+// gives the next free image number. v12 (J.11.2): an opening with a photo gets
+// a reference line that takes only the style from it. Empty with no openings.
+function openingsPart(openings, roomImage, takeImage) {
   if (openings.length === 0) return ''
   const fromPhoto = roomImage
     ? ` Image ${roomImage} may show doors and windows too: take only their style from it (frame, color, glazing), never their number, size or place.`
     : ''
-  const lines = openings.map(
-    (opening) =>
-      `- ${opening.name} (${withArticle(opening.type)}): its rectangle spans from ${opening.left}% to ${opening.right}% from the left and from ${opening.top}% to ${opening.bottom}% from the top of image 1.`,
-  )
+  const lines = openings.map((opening) => {
+    const where = `- ${opening.name} (${withArticle(opening.type)}): its rectangle spans from ${opening.left}% to ${opening.right}% from the left and from ${opening.top}% to ${opening.bottom}% from the top of image 1.`
+    if (!opening.photo) return where
+    const image = takeImage()
+    return [
+      where,
+      `  Image ${image} is its reference. Take only the style of the ${opening.type} from image ${image}: its frame, material, color, glazing or panels and handle. Its size and place stay those of its rectangle.`,
+      `  Ignore everything else in image ${image}: other doors and windows, walls, floor and furniture.`,
+    ].join('\n')
+  })
   return `The doors and windows:
 The flat colored rectangles on the walls of image 1 are placeholders: a brown one is a door, a pale blue one is a window. Make each a real door or window that fills its rectangle exactly: on the same wall, at the same place, with the same width and height. Do not move, resize, add or remove any.${fromPhoto}
 ${lines.join('\n')}
@@ -61,8 +71,8 @@ ${lines.join('\n')}
 
 // room: { mode, photo? }; objects: [{ name, mode, x, y, facing?, photo? }] (x
 // and y in percent of the image from the left and from the top); openings:
-// [{ type, name, left, right, top, bottom }] (percent, J.11.1). Returns the
-// prompt text; image numbers follow the order above.
+// [{ type, name, left, right, top, bottom, photo? }] (percent, J.11.1).
+// Returns the prompt text; image numbers follow the order above.
 export function buildPrompt({ room, objects, openings = [] }) {
   let nextImage = 2
   const roomImage = room.photo ? nextImage++ : null
@@ -110,7 +120,7 @@ The grey shapes only mark where each piece stands, how big it is and which way i
 The room (walls, floor, light):
 ${roomLines.join('\n')}
 
-${openingsPart(openings, roomImage)}The furniture:
+${openingsPart(openings, roomImage, () => nextImage++)}The furniture:
 ${objectLines.join('\n')}
 
 Do not add anything else: no plants, rugs, shelves, wall slats, beams, artwork, lamps, tables, chairs or other furniture. Every object in the result must be one of the pieces listed above.

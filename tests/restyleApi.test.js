@@ -64,6 +64,26 @@ test('doors and windows with their rectangles are accepted; a wrong one is refus
   }
 })
 
+test('a door or window card: Reference needs a photo, Creative has none, photos count toward the limit (J.11.2)', async () => {
+  const opening = { type: 'window', name: 'Window 1', left: 68, right: 85, top: 37, bottom: 54 }
+  const request = (openings, objects = [object(1)]) =>
+    post({ render: jpeg, room: { mode: 'creative' }, objects, openings })
+  assert.equal((await request([{ ...opening, mode: 'reference', photo: jpeg }, { ...opening, mode: 'creative' }])).status, 200)
+  for (const wrong of [
+    { ...opening, mode: 'reference' },
+    { ...opening, mode: 'creative', photo: jpeg },
+    { ...opening, mode: 'other' },
+    { ...opening, photo: jpeg },
+  ]) {
+    assert.equal((await request([wrong])).status, 400)
+  }
+  // 7 object photos and a door photo make 8, the most allowed; one more is too many.
+  const sevenObjects = Array.from({ length: MAX_PHOTOS - 1 }, (_, index) => object(index + 1))
+  const photo = { ...opening, mode: 'reference', photo: jpeg }
+  assert.equal((await request([photo], sevenObjects)).status, 200)
+  assert.equal((await request([photo, photo], sevenObjects)).status, 400)
+})
+
 test('a body over the size limit is refused', async () => {
   const response = await post('x'.repeat(MAX_BODY + 1))
   assert.equal(response.status, 413)
