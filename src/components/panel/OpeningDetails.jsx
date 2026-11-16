@@ -8,12 +8,20 @@ import {
   freeSpan,
   openingLabel,
   openingsOf,
+  swingOf,
   widenedOpening,
 } from '../../store/openings'
 import { useUiStore } from '../../store/uiStore'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import NumberField from '../ui/NumberField'
 import Button from '../ui/Button'
+import FieldGroup from '../ui/FieldGroup'
+import SegmentedSwitch from '../ui/SegmentedSwitch'
+
+const SWINGS = [
+  { value: 'in', label: 'Inside' },
+  { value: 'out', label: 'Outside' },
+]
 
 // One size of the selected opening. While typing, stepping or dragging the
 // field, each value that fits is applied at once, so the view follows
@@ -115,6 +123,19 @@ export default function OpeningDetails({ id }) {
         min={MIN_OPENING_SIZE}
         max={room.height - opening.sill}
       />
+      {/* Which way a door opens (J.8.5). */}
+      {!isWindow && (
+        <FieldGroup title="Opens">
+          <SegmentedSwitch
+            options={SWINGS}
+            value={swingOf(opening)}
+            onChange={(swing) => useRoomStore.getState().updateOpening(opening.id, { swing })}
+            label="Which way the door opens"
+            size="small"
+            stretch
+          />
+        </FieldGroup>
+      )}
       {/* A door always stands on the floor. */}
       {isWindow && (
         <OpeningField opening={opening} field="sill" label="Sill" min={0} max={room.height - opening.height} />

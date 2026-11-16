@@ -13,6 +13,7 @@ import {
   placedOpening,
   reanchorOpenings,
   spannedOpening,
+  swingOf,
   tallestOpening,
   widenedOpening,
 } from '../src/store/openings.js'
@@ -316,6 +317,32 @@ test('adding, changing and removing an opening, each one undo step', () => {
   history.undo()
   history.undo()
   assert.equal(room().openings.length, 0)
+})
+
+test('a door opens in unless set to open out; the file keeps it, and a window has none (J.8.5)', () => {
+  assert.equal(swingOf(door()), 'in')
+  assert.equal(swingOf(door({ swing: 'out' })), 'out')
+  const id = addCentred('door', 0).id
+  assert.equal(swingOf(room().openings[0]), 'in')
+  // Changing it is one undo step and keeps the rest.
+  useHistoryStore.getState().clear()
+  assert.equal(useRoomStore.getState().updateOpening(id, { swing: 'out' }), true)
+  assert.equal(useHistoryStore.getState().past.length, 1)
+  addCentred('window', 1)
+  const saved = layoutData()
+  assert.equal(saved.room.openings[0].swing, 'out')
+  assert.equal('swing' in saved.room.openings[1], false)
+  newLayout()
+  assert.equal(importLayout(JSON.stringify(saved)), 'done')
+  assert.equal(swingOf(room().openings[0]), 'out')
+  // A file from before J.8.5 has no swing: the door opens in. A wrong one is refused.
+  const old = structuredClone(saved)
+  delete old.room.openings[0].swing
+  assert.equal(importLayout(JSON.stringify(old)), 'done')
+  assert.equal(swingOf(room().openings[0]), 'in')
+  const wrong = structuredClone(saved)
+  wrong.room.openings[0].swing = 'sideways'
+  assert.equal(importLayout(JSON.stringify(wrong)), 'invalid')
 })
 
 test('openings are saved in the file and opened again; a file whose opening does not fit is refused', () => {

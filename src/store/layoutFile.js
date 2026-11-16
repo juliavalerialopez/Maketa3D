@@ -1,6 +1,6 @@
 import { DEFAULT_ROOM, ROOM_LIMITS, roomSize, shapeFor, useRoomStore } from './roomStore.js'
 import { isValidRoomCorners, rectangleCorners } from './roomShape.js'
-import { MIN_OPENING_SIZE, OPENING_TYPES, openingsOf, openingsProblem } from './openings.js'
+import { MIN_OPENING_SIZE, OPENING_TYPES, openingsOf, openingsProblem, swingOf } from './openings.js'
 import { useObjectsStore } from './objectsStore.js'
 import { useModeStore } from './modeStore.js'
 import { useHistoryStore } from './historyStore.js'
@@ -61,6 +61,8 @@ export function layoutData() {
         width: roundMeters(opening.width),
         height: roundMeters(opening.height),
         sill: roundMeters(opening.sill),
+        // Which way a door opens (J.8.5); a window has none.
+        ...(opening.type === 'door' ? { swing: swingOf(opening) } : {}),
       })),
     },
     objects: objects.map((object) => ({
@@ -222,7 +224,9 @@ function isValidOpening(item, wallCount) {
     isWhole(item.wall, 0, wallCount - 1) &&
     ['offset', 'width', 'height', 'sill'].every((key) => isNumber(item[key]) && item[key] >= 0) &&
     item.width >= MIN_OPENING_SIZE &&
-    item.height >= MIN_OPENING_SIZE
+    item.height >= MIN_OPENING_SIZE &&
+    // Which way a door opens (J.8.5): optional, as in files from before.
+    (item.swing === undefined || item.swing === 'in' || item.swing === 'out')
   )
 }
 
@@ -287,7 +291,7 @@ function parseLayout(text) {
     shape: shapeFor(corners),
     height: data.room.height,
     corners,
-    openings: openings.map(({ type, wall, offset, width, height, sill }) => ({
+    openings: openings.map(({ type, wall, offset, width, height, sill, swing }) => ({
       id: crypto.randomUUID(),
       type,
       wallIndex: wall,
@@ -295,6 +299,7 @@ function parseLayout(text) {
       width,
       height,
       sill: type === 'door' ? 0 : sill,
+      ...(type === 'door' ? { swing: swing === 'out' ? 'out' : 'in' } : {}),
     })),
   }
   if (openingsProblem(room)) return { problem: 'invalid' }

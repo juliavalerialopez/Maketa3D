@@ -27,6 +27,10 @@ const EPSILON = 1e-6
 // The room's openings (none in rooms from before J.8).
 export const openingsOf = (room) => room.openings ?? []
 
+// Which way a door opens (J.8.5): 'in' (into the room) or 'out'. Stored as
+// `swing` on the door; a door without one, as before J.8.5, opens in.
+export const swingOf = (opening) => (opening.swing === 'out' ? 'out' : 'in')
+
 // Wall `wall`'s direction from its first corner, [x, z], 1 m long.
 const direction = (wall) => [(wall.end.x - wall.start.x) / wall.length, (wall.end.z - wall.start.z) / wall.length]
 
