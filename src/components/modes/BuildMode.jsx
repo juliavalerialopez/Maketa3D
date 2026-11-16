@@ -2,6 +2,8 @@ import { Canvas } from '@react-three/fiber'
 import BuildScene from '../scene/BuildScene'
 import ContextLossGuard from '../scene/ContextLossGuard'
 import BuildNotice from '../scene/BuildNotice'
+import MeterScale from '../scene/MeterScale'
+import ScaleLegend from '../scene/ScaleLegend'
 import { TopControls } from '../scene/TopCamera'
 import { topCameraSettings } from '../scene/planViews'
 import SplitLayout from '../layout/SplitLayout'
@@ -45,7 +47,9 @@ export default function BuildMode() {
               <BuildScene />
               <ContextLossGuard />
               <TopControls />
+              <MeterScale />
             </Canvas>
+            <ScaleLegend />
             <BuildNotice />
           </ErrorBoundary>
         </div>

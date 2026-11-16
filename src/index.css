@@ -1437,6 +1437,67 @@ canvas {
 /* Walk: how to look and walk, at the bottom center; Build's short message
    (J.8) in the same place. Clicks go through to the canvas. */
 .walk-hint,
+/* Build's scale legend: a square of dots, one meter wide at the view's zoom
+   (--meter and --legend-display are set by MeterScale), dots every 0.1 m. */
+.scale-legend {
+  --dot: radial-gradient(circle, #a99f84 0 1px, transparent 1.4px);
+  position: absolute;
+  bottom: 28px;
+  left: 28px;
+  display: var(--legend-display, none);
+  width: var(--meter, 0);
+  height: var(--meter, 0);
+  pointer-events: none;
+}
+
+.scale-legend i {
+  position: absolute;
+  background-image: var(--dot);
+}
+
+.scale-top,
+.scale-bottom {
+  left: calc(var(--meter) * -0.05);
+  width: calc(var(--meter) * 1.1);
+  height: 3px;
+  background-size: calc(var(--meter) * 0.1) 3px;
+}
+
+.scale-top {
+  top: -1px;
+}
+
+.scale-bottom {
+  bottom: -1px;
+}
+
+.scale-left,
+.scale-right {
+  top: calc(var(--meter) * -0.05);
+  width: 3px;
+  height: calc(var(--meter) * 1.1);
+  background-size: 3px calc(var(--meter) * 0.1);
+}
+
+.scale-left {
+  left: -1px;
+}
+
+.scale-right {
+  right: -1px;
+}
+
+.scale-legend span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  user-select: none;
+}
+
 .scene-notice {
   position: absolute;
   bottom: 12px;
