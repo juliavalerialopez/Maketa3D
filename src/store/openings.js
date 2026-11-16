@@ -248,6 +248,18 @@ export function widenedOpening(room, opening, width) {
   return { offset: Math.round(offset * 1000) / 1000 + 0, width }
 }
 
+// `opening` back at its type's standard width and height (J.8.1.1), lower in
+// a room too low for it, growing like a wider Width (widenedOpening).
+// Returns { offset, width, height }, or null when that does not fit there.
+export function defaultSized(room, opening) {
+  const standard = OPENING_TYPES[opening.type]
+  const height = Math.min(standard.height, room.height - opening.sill)
+  if (height < MIN_OPENING_SIZE - EPSILON) return null
+  const sized = { ...widenedOpening(room, opening, standard.width), height }
+  const openings = openingsOf(room).map((item) => (item.id === opening.id ? { ...item, ...sized } : item))
+  return openingsProblem({ ...room, openings }) ? null : sized
+}
+
 // The tallest opening's top (sill + height), 0 without openings: the room
 // cannot be lower than this.
 export const tallestOpening = (room) => Math.max(0, ...openingsOf(room).map((opening) => opening.sill + opening.height))

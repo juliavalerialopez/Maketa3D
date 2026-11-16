@@ -1,7 +1,15 @@
 import { useRef, useState } from 'react'
 import { useRoomStore } from '../../store/roomStore'
 import { roomWalls } from '../../store/roomShape'
-import { MIN_OPENING_SIZE, OPENING_EDGE, freeSpan, openingLabel, openingsOf, widenedOpening } from '../../store/openings'
+import {
+  MIN_OPENING_SIZE,
+  OPENING_EDGE,
+  defaultSized,
+  freeSpan,
+  openingLabel,
+  openingsOf,
+  widenedOpening,
+} from '../../store/openings'
 import { useUiStore } from '../../store/uiStore'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import NumberField from '../ui/NumberField'
@@ -65,7 +73,8 @@ function removeOpening(id) {
 }
 
 // Door or window `id`'s details, in Build (J.8) and Plan (J.9.1): which wall
-// it is on, where along it, its size, and Delete (the Delete key too).
+// it is on, where along it, its size, Default size (J.8.1.1) and Delete (the
+// Delete key too).
 // Nothing when it is gone.
 export default function OpeningDetails({ id }) {
   const room = useRoomStore((state) => state.room)
@@ -74,6 +83,10 @@ export default function OpeningDetails({ id }) {
   if (!wall) return null
   const isWindow = opening.type === 'window'
   const span = freeSpan(room, opening)
+  // Default size (J.8.1.1): greyed out when it already has it or it does not fit.
+  const standard = defaultSized(room, opening)
+  const isStandard =
+    standard && Math.abs(standard.width - opening.width) < 1e-9 && Math.abs(standard.height - opening.height) < 1e-9
   return (
     <div className="field-stack">
       <p className="panel-notice">
@@ -106,7 +119,15 @@ export default function OpeningDetails({ id }) {
       {isWindow && (
         <OpeningField opening={opening} field="sill" label="Sill" min={0} max={room.height - opening.height} />
       )}
-      <Button onClick={() => removeOpening(opening.id)}>Delete</Button>
+      <div className="object-details-actions">
+        <Button
+          onClick={() => useRoomStore.getState().updateOpening(opening.id, standard)}
+          disabled={!standard || isStandard}
+        >
+          Default size
+        </Button>
+        <Button onClick={() => removeOpening(opening.id)}>Delete</Button>
+      </div>
     </div>
   )
 }

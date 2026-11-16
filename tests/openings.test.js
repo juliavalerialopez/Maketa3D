@@ -1,6 +1,7 @@
 import { beforeEach, test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  defaultSized,
   fitOpenings,
   freeSpan,
   nearestWall,
@@ -70,6 +71,24 @@ test('a wider opening grows past its far edge, then back toward the wall start (
   useRoomStore.getState().setRoom(roomWith([atEnd]))
   assert.ok(useRoomStore.getState().updateOpening('d', widenedOpening(room(), atEnd, 1.2)))
   close(useRoomStore.getState().room.openings[0].offset, 4.7)
+})
+
+test('Default size puts the standard width and height back, growing like Width, or does not fit (J.8.1.1)', () => {
+  // A narrow, low door in the middle of the wall: it keeps its place.
+  const small = door({ width: 0.6, height: 1.8 })
+  assert.deepEqual(defaultSized(roomWith([small]), small), { offset: 1, width: 0.9, height: 2.05 })
+  // Against the wall's end (5.9): it grows back toward the start.
+  const atEnd = door({ offset: 5.3, width: 0.6 })
+  assert.deepEqual(defaultSized(roomWith([atEnd]), atEnd), { offset: 5, width: 0.9, height: 2.05 })
+  // A window keeps its sill; in a low room it is lower.
+  const wide = window({ width: 2, height: 0.8 })
+  assert.deepEqual(defaultSized(roomWith([wide]), wide), { offset: 3, width: 1.2, height: 1.2 })
+  const low = { ...roomWith([wide]), height: 2 }
+  close(defaultSized(low, wide).height, 1.1)
+  // Squeezed between two others with less than 0.9 m free: it does not fit.
+  const squeezed = door({ offset: 2.2, width: 0.6 })
+  const between = roomWith([window({ offset: 1, width: 1.2 }), squeezed, window({ id: 'w2', offset: 2.8 })])
+  assert.equal(defaultSized(between, squeezed), null)
 })
 
 test('a door placed with the pointer is centred on it in 5 cm steps, 0.1 m from the wall ends (J.8.1)', () => {
