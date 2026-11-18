@@ -195,24 +195,25 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - ✅ J.11 Personalize with openings: check the AI keeps doors and windows, adjust the prompt if not. Update docs and run the verifier.
   - ✅ J.11.1 The request sends each door's and window's rectangle in the Room render, and the prompt (v10) lists them, so they keep their place and size (added 2026-11-16, from Julia's check with v9)
   - ✅ J.11.2 Reference cards for doors and windows in Personalize: a photo or Creative for each, like the furniture (added 2026-11-16, Julia)
+  - ✅ J.11.3 Bug: Personalize stops working the second time it is opened in a session ("This part of Maketa stopped working"; console: "Maximum update depth exceeded" in `ReferenceSection`). Steps: add a sofa, open Personalize, go back to Plan, open Personalize again. Cause: `useRenderOpenings` in `src/store/restyleStore.js` returned a new `[]` on every read when there was no Room render, or a render without `openings`, so the store selector never settled. Fixed with one shared empty list (`NO_OPENINGS`); the test is in `tests/cameraRenders.test.js` (found by Claude's check, 2026-11-17)
 
 ## Acceptance criteria
 - [ ] J0.1: with the divider dragged fully left, at 1280 px and at a wide window, every number in Room configuration and Object details is fully visible.
-- [ ] J0.2: pressing on a sofa and moving the mouse moves it, also zoomed out; it turns only when I grab the rotate ring.
+- [x] J0.2: pressing on a sofa and moving the mouse moves it, also zoomed out; it turns only when I grab the rotate ring.
 - [ ] J0.3: while dragging, the label shows the same X and Z as Object details shows after the drop. (replaced by J0.3.1)
-- [ ] J0.3.1: a sofa dragged 30 cm straight shows one number, "30 cm", with an arrow the way it moved on screen; a diagonal drag shows two; 1 m and more shows in meters.
-- [ ] J0.4: a selected sofa shows four lines with distances that add up to the room size minus its footprint, for a turned sofa too, and they update while dragging.
-- [ ] J0.5: Ctrl+S saves in all modes; Ctrl+O opens in Plan and Build; arrows nudge 10 cm (Shift 1 cm) and one Ctrl+Z undoes a burst; Backspace with the color field or a button focused does not delete.
-- [ ] J0.6: Ctrl+D and the Duplicate button make "Sofa 2" next to "Sofa 1", selected, inside the walls; one Ctrl+Z removes it.
-- [ ] J.1.1: 2D shows the room from above, front wall at the bottom; a sofa can be dragged and turned there; wheel zooms and empty space pans; back in 3D the camera is where I left it; the camera slots and frame guide show in 3D only.
+- [x] J0.3.1: a sofa dragged 30 cm straight shows one number, "30 cm", with an arrow the way it moved on screen; a diagonal drag shows two; 1 m and more shows in meters.
+- [x] J0.4: a selected sofa shows four lines with distances that add up to the room size minus its footprint, for a turned sofa too, and they update while dragging.
+- [x] J0.5: Ctrl+S saves in all modes; Ctrl+O opens in Plan and Build; arrows nudge 10 cm (Shift 1 cm) and one Ctrl+Z undoes a burst; Backspace with the color field or a button focused does not delete.
+- [x] J0.6: Ctrl+D and the Duplicate button make "Sofa 2" next to "Sofa 1", selected, inside the walls; one Ctrl+Z removes it.
+- [x] J.1.1: 2D shows the room from above, front wall at the bottom; a sofa can be dragged and turned there; wheel zooms and empty space pans; back in 3D the camera is where I left it; the camera slots and frame guide show in 3D only.
 - [ ] J.1.2: in Walk I look around by dragging the view and walk with W A S D or the arrows at eye height; the mouse is never locked; I cannot walk through a wall; switching to Personalize from Walk shows the same Room render as from 3D.
 - [ ] J.2: an old file opens with everything in the same place; an L room keeps furniture out of the notch (and Walk stops at the L's walls); the Room render of a rectangle room looks as before; a file with a broken room is refused with a message.
-- [ ] J.3: an object pushed into the front left corner shows Location 0, 0; typing a Location puts its front left corner there.
-- [ ] J.4: Square, Rectangle and L set the room; the L rotate button moves the notch; pieces pushed in show the notice.
-- [ ] J.5: Build shows the room from above with wall lengths; a typed length moves the far end; Build → Personalize shows the Room renders; leaving Build moves pieces inside with the notice.
+- [x] J.3: an object pushed into the front left corner shows Location 0, 0; typing a Location puts its front left corner there.
+- [x] J.4: Square, Rectangle and L set the room; the L rotate button moves the notch; pieces pushed in show the notice.
+- [x] J.5: Build shows the room from above with wall lengths; a typed length moves the far end; Build → Personalize shows the Room renders; leaving Build moves pieces inside with the notice.
 - [ ] J.6 to J.9: the spec's rules hold (5 cm snap, 0.5 m walls, no crossing, openings fit their wall and the room height); each step can be undone.
-- [ ] J.10: Ctrl+Z works in Build; 1, 2, 3 switch modes.
-- [ ] J.11: prompt runs with a door and a window are in `docs/prompts/restyle.md`, with the decision.
+- [x] J.10: Ctrl+Z works in Build; 1, 2, 3 switch modes.
+- [x] J.11: prompt runs with a door and a window are in `docs/prompts/restyle.md`, with the decision.
 - [ ] No console errors; `npm run build`, `npm run lint` and `npm test` succeed; deployed and working on the live site.
 
 ## Backlog
@@ -243,3 +244,5 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - 2026-11-16: J.11, Julia's first Generate with a window (prompt v9): it became a real window on its wall, but taller than its rectangle. So the app now sends each door's and window's rectangle and the prompt lists them (J.11.1, new, prompt v10). Julia also noted there is no reference card for a door or window (J.11.2, new).
 - 2026-11-16: From Julia's check of the grid: Build shows a scale legend, a dotted square of 1 m² in its bottom left corner (J.5.5, new).
 - 2026-11-16: From Julia's floor plan reference: a grid floor in Build, dots every meter and a line every 5 m instead of 10 (J.5.2, new), and the room's sizes as dimension lines plus its area, in Build and 2D (J.5.3, new; an area label was out of scope before).
+- 2026-11-17: Acceptance check in the running app (Claude, on Julia's request). Ticked: J0.2, J0.3.1, J0.4, J0.5, J0.6, J.1.1, J.3, J.4, J.5, J.10, J.11. Left open: J0.1 (checked at 1920 px with the divider fully left, panel 288 px, nothing cut off; 1280 px not checked), J.1.2 (not compared: Personalize from Walk and from 3D), J.2 (old file, L room and broken file pass; Walk stopping at the L's walls and the rectangle Room render looking as before not checked), J.6 to J.9 (5 cm snap, openings fitting wall and room height, and undo pass; the 0.5 m wall minimum, no crossing and dragging a door or window in Plan's 3D view not checked), and the last item (`npm test` passes, 187 of 187; `npm run lint` and `npm run build` cannot run in the Linux VM, run them on Windows; the live site works but misses the last two commits, which are not pushed; the console shows one error, J.11.3). New task J.11.3 (bug). Status stays In progress.
+- 2026-11-17: J.11.3 (bug) fixed. Personalize crashed ("Maximum update depth exceeded" in `ReferenceSection`) when the chosen Room render was missing or had no `openings`: the selector behind the door and window cards (`useRenderOpenings`, J.11.2) returned a new empty list on every read. It now returns one shared empty list. Reproduced in Chromium by making the second Room render fail (React: "The result of getSnapshot should be cached to avoid an infinite loop"); the exact steps (a sofa, Personalize, Plan, Personalize) did not crash in headless Chromium, so what made the Room render fail on Julia's machine is not known. No other selector has the same pattern.

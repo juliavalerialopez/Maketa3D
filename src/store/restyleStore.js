@@ -67,8 +67,11 @@ function showCameraOf(version) {
 }
 
 // The doors and windows in the chosen Room render (J.11.2), as the render
-// stored them: [{ id, type, name, left, right, top, bottom }].
-const renderOpenings = (render) => render?.openings ?? []
+// stored them: [{ id, type, name, left, right, top, bottom }]. One shared
+// empty list when there are none: a store selector must return the same value
+// on every read, or React never settles (J.11.3).
+const NO_OPENINGS = Object.freeze([])
+const renderOpenings = (render) => render?.openings ?? NO_OPENINGS
 
 // The cards that are sent, in panel order: the room, then `referenceObjects`,
 // the objects with a card (selectReferenceObjects), in list order (H.7.1), then
@@ -309,10 +312,13 @@ export function useReferenceObjects() {
   return useMemo(() => selectReferenceObjects(objects, view), [objects, view])
 }
 
-// The doors and windows with a reference card (J.11.2), for components: the
-// ones in the chosen Room render. Re-renders when the render changes.
+// The doors and windows with a reference card (J.11.2): the ones in the chosen
+// Room render, or none.
+export const selectRenderOpenings = (state) => renderOpenings(selectRoomRender(state))
+
+// The same for components. Re-renders when the render changes.
 export function useRenderOpenings() {
-  return useModeStore((state) => renderOpenings(selectRoomRender(state)))
+  return useModeStore(selectRenderOpenings)
 }
 
 // A card's reference: its stored value, or the default when untouched.

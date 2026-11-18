@@ -1,7 +1,7 @@
 import { beforeEach, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { selectRoomRender, useModeStore } from '../src/store/modeStore.js'
-import { useRestyleStore } from '../src/store/restyleStore.js'
+import { selectRenderOpenings, useRestyleStore } from '../src/store/restyleStore.js'
 
 const mode = () => useModeStore.getState()
 const restyle = () => useRestyleStore.getState()
@@ -29,6 +29,23 @@ test('with no render there is no camera and no Room render', () => {
   mode().setRoomRenders([null, null, null], 0)
   assert.equal(mode().renderSlot, null)
   assert.equal(selectRoomRender(mode()), null)
+})
+
+test('the doors and windows of the Room render are the same list on every read, also with no render or none in it (J.11.3)', () => {
+  // A store selector that returns a new array on each read never settles:
+  // React reads it again and again and the view stops ("Maximum update depth").
+  const read = () => selectRenderOpenings(mode())
+  // A render that has none (the fixtures here have no `openings`).
+  assert.deepEqual(read(), [])
+  assert.equal(read(), read())
+  // No render at all.
+  mode().setRoomRenders([null, null, null], 0)
+  assert.deepEqual(read(), [])
+  assert.equal(read(), read())
+  // A render with some: its own list.
+  const openings = [{ id: 'a', type: 'door', name: 'Door 1', left: 10, right: 20, top: 30, bottom: 80 }]
+  mode().setRoomRenders([{ ...render(0), openings }], 0)
+  assert.equal(read(), openings)
 })
 
 test('choosing another camera shows its render and deselects the version, keeping the versions', () => {
