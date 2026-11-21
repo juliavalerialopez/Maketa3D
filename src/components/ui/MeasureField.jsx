@@ -11,6 +11,9 @@ const text = (value) => String(Math.round(value * 1000) / 1000)
 // last valid value back. Up and Down step 0.1 m, with Shift 1 m. All the text
 // is selected on focus.
 //
+// `limitNote` (optional) is added to the message of a value outside `limits`,
+// to say why the limit is where it is.
+//
 // `onCommit(value)` applies the value and returns nothing, or a message to
 // refuse it. `onProblem(message)` is called with the message, or null once a
 // value is applied. `invalid` marks the field as the one the message is about,
@@ -22,6 +25,7 @@ export default function MeasureField({
   label,
   value,
   limits,
+  limitNote,
   unit,
   disabled = false,
   invalid = false,
@@ -75,7 +79,7 @@ export default function MeasureField({
   function commit(number) {
     const result = validateMeasure(number, limits, label)
     if (!result.ok) {
-      refuse(result.message)
+      refuse(result.reason === 'range' && limitNote ? `${result.message} ${limitNote}` : result.message)
       return false
     }
     const problem = result.value === value ? null : onCommit(result.value)

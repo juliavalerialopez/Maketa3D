@@ -30,12 +30,16 @@ export function parseMeasure(text) {
 const shown = (number) => String(round(number))
 
 // Checks a size against [min, max]. Returns { ok: true, value } or
-// { ok: false, message }; nothing is clamped. `value` is a number or null (a
-// text that did not parse).
+// { ok: false, reason, message }, `reason` 'number' or 'range'; nothing is
+// clamped. `value` is a number or null (a text that did not parse).
 export function validateMeasure(value, [min, max], name) {
-  if (value === null || !Number.isFinite(value)) return { ok: false, message: `${name} must be a number, for example 4.5.` }
+  if (value === null || !Number.isFinite(value)) {
+    return { ok: false, reason: 'number', message: `${name} must be a number, for example 4.5.` }
+  }
   const rounded = round(value)
-  if (rounded < min || rounded > max) return { ok: false, message: `${name} must be between ${shown(min)} and ${shown(max)} m.` }
+  if (rounded < min || rounded > max) {
+    return { ok: false, reason: 'range', message: `${name} must be between ${shown(min)} and ${shown(max)} m.` }
+  }
   return { ok: true, value: rounded }
 }
 

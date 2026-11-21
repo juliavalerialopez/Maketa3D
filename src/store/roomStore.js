@@ -133,13 +133,6 @@ export function notchedRoom(room, notch) {
   return shapedRoom(room, { ...params, notch })
 }
 
-// An L with its cut away corner moved to the next corner, clockwise seen from
-// above (front at the bottom).
-export function rotatedNotch(room) {
-  const params = roomParams(room)
-  return params.shape === 'l' ? notchedRoom(room, (params.notch + 1) % 4) : room
-}
-
 // A Standard room linked or unlinked. Linking makes the depth equal to the
 // width, so it is one change.
 export function linkedRoom(room, linked) {
@@ -279,7 +272,6 @@ export const useRoomStore = create((set, get) => ({
   setRoomSize: (size, base) => set((state) => ({ room: resizedRoom(base ?? state.room, size) })),
   // 'standard' or 'l' (the shape cards); 'square' and 'rectangle' mean Standard.
   setShape: (shape) => set((state) => ({ room: reshapedRoom(state.room, shape) })),
-  rotateNotch: () => set((state) => ({ room: rotatedNotch(state.room) })),
   // An L's cut away corner, by index (NOTCH_CORNERS).
   setNotchCorner: (notch) => set((state) => ({ room: notchedRoom(state.room, notch) })),
   // A Standard's Width and Depth linked or not.

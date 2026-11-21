@@ -268,7 +268,7 @@ test('after a new shape or size, openings slide or get lower to fit, or are left
 })
 
 test('after a new shape a door stays on the wall facing the same way, nearest to where it was', () => {
-  const { setShape, rotateNotch, setRoomSize, setLinked } = useRoomStore.getState()
+  const { setShape, setNotchCorner, setRoomSize, setLinked } = useRoomStore.getState()
   setLinked(false)
   setRoomSize({ width: 6 })
   setRoomSize({ depth: 5 })
@@ -290,9 +290,9 @@ test('after a new shape a door stays on the wall facing the same way, nearest to
   setRoomSize({ width: 2 }, base)
   setRoomSize({ width: 6 }, base)
   assert.equal(room().openings.length, 1)
-  // Turned: the notch moves to the front left; the door is still on a wall
-  // facing the front.
-  rotateNotch()
+  // The cut-out moves to the front left; the door is still on a wall facing
+  // the front.
+  setNotchCorner(1)
   assert.equal(room().openings.length, 1)
   assert.equal(room().corners[room().openings[0].wallIndex].z, room().corners[(room().openings[0].wallIndex + 1) % room().corners.length].z)
 })

@@ -648,6 +648,71 @@ canvas {
   font-size: 0.8em;
 }
 
+/* The corner picker (K.1.8): four quarters of a floor plan, the front at the
+   bottom; the chosen quarter is the cut-out. */
+.corner-picker-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.corner-picker-label {
+  flex: 0 0 56px;
+  padding-top: 8px;
+  color: var(--muted);
+}
+
+.corner-picker {
+  display: grid;
+  grid-template-columns: repeat(2, 36px);
+  gap: 4px;
+  padding-bottom: 4px;
+}
+
+.corner-picker-button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.corner-picker-button.on {
+  border-color: var(--accent);
+  border-style: dashed;
+  background: var(--soft);
+}
+
+.corner-picker-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.corner-picker-check {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The front wall: a line under the bottom row, named. */
+.corner-picker-front {
+  grid-column: 1 / -1;
+  padding-top: 3px;
+  border-top: 3px solid var(--text);
+  color: var(--muted);
+  font-size: 0.75em;
+  text-align: center;
+}
+
 /* The floor area: a label and the value, read only. */
 .area-readout {
   display: flex;

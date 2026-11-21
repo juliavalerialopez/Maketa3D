@@ -127,18 +127,6 @@ test('reset puts back the default room: Standard, linked, 5 m, 2.6 m high, no do
   assert.notEqual(room().corners, DEFAULT_ROOM.corners)
 })
 
-test('the rotate button moves the cut away corner clockwise around the room', () => {
-  const { setShape, rotateNotch } = useRoomStore.getState()
-  setShape('l')
-  const notches = []
-  for (let i = 0; i < 4; i++) {
-    rotateNotch()
-    notches.push(params().notch)
-  }
-  // Front right, then front left, back left, back right and front right again.
-  assert.deepEqual(notches, [1, 2, 3, 0])
-})
-
 test('each leg of the L stays at least 0.5 m', () => {
   const { setShape, setRoomSize } = useRoomStore.getState()
   setShape('l')

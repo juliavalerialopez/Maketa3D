@@ -37,10 +37,15 @@ test('a size inside the limits is accepted and rounded to the millimeter', () =>
 })
 
 test('a size outside the limits or not a number is refused with a message, never clamped', () => {
-  assert.deepEqual(validateMeasure(31, SIZE_LIMITS.width, 'Width'), { ok: false, message: 'Width must be between 1 and 30 m.' })
-  assert.deepEqual(validateMeasure(0.5, SIZE_LIMITS.depth, 'Depth'), { ok: false, message: 'Depth must be between 1 and 30 m.' })
-  assert.deepEqual(validateMeasure(7, SIZE_LIMITS.height, 'Height'), { ok: false, message: 'Height must be between 2 and 6 m.' })
-  assert.deepEqual(validateMeasure(null, SIZE_LIMITS.width, 'Width'), { ok: false, message: 'Width must be a number, for example 4.5.' })
+  const range = (message) => ({ ok: false, reason: 'range', message })
+  assert.deepEqual(validateMeasure(31, SIZE_LIMITS.width, 'Width'), range('Width must be between 1 and 30 m.'))
+  assert.deepEqual(validateMeasure(0.5, SIZE_LIMITS.depth, 'Depth'), range('Depth must be between 1 and 30 m.'))
+  assert.deepEqual(validateMeasure(7, SIZE_LIMITS.height, 'Height'), range('Height must be between 2 and 6 m.'))
+  assert.deepEqual(validateMeasure(null, SIZE_LIMITS.width, 'Width'), {
+    ok: false,
+    reason: 'number',
+    message: 'Width must be a number, for example 4.5.',
+  })
   assert.equal(validateMeasure(NaN, SIZE_LIMITS.width, 'Width').ok, false)
 })
 
