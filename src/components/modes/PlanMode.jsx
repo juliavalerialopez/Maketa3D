@@ -9,6 +9,8 @@ import ContextLossGuard from '../scene/ContextLossGuard'
 import HistoryButtons from '../scene/HistoryButtons'
 import CameraSlots from '../scene/CameraSlots'
 import ViewSwitch from '../scene/ViewSwitch'
+import MeterScale from '../scene/MeterScale'
+import ScaleLegend from '../scene/ScaleLegend'
 import WalkCamera from '../scene/WalkCamera'
 import { PLAN_FOV, WALK_FOV, topCameraSettings } from '../scene/planViews'
 import SplitLayout from '../layout/SplitLayout'
@@ -80,6 +82,7 @@ function TopCanvas() {
     >
       <SceneContent />
       <TopControls />
+      <MeterScale />
     </Canvas>
   )
 }
@@ -128,6 +131,7 @@ export default function PlanMode() {
                 closes one camera (it saves its view) and opens the other. */}
             <ViewCanvas key={sceneView} />
             {sceneView === 'walk' && <WalkHint />}
+            {sceneView === '2d' && <ScaleLegend />}
             {/* The frame and the camera slots belong to the 3D camera: the
                 Room renders always come from it (J.1). */}
             {is3d && <FrameGuide />}

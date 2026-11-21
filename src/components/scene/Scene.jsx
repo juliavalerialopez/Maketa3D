@@ -5,6 +5,8 @@ import Objects from './Objects'
 import ObjectNames from './ObjectNames'
 import OpeningMarks from './OpeningMarks'
 import RoomDimensions from './RoomDimensions'
+import RoomGrid from './RoomGrid'
+import WallDimensions from './WallDimensions'
 import SelectionBox from './SelectionBox'
 import OpeningOutline from './OpeningOutline'
 import OpeningDistances from './OpeningDistances'
@@ -21,8 +23,8 @@ import { shadowBounds } from './shadowBounds'
 // that shows each color as it is, so nothing is shaded and nothing casts a
 // shadow, like Build.
 const FLAT_LIGHT = Math.PI
-// How far outside the room's back and left edges the 2D view's dimension lines
-// start (J.5.3), past the thin walls.
+// How far outside each wall its dimension line sits in the 2D view (J.5.3),
+// past the thin walls.
 const DIMENSION_GAP_2D = 0.5
 
 // The room's sun. Its shadow box and map follow the room's size, so a large
@@ -71,7 +73,17 @@ export default function Scene() {
       <Objects />
       {flat && <ObjectNames />}
       {flat && <OpeningMarks />}
-      {flat && <RoomDimensions gap={DIMENSION_GAP_2D} />}
+      {/* The 2D view's floor aids (K.1.14, from Build): the grid, each wall's
+          length and the area. Helpers, so a Room render has none of them. */}
+      {flat && (
+        <>
+          <group userData={{ helper: true }}>
+            <RoomGrid />
+            <WallDimensions offset={DIMENSION_GAP_2D} />
+          </group>
+          <RoomDimensions gap={0} withLines={false} />
+        </>
+      )}
       {editing && (
         <>
           <SelectionBox />
