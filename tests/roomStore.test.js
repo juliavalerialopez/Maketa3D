@@ -142,10 +142,10 @@ test('a typed wall length that keeps the room allowed is applied, its shape foll
   assert.equal(setWallLength(0, 6), null)
   assert.deepEqual(roomSize(room()), { width: 6, depth: 5 })
   assert.equal(room().shape, 'rectangle')
-  // Under 0.5 m, or over the 10 m limit: refused, nothing changes.
+  // Under 0.5 m, or over the 30 m limit: refused, nothing changes.
   const before = room()
   assert.equal(setWallLength(0, 0.2), 'shape')
-  assert.equal(setWallLength(0, 12), 'shape')
+  assert.equal(setWallLength(0, 32), 'shape')
   assert.equal(room(), before)
   // One undo step per typed length.
   useHistoryStore.getState().undo()
@@ -159,10 +159,10 @@ test('a dragged wall moves in 5 cm steps and stops at the limit', () => {
   // The right wall (wall 1) dragged out 1 m: 20 steps, a 6 m wide room.
   assert.equal(reachableStep(square, drag, 0, 20), 20)
   assert.deepEqual(roomSize({ corners: draggedCorners(drag, 20) }), { width: 6, depth: 5 })
-  // Dragged far in: it stops when the room is 2 m wide (the smallest).
-  assert.equal(reachableStep(square, drag, 0, -100), -60)
-  // Dragged far out: it stops at 10 m wide.
-  assert.equal(reachableStep(square, drag, 0, 200), 100)
+  // Dragged far in: it stops when the room is 1 m wide (the smallest).
+  assert.equal(reachableStep(square, drag, 0, -100), -80)
+  // Dragged far out: it stops at 30 m wide.
+  assert.equal(reachableStep(square, drag, 0, 600), 500)
   // Back to where it started: the room as before.
   assert.deepEqual(draggedCorners(drag, 0), corners)
 })

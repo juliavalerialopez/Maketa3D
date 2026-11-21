@@ -14,15 +14,12 @@ import {
   wallLengthMove,
 } from './roomShape.js'
 import { fitOpenings, openingsOf, openingsProblem, reanchorOpenings } from './openings.js'
+import { SIZE_LIMITS } from './roomMeasure.js'
 
 // Allowed room size in meters, per dimension: [min, max]. Width and depth are
 // the room's size seen from above (its corners' bounding box). Used by the
 // Room inputs and by layout import.
-export const ROOM_LIMITS = {
-  width: [2, 10],
-  depth: [2, 10],
-  height: [2, 4],
-}
+export const ROOM_LIMITS = SIZE_LIMITS
 
 // The room: { shape, height, corners, openings } (J.2, J.4, J.8). Corners as
 // in roomShape.js, in world space with the front wall at +z. `shape` is the
