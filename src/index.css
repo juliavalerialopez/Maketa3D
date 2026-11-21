@@ -18,6 +18,7 @@
   --error: #b3261e;
   --track: #d9d3c2;         /* toggle track when off */
   --control-border: #7c8278; /* outline of a control: 3:1 on the panel and the fields */
+  --input-bg: #ebe6d8;      /* the box of a typed value */
   --plate: #e4dfd0;         /* plate behind icons and pictures */
   --overlay: rgba(245, 242, 234, 0.93); /* cards over the 3D view */
   --selection: #24533a;     /* selection box in the 3D scene */
@@ -42,6 +43,7 @@
   --error: #ff8a80;
   --track: #101712;
   --control-border: #6d7f73; /* outline of a control: 3:1 on the panel and the fields */
+  --input-bg: #111915;      /* the box of a typed value */
   --plate: #2d3b35;         /* plate behind icons and pictures */
   --overlay: rgba(24, 33, 29, 0.93); /* cards over the 3D view */
   /* Not sage: the floor and walls stay light in both themes, and pale sage
@@ -603,6 +605,10 @@ canvas {
   margin: 6px 0 0;
 }
 
+.field-stack > .room-group ~ .room-group > .panel-group-title {
+  margin-top: 0;
+}
+
 /* The switch between Width and Depth: on, the two stay equal. */
 .link-toggle-row {
   display: flex;
@@ -617,9 +623,9 @@ canvas {
   width: 36px;
   height: 36px;
   padding: 0;
-  border: 2px solid var(--control-border);
-  border-radius: 50%;
-  background: var(--surface);
+  border: 1px solid var(--control-border);
+  border-radius: 10px;
+  background: transparent;
   color: var(--muted);
   cursor: pointer;
 }
@@ -650,25 +656,22 @@ canvas {
   font-size: 0.8em;
 }
 
-/* The corner picker (K.1.8): four quarters of a floor plan, the front at the
-   bottom; the chosen quarter is the cut-out. */
+/* The corner picker (K.1.8, K.1.18): a row of four small buttons, each with a
+   tiny L whose cut-out is in that corner; the chosen one is the cut-out. */
 .corner-picker-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
 }
 
 .corner-picker-label {
-  flex: 0 0 56px;
-  padding-top: 8px;
+  flex: 0 0 48px;
   color: var(--muted);
 }
 
 .corner-picker {
-  display: grid;
-  grid-template-columns: repeat(2, 36px);
-  gap: 4px;
-  padding-bottom: 4px;
+  display: flex;
+  gap: 8px;
 }
 
 .corner-picker-button {
@@ -677,16 +680,15 @@ canvas {
   width: 36px;
   height: 36px;
   padding: 0;
-  border: 2px solid var(--control-border);
-  border-radius: 6px;
-  background: var(--surface);
-  color: var(--accent);
+  border: 1px solid var(--control-border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
   cursor: pointer;
 }
 
 .corner-picker-button.on {
   border-color: var(--accent);
-  border-style: dashed;
   background: var(--soft);
 }
 
@@ -695,24 +697,13 @@ canvas {
   outline-offset: 2px;
 }
 
-.corner-picker-check {
-  width: 16px;
-  height: 16px;
+.corner-picker-icon {
+  width: 20px;
+  height: 20px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
+  stroke-width: 1.6;
   stroke-linejoin: round;
-}
-
-/* The front wall: a line under the bottom row, named. */
-.corner-picker-front {
-  grid-column: 1 / -1;
-  padding-top: 3px;
-  border-top: 3px solid var(--text);
-  color: var(--muted);
-  font-size: 0.75em;
-  text-align: center;
 }
 
 /* Reset room (K.1.10): an icon button and its name, at the end of the panel. */
@@ -735,8 +726,14 @@ canvas {
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-  padding-top: 4px;
   color: var(--muted);
+}
+
+/* Thin lines between the groups of Room configuration (K.1.18). */
+.field-stack > .room-group ~ .room-group,
+.field-stack > .area-readout {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
 }
 
 .area-readout output {
@@ -774,17 +771,14 @@ canvas {
   min-height: 64px;
   min-width: 0;
   padding: 8px 4px;
-  border: 2px solid var(--control-border);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   background: var(--surface);
   color: var(--text);
   font: inherit;
   font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-}
-
-.ui-shape-card.dashed {
-  border-style: dashed;
 }
 
 .ui-shape-card:hover:not(.active) {
@@ -793,6 +787,7 @@ canvas {
 
 .ui-shape-card.active {
   border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
   background: var(--soft);
 }
 
@@ -957,15 +952,16 @@ canvas {
   text-align: center;
 }
 
-/* ui/MeasureField: a size typed as text, with the unit inside the field. */
+/* ui/MeasureField: a size typed as text: a dark box with a bold value, the
+   unit after it, square minus and plus buttons. */
 .ui-measure-field {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .ui-measure-label {
-  flex: 0 0 56px;
+  flex: 0 0 48px;
   color: var(--muted);
 }
 
@@ -979,14 +975,14 @@ canvas {
   width: 100%;
   box-sizing: border-box;
   height: 36px;
-  padding: 0 28px 0 12px;
+  padding: 0 6px;
   border: 1px solid var(--control-border);
-  border-radius: 99px;
-  background: var(--field);
+  border-radius: 10px;
+  background: var(--input-bg);
   color: inherit;
   font: inherit;
-  font-weight: 500;
-  text-align: right;
+  font-weight: 700;
+  text-align: center;
 }
 
 .ui-measure-input input[aria-invalid="true"] {
@@ -999,12 +995,8 @@ canvas {
 }
 
 .ui-measure-unit {
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  transform: translateY(-50%);
+  flex: none;
   color: var(--muted);
-  pointer-events: none;
 }
 
 .ui-measure-step {
@@ -1015,9 +1007,9 @@ canvas {
   height: 36px;
   padding: 0;
   border: 1px solid var(--control-border);
-  border-radius: 50%;
-  background: var(--surface);
-  color: var(--accent);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
   font: inherit;
   font-size: 16px;
   font-weight: 600;

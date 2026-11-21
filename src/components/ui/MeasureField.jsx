@@ -11,6 +11,10 @@ const text = (value) => String(Math.round(value * 1000) / 1000)
 // last valid value back. Up and Down step 0.1 m, with Shift 1 m. All the text
 // is selected on focus.
 //
+// `label` is the text next to the field; `name` (default the label) is what
+// screen readers and messages call it, for when the label is short ("Width"
+// under a Cut-out header: "Cut-out width").
+//
 // `limitNote` (optional) is added to the message of a value outside `limits`,
 // to say why the limit is where it is.
 //
@@ -23,6 +27,7 @@ const text = (value) => String(Math.round(value * 1000) / 1000)
 // until blur; a step button is an edit of its own.
 export default function MeasureField({
   label,
+  name = label,
   value,
   limits,
   limitNote,
@@ -77,7 +82,7 @@ export default function MeasureField({
 
   // Applies a typed or stepped number; false when it was refused.
   function commit(number) {
-    const result = validateMeasure(number, limits, label)
+    const result = validateMeasure(number, limits, name)
     if (!result.ok) {
       refuse(result.reason === 'range' && limitNote ? `${result.message} ${limitNote}` : result.message)
       return false
@@ -137,12 +142,12 @@ export default function MeasureField({
     endEdit()
   }
 
-  const stepButton = (direction, symbol, name) => (
+  const stepButton = (direction, symbol, action) => (
     <button
       type="button"
       className="ui-measure-step"
-      aria-label={`${name} ${label}`}
-      title={`${name} ${label} by 0.1`}
+      aria-label={`${action} ${name}`}
+      title={`${action} ${name} by 0.1`}
       disabled={disabled}
       onClick={() => handleStep(direction)}
     >
@@ -166,6 +171,7 @@ export default function MeasureField({
           spellCheck={false}
           value={draft}
           disabled={disabled}
+          aria-label={name === label ? undefined : name}
           aria-invalid={invalid || undefined}
           aria-describedby={invalid ? describedBy : undefined}
           onChange={(event) => setDraft(event.target.value)}
@@ -174,12 +180,12 @@ export default function MeasureField({
           onBlur={handleBlur}
           onMouseUp={handleMouseUp}
         />
-        {unit && (
-          <span className="ui-measure-unit" aria-hidden="true">
-            {unit}
-          </span>
-        )}
       </div>
+      {unit && (
+        <span className="ui-measure-unit" aria-hidden="true">
+          {unit}
+        </span>
+      )}
       {stepButton(1, '+', 'Increase')}
     </div>
   )

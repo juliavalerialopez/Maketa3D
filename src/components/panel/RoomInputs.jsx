@@ -141,7 +141,7 @@ export default function RoomInputs({ inBuild = false }) {
 
   // One size field. While the pointer is over it or it has the focus, the
   // walls it changes light up in the view (J.4.2).
-  const field = (key, label) => (
+  const field = (key, label, name = label) => (
     <div
       key={`${params.shape}-${key}`}
       onPointerEnter={() => highlight(key)}
@@ -151,6 +151,7 @@ export default function RoomInputs({ inBuild = false }) {
     >
       <MeasureField
         label={label}
+        name={name}
         value={params[key]}
         limits={limitsFor(params, key, tallest)}
         limitNote={limitNote(key)}
@@ -188,18 +189,19 @@ export default function RoomInputs({ inBuild = false }) {
           />
         )}
         {field('depth', 'Depth')}
-        <AreaReadout area={area} />
         {messageFor(['width', 'depth'])}
       </RoomGroup>
 
       {params.shape === 'l' && (
         <RoomGroup title="Cut-out">
-          {field('notchWidth', 'Cut-out width')}
-          {field('notchDepth', 'Cut-out depth')}
+          {field('notchWidth', 'Width', 'Cut-out width')}
+          {field('notchDepth', 'Depth', 'Cut-out depth')}
           <CornerPicker notch={params.notch} onChoose={(notch) => changeRoom((current) => notchedRoom(current, notch), 'notchWidth')} />
           {messageFor(['notchWidth', 'notchDepth'])}
         </RoomGroup>
       )}
+
+      <AreaReadout area={area} />
 
       <RoomGroup title="Ceiling">
         {field('height', 'Height')}

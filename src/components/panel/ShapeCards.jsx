@@ -16,8 +16,15 @@ const CARDS = [
     value: 'custom',
     label: 'Custom',
     title: 'Custom: shape the walls in Build',
-    dashed: true,
-    icon: icon(<path d="M4 6h7v4h9v8H4z" strokeDasharray="3 2.5" />),
+    // A free outline with a dot on each corner.
+    icon: icon(
+      <>
+        <path d="M5 8l6-4 8 3 1 8-9 4-6-3z" />
+        {[[5, 8], [11, 4], [19, 7], [20, 15], [11, 19], [5, 16]].map(([x, y]) => (
+          <circle key={`${x}-${y}`} cx={x} cy={y} r="1.3" fill="currentColor" stroke="none" />
+        ))}
+      </>,
+    ),
   },
 ]
 
