@@ -8,7 +8,8 @@ Status: **Not started**. Builds on Part J (room shapes, Build, doors and windows
 2. Room configuration shows three preview cards, **Standard**, **L-shape** and **Custom**, with the sizes of that shape as stacked rows (label left, field right), grouped as Floor, Cut-out and Ceiling.
 3. Sizes are typed as text in meters (comma or dot), checked against limits, and refused with an inline message when invalid (no silent clamping).
 4. A read-only floor area, a link toggle for Width and Depth, a corner picker for the L's cut-out, and a Reset room button.
-5. Door and Window leave Plan's panel (Build keeps Wall tools).
+5. Door and Window leave Plan's panel (Build keeps Wall tools). (changed 2026-11-21: they come back in K.1.13)
+6. (added 2026-11-21) Build is deleted. Plan's 2D view takes the wall tools that stay (drag walls, a Cut tool turned on by the Custom card, the grid, the scale legend and the walls' dimension lines), K.1.13 to K.1.17.
 
 ### K.2 Furniture
 1. A **Furniture** section replaces the Objects chips: four category tiles and "Your item" add one default piece each, in a smart spot of the room.
@@ -69,7 +70,7 @@ Status: **Not started**. Builds on Part J (room shapes, Build, doors and windows
 
 ## Out of scope
 ### K.1 Room Configuration panel and the dark palette
-Changing Build mode itself (K.5 and K.6 do that), mobile layout.
+Mobile layout.
 
 ### K.2 Furniture
 Build mode, door and window tools, the personalize mode and scanning, the AI layout tool itself, mounting Wall art on a wall, the Rug layering rule, choosing a type directly from the library tiles, resize handles, mobile layout.
@@ -119,6 +120,14 @@ Four buttons (top-left, top-right, bottom-left, bottom-right) drawn as a small f
 
 #### Reset room
 An icon button with tooltip and `aria-label`: the room becomes the default (Standard 5 × 5 m, linked, 2.6 m high, no doors or windows), furniture is fitted inside by the same rule as a shape change (with the notice), and it is one undo step. Never refused by the openings rule.
+
+#### Build removed, its wall tools in Plan (added 2026-11-21, Julia)
+- The Build mode and its tab in the top bar are deleted. What stays of it moves into Plan's 2D view: the dotted floor grid, the 1 m² scale legend and the walls' own dimension lines (J.5.2, J.5.3, J.5.5; in 2D only, never in 3D, Walk or a Room render); selecting a wall (clay color) and dragging it in 5 cm steps with the J.6 and J.7 rules; and the Cut tool (J.7.1).
+- **The Custom card is a tool button**, not a shape: it turns the Cut tool on and off, and it is never highlighted as the room's shape. It shows a pressed look only while the tool is on. Esc or a second click turns the tool off. The tool works in 2D (a point follows the wall under the pointer in 5 cm steps, as in Build) and in 3D (picking a wall's inside face, as the door and window tools do). That is the only difference between the three cards.
+- A room whose walls were cut or dragged out of a rectangle or L has the shape 'custom': **no shape card is highlighted**, Width and Depth are read-only (Height stays editable), and the note says so ("Custom shape. Drag its walls in 2D, or cut one with Custom.").
+- Door and Window buttons, the placing-tool notice and the Openings list come back in Plan's panel (what K.1.9 removed on the idea that Build would hold them).
+- Dropped with Build: typing a wall's length in a Wall section, the wall bar (Cut, Door and Window beside a selected wall), furniture hidden while editing walls. Furniture stays visible; when a wall drag or cut ends, pieces outside the walls are pushed inside with the notice, in the same undo step.
+- Keys 1, 2, 3 (J.10): Build is gone, so 1 is Plan and 2 is Personalize.
 
 #### Old names
 `shapeFor(corners)` returns `'standard'` for any rectangle. `normalizeShape('square' | 'rectangle')` returns `'standard'` for any caller still using the old names. The Square/Rectangle switching logic (`RECTANGLE_DEPTH`) is deleted.
@@ -228,18 +237,18 @@ Every 2D `<Html>` label (room dimensions, piece names, door and window names, wa
 
 ### K.4 Architecture clean-ups (before angled walls)
 Code health, no change in behavior. Re-run these greps when K.4 starts, since later work added copies: `setPointerCapture`, `wall.length`, `selectOpening(`, `addEventListener('keydown'`.
-- **Wall helpers** (`src/store/roomShape.js`): `roomWalls` also gives each wall's `direction` (1 m long); add `alongWall(wall, x, z)`, `wallPoint(wall, along, across)`, `STEP = 0.05` and `snapToStep`. Replace the copies in `openings.js`, `BuildScene.jsx`, `BuildOpenings.jsx`, `PlaceOpening.jsx`, `Openings.jsx`, `OpeningDistances.jsx`, `BuildDistances.jsx`, `openingPlacement.js`; `WALL_SNAP` in `roomStore.js` becomes `STEP`.
+- **Wall helpers** (`src/store/roomShape.js`): `roomWalls` also gives each wall's `direction` (1 m long); add `alongWall(wall, x, z)`, `wallPoint(wall, along, across)`, `STEP = 0.05` and `snapToStep`. Replace the copies in `openings.js`, the wall code K.1.15 puts in Plan's 2D view, `PlaceOpening.jsx`, `Openings.jsx`, `OpeningDistances.jsx`, `openingPlacement.js`; `WALL_SNAP` in `roomStore.js` becomes `STEP`.
 - **One selection store** (`src/store/selectionStore.js`, no DOM): `{ objectId, openingId, wall, tool }`; each select action clears the others, and a selection whose thing is gone is dropped (it listens to the room and objects stores once). `objectsStore.selectedId` and the `uiStore` selection fields move into it; the hand-written exclusivity in `Openings.jsx`, `OpeningList.jsx`, `PlanMode.jsx`, `BuildMode.jsx`, `modeSwitch.js`, `ControlPanel.jsx` and the `BuildScene.jsx` effect goes; `historyStore.apply` stops touching selection.
-- **One scene drag hook** (`scene/useSceneDrag.js`): `useSceneDrag({ onStart, onMove, onEnd })` owns the button check, pointer id, capture, pausing the default controls, `beginGesture` and `endGesture` and the clean-up when the thing is removed mid-drag. Used by `Objects.jsx`, `Openings.jsx`, `BuildOpenings.jsx` and `BuildWall`.
-- **One place for shortcuts** (`layout/useShortcuts.js`, mounted once in `App.jsx`): the shared guards (`focusIsFree`, typing, an open menu or dialog), then keys by mode. Replaces `panel/useObjectShortcuts.js` and Build's keys effect; deleting a door or window is written once; Ctrl+S and Ctrl+O stay in `ProjectMenu`. K.3's Esc in Walk joins it.
+- **One scene drag hook** (`scene/useSceneDrag.js`): `useSceneDrag({ onStart, onMove, onEnd })` owns the button check, pointer id, capture, pausing the default controls, `beginGesture` and `endGesture` and the clean-up when the thing is removed mid-drag. Used by `Objects.jsx`, `Openings.jsx` and the wall drag of K.1.15.
+- **One place for shortcuts** (`layout/useShortcuts.js`, mounted once in `App.jsx`): the shared guards (`focusIsFree`, typing, an open menu or dialog), then keys by mode. Replaces `panel/useObjectShortcuts.js`; deleting a door or window is written once; Ctrl+S and Ctrl+O stay in `ProjectMenu`. K.3's Esc in Walk joins it.
 
 ### K.5 Angled walls
 Today the room is rectilinear by construction: `isValidRoomCorners` requires every wall along an axis, `moveWall` slides a wall on one axis, walls are axis-aligned boxes, and `fitRegions` and `positionLimits` clamp objects with axis-aligned rectangles.
 - **Model and file:** any angle; a segment test replaces the box test (no crossing, each wall at least `MIN_WALL`, `WALL_CLEARANCE` as a distance between segments, a minimum angle between neighbours so a corner is never a needle: default 30°). Project file version 3; version 1 and 2 files still open.
-- **Editing in Build (open question):** how to make an angle. Default: drag a corner anywhere, with the wall length and angle shown while dragging, the 5 cm snap and an angle snap (15°) with a key to turn it off. Wall length fields and distances keep working along the wall.
+- **Editing in Plan's 2D view (open question):** how to make an angle. Default: drag a corner anywhere, with the wall length and angle shown while dragging, the 5 cm snap and an angle snap (15°) with a key to turn it off. Wall length fields and distances keep working along the wall.
 - **Drawing:** oriented walls with mitered corners, wall shading and the walls-facing-the-camera hiding, dimension lines along the wall, the grid origin.
 - **Objects:** the rectangle-based clamp (`fitRegions`, `positionLimits`, `clampPosition`) becomes a polygon clamp for the rotated footprint; the object-to-wall distance lines work along the axes still.
-- **Doors and windows:** already placed by wall and offset; the flat rectangle takes the wall's angle (Build symbol, Plan 2D and 3D, the placing tools, `Openings.jsx`).
+- **Doors and windows:** already placed by wall and offset; the flat rectangle takes the wall's angle (Plan 2D and 3D, the placing tools, `Openings.jsx`).
 - **Walk and the Room render:** Walk stops at angled walls; `openingFrame` and the wall hiding work; the AI rectangles still match.
 
 ### K.6 Wall thickness and snap to wall
@@ -272,6 +281,11 @@ Each task: implement only it, run `npm test`, `npm run lint`, `npm run build`, s
 - ✅ K.1.10 Reset room. *Check:* resets shape, size, height and removes doors and windows; furniture inside; Ctrl+Z restores all of it.
 - ✅ K.1.11 Visual and accessibility pass: contrast numbers (light `--muted` fixed), 36 px targets, focus rings, aria-labels and tooltips, both themes, 1280 px and wide, divider at its 276 px minimum. *Check:* a table of ratios here.
 - ✅ K.1.12 Docs: CLAUDE.md Structure (`roomMeasure.js`, `MeasureField`, `ShapeCard`), SPEC.md, Part J's J.9.4 changelog line, backlog.
+- ⬜ K.1.13 (added 2026-11-21) Door and Window buttons, the tool notice and the Openings list back in Plan's panel (reverses K.1.9, which assumed Build). *Check:* the buttons place doors and windows in 2D and 3D; Esc cancels; the list selects; a Generate with a window works.
+- ⬜ K.1.14 (added 2026-11-21) The floor aids in Plan's 2D view: the dotted grid, the 1 m² scale legend and the walls' own dimension lines (they replace the chain of dimension lines there; the area stays). 2D only. *Check:* as J.5.2, J.5.3 and J.5.5 in Plan's 2D, in both themes, in a 30 m and a 1 m room; none in 3D, Walk or the Room render.
+- ⬜ K.1.15 (added 2026-11-21) Wall selection and dragging in Plan's 2D view (J.6, J.7 rules, one undo step per drag). *Check:* hover shows clay, a click selects, a drag moves in 5 cm steps and stops at the limits (0.5 m walls, no crossing, doors and windows, the size limits) with the message; pieces left outside are pushed in with the notice in the same step; furniture, openings and walls can each be dragged without fighting each other.
+- ⬜ K.1.16 (added 2026-11-21) The Cut tool from the Custom card, in 2D and 3D. *Check:* Custom turns the tool on and off and is never highlighted as a shape; a point follows the wall with its distances; a click splits the wall; a cut through a door or window is refused with the message; Esc cancels; a cut room has no shape card chosen and read-only Width and Depth.
+- ⬜ K.1.17 (added 2026-11-21) Delete Build: the top bar tab, `BuildMode`, `BuildScene`, `BuildPanel`, `BuildOpenings`, `BuildDistances`, `WallLengthField`, `OpeningsSection`, `BuildNotice`, `mode: 'build'`, the leaving-Build rule in `modeSwitch.js`, the 1 and 2 keys, `inBuild` in `RoomInputs`. Docs: CLAUDE.md, SPEC.md, Part J's changelog. *Check:* the top bar has Plan and Personalize; every Build feature that stays works in Plan; old files open; `npm run build`, `npm run lint` and `npm test` pass.
 
 ### K.2 Furniture
 Each task: implement only it, run `npm test`, `npm run lint`, `npm run build`, stop for review; commit after "good" and tick it here.
@@ -307,14 +321,14 @@ Each task: implement only it, run `npm test`, `npm run lint`, `npm run build`, s
 - ⬜ K.3.9 Docs: CLAUDE.md Structure (new files in `scene/`, `ui/`, `store/`), SPEC.md, backlog ("Fit room" and "Frame selection" buttons added as an idea).
 
 ### K.4 Architecture clean-ups (before angled walls)
-- ⬜ K.4.1 Wall helpers in one place. *Check:* in Build, drag a wall, cut one, place a door and a window, drag an opening onto another wall: 5 cm steps and distances as before. Commit: "Share wall direction and snap helpers".
-- ⬜ K.4.2 One selection store. *Check:* select a sofa then a door in Plan (list and view): only one is selected; undo a delete of the selected piece; in Build select a wall then an opening; switch modes and back; New Project clears the selection. Commit: "Move selection into one store".
-- ⬜ K.4.3 One scene drag hook. *Check:* drag a piece, an opening in Plan (2D and 3D), an opening and a wall in Build; each drag is one undo step; press Delete mid-drag and check Undo still works. Commit: "Share the scene drag handling".
-- ⬜ K.4.4 One place for shortcuts. *Check:* every row of the shortcut table in Part J's spec, in Plan and Build, with the focus on the view, on a field and on a button. Commit: "Handle Plan and Build shortcuts in one place".
+- ⬜ K.4.1 Wall helpers in one place. *Check:* in Plan's 2D, drag a wall, cut one, place a door and a window, drag an opening onto another wall: 5 cm steps and distances as before. Commit: "Share wall direction and snap helpers".
+- ⬜ K.4.2 One selection store. *Check:* select a sofa then a door in Plan (list and view): only one is selected; undo a delete of the selected piece; in Plan select a wall then an opening; switch modes and back; New Project clears the selection. Commit: "Move selection into one store".
+- ⬜ K.4.3 One scene drag hook. *Check:* drag a piece, an opening in Plan (2D and 3D), an opening and a wall in Plan's 2D; each drag is one undo step; press Delete mid-drag and check Undo still works. Commit: "Share the scene drag handling".
+- ⬜ K.4.4 One place for shortcuts. *Check:* every row of the shortcut table in Part J's spec, in Plan and Personalize, with the focus on the view, on a field and on a button. Commit: "Handle Plan shortcuts in one place".
 
 ### K.5 Angled walls
 - ⬜ K.5.1 Model and file: any angle, the segment test, file version 3. *Check:* crossing, narrow slivers and old files in tests; an old file opens unchanged.
-- ⬜ K.5.2 Editing in Build (after Julia answers how to make an angle).
+- ⬜ K.5.2 Editing in Plan's 2D view (after Julia answers how to make an angle).
 - ⬜ K.5.3 Drawing the walls (mitered corners, shading, hiding, dimension lines).
 - ⬜ K.5.4 Objects in an angled room (polygon clamp). *Check:* furniture stays inside, also turned.
 - ⬜ K.5.5 Doors and windows on angled walls.
@@ -340,8 +354,8 @@ Each task: implement only it, run `npm test`, `npm run lint`, `npm run build`, s
 - [ ] Each of the four corners puts the cut-out in the named corner, whatever the 3D camera angle.
 - [ ] A size that would leave a door or window not fitting is refused with its name in the message.
 - [ ] Reset room is one undo step and removes doors and windows.
-- [ ] Plan's panel has no Door or Window buttons; Build still has Wall tools.
-- [ ] Old files open; Custom opens Build; undo and redo work for every change here.
+- [ ] (changed 2026-11-21) Plan's panel has the Door and Window buttons again (K.1.13); Build is gone (K.1.17).
+- [ ] Old files open; Custom turns the Cut tool on and off and is never highlighted; undo and redo work for every change here.
 - [ ] No console errors; `npm run build`, `npm run lint` and `npm test` succeed; deployed and working.
 
 ### K.2 Furniture
@@ -384,7 +398,7 @@ Each task: implement only it, run `npm test`, `npm run lint`, `npm run build`, s
 
 ## Playwright ideas (scratch scripts, run by hand)
 ### K.1 Room Configuration panel and the dark palette
-New project (three cards, Standard active, 5 / 5 / 2.6, area 25.0); "4,5" in Width with the link on (Depth 4.5, area 20.3); "abc" and "31" refused; ArrowUp and Shift+ArrowUp; each of the four corner buttons against the store's corners; Width below cut-out + 0.5 refused; undo and redo after size, shape and reset; Custom card opens Build; a door that would not fit; Reset with a door and a sofa; Tab order and aria-labels; both themes; screenshots.
+New project (three cards, Standard active, 5 / 5 / 2.6, area 25.0); "4,5" in Width with the link on (Depth 4.5, area 20.3); "abc" and "31" refused; ArrowUp and Shift+ArrowUp; each of the four corner buttons against the store's corners; Width below cut-out + 0.5 refused; undo and redo after size, shape and reset; Custom card toggles the Cut tool; a door that would not fit; Reset with a door and a sofa; Tab order and aria-labels; both themes; screenshots.
 
 ### K.2 Furniture
 Empty room and the four tiles plus "Your item"; reload a saved file with 3 pieces (collapsed); rename (double-click, F2, pencil, Enter, Escape, blur, empty, 41 characters); select in 3D by clicking the canvas and check the row, and the other way round; hide (not clickable in 3D) and lock (drag does nothing); size fields ("1,5", "abc", "0", "11", ArrowUp, Shift+ArrowUp, Reset); type grid switching; undo and redo of add, remove, rename, type, size, hide, lock; Delete key not while a field is focused; both themes; tab order and labels.
@@ -417,13 +431,14 @@ Computed `opacity` of the map card, `hover()` and `Tab` into a pin; `landingPoin
 - None blocking. Defaults taken 2026-11-21: Esc leaves Walk for 3D; the Shift item stays in the strip.
 
 ### K.5 to K.8
-- (K.5.2) How do I make an angle in Build: drag a corner anywhere (recommended), an angle field per wall, or both?
+- (K.5.2) How do I make an angle in Plan's 2D view: drag a corner anywhere (recommended), an angle field per wall, or both?
 - (K.5.1) The minimum angle between two walls at a corner: 30° (recommended)?
 - (K.6.1) Wall thickness range, default and step.
 - (K.6.2) Snap to wall: always on, or only with a key held?
 - (K.8.1) What is wrong in Walk today?
 
 ## Changelog
+- 2026-11-21 (K.1): Julia: delete Build. Custom is never highlighted and only adds a Cut tool; Plan keeps the Cut tool, dragging walls, and in 2D the grid, the scale legend and the dimension lines; Door and Window come back in Plan's panel; the Cut tool works in 2D and 3D. Dropped: typing a wall's length. New tasks K.1.13 to K.1.17.
 - 2026-11-21 (K.1): Draft written from Julia's brief and a code survey (Claude). Julia's answers: limits raised to 1 to 30 m and 2 to 6 m; Door and Window removed from Plan only; Reset room added; tooling follows CLAUDE.md; a size that would leave an opening not fitting is refused; the dark theme takes the new palette once (K.1.1).- 2026-11-21 (K.2): Draft written from Julia's brief and a code survey (Claude). Julia's answers: smart spot and drag from a tile; keep a changed size on a type change; grow from the center then push inside the walls; front arrow on the selected piece only; Hide = not drawn and not selectable; Object details keeps Color, Duplicate, Delete and the type's own settings, drops Location and Rotation; drag a library tile into the room yes, drag the selection box to resize no.
 - 2026-11-21 (K.3): Draft written from Julia's brief and a code survey (Claude). Julia's answers: "Frame" is not renamed and "Fit room" and "Frame selection" are dropped for now; the dark theme palette is a K.1 task (K.1.1); map pins only for slots inside the room, bookmarks saved as before.
 - 2026-11-21: One Part K. Julia expected all of it in Part K, so the three specs written as K, L and M (Room panel, Furniture, Canvas navigation) are merged here as blocks K.1 to K.3 and renumbered; the paused work comes in as K.4 Architecture clean-ups, K.5 Angled walls, K.6 Wall thickness and snap to wall, K.7 Controls redesign and scene toolbar, K.8 Walk look and feel.
