@@ -241,7 +241,7 @@ Each task: implement only it, run `npm test`, `npm run lint`, `npm run build`, s
 ### K.1 Room Configuration panel and the dark palette
 Each task: implement only it, run `npm test`, `npm run lint`, `npm run build`, stop for review; commit after "good" and tick it here.
 
-- ⬜ K.1.1 Dark theme palette, once (colors only). *Check:* every screen in the dark theme (Plan, Build, Personalize, dialogs, menus) readable; the light theme unchanged; both themes switch.
+- ✅ K.1.1 Dark theme palette, once (colors only). *Check:* every screen in the dark theme (Plan, Build, Personalize, dialogs, menus) readable; the light theme unchanged; both themes switch.
 - ⬜ K.1.2 Pure functions and tests (`roomMeasure.js`). *Check:* `npm test`; nothing changes in the app.
 - ⬜ K.1.3 Raise the limits (`ROOM_LIMITS`, `layoutFile.js`, `WallLengthField`'s maximum). *Check:* type 30 × 30 and 1 × 1; the Plan camera, grid, scale legend, 2D, Walk and the Room render in a 30 m and a 1 m room; an old file still opens; furniture in a 1 m room is pushed inside with the notice.
 - ⬜ K.1.4 Store model: `'standard'`, `linked`, `setNotchCorner`, `resetRoom`, old Square/Rectangle logic removed; the old panel gets the least edit to keep running. *Check:* new project, Standard ↔ L ↔ Build, undo each, open an old file.

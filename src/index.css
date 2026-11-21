@@ -1,7 +1,7 @@
 /* Theme colors (Part G). Rules use these role names, never a palette color
    directly, so switching data-theme on <html> recolors the whole page.
-   Light: forest is the accent. Dark: sage is the accent. Values follow
-   docs/design/maketa-style-v3.html. */
+   Light: forest is the accent. Dark: sage is the accent. Light values follow
+   docs/design/maketa-style-v3.html; the dark ones are the palette of K.1.1. */
 :root[data-theme="light"] {
   color-scheme: light;
   --bg: #f5f2ea;            /* ivory: page, top bar, panel */
@@ -17,6 +17,8 @@
   --border-strong: #c4bca6;
   --error: #b3261e;
   --track: #d9d3c2;         /* toggle track when off */
+  --plate: #e4dfd0;         /* plate behind icons and pictures */
+  --overlay: rgba(245, 242, 234, 0.93); /* cards over the 3D view */
   --selection: #24533a;     /* selection box in the 3D scene */
   --shadow-out: 7px 7px 16px rgba(125, 112, 86, 0.22), -7px -7px 16px rgba(255, 255, 255, 0.95);
   --shadow-out-small: 4px 4px 9px rgba(125, 112, 86, 0.22), -4px -4px 9px rgba(255, 255, 255, 0.95);
@@ -25,19 +27,21 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #18211c;            /* night moss */
-  --surface: #18211c;
+  --bg: #1b2420;            /* panel, page, top bar */
+  --surface: #222c27;       /* tiles */
   --field: #202b24;
-  --hover: rgba(185, 205, 176, 0.08);
-  --text: #ece8dc;          /* ivory */
-  --muted: #8f9b91;
-  --accent: #b9cdb0;        /* sage */
-  --on-accent: #15211a;
+  --hover: rgba(183, 211, 168, 0.08);
+  --text: #eef4ef;
+  --muted: #a7b8ae;
+  --accent: #b7d3a8;        /* sage */
+  --on-accent: #14201a;
   --soft: #3e5a47;          /* deep green */
-  --border: #2c3a31;
+  --border: #34443d;
   --border-strong: #3e5a47;
   --error: #ff8a80;
   --track: #101712;
+  --plate: #2d3b35;         /* plate behind icons and pictures */
+  --overlay: rgba(24, 33, 29, 0.93); /* cards over the 3D view */
   /* Not sage: the floor and walls stay light in both themes, and pale sage
      would hardly show on them. A brighter forest reads on the floor and on
      the dark page around the room. */
