@@ -8,6 +8,7 @@ import { floorArea, limitsFor, openingsFit } from '../../store/roomMeasure'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import { switchMode } from '../layout/modeSwitch'
 import MeasureField from '../ui/MeasureField'
+import IconButton from '../ui/IconButton'
 import ShapeCards from './ShapeCards'
 import CornerPicker from './CornerPicker'
 import LinkToggle from './LinkToggle'
@@ -16,6 +17,14 @@ import GroupMessage from './GroupMessage'
 
 // How long the "moved inside" notice stays, in seconds.
 const NOTICE_SECONDS = 5
+
+const RESET_LABEL = 'Reset room: a 5 × 5 m Standard room, 2.6 m high. Doors and windows are removed. Undo with Ctrl+Z.'
+
+const RESET_ICON = (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4" />
+  </svg>
+)
 
 // A group of rows under a small header (K.1.7).
 function RoomGroup({ title, children }) {
@@ -82,6 +91,18 @@ export default function RoomInputs({ inBuild = false }) {
     setProblem(null)
     beginGesture()
     useRoomStore.getState().setRoom(next)
+    const moved = fitObjects()
+    endGesture()
+    useUiStore.getState().setRoomNotice(movedInsideNotice(moved))
+  }
+
+  // Reset room (K.1.10): the default room, which has no doors or windows, so
+  // the openings rule does not apply. The pieces it pushes inside and the room
+  // are one undo step.
+  function resetRoom() {
+    setProblem(null)
+    beginGesture()
+    useRoomStore.getState().resetRoom()
     const moved = fitObjects()
     endGesture()
     useUiStore.getState().setRoomNotice(movedInsideNotice(moved))
@@ -184,6 +205,13 @@ export default function RoomInputs({ inBuild = false }) {
         {field('height', 'Height')}
         {messageFor(['height'])}
       </RoomGroup>
+
+      <div className="reset-room-row">
+        <IconButton className="reset-room" label={RESET_LABEL} onClick={resetRoom}>
+          {RESET_ICON}
+        </IconButton>
+        <span>Reset room</span>
+      </div>
 
       {notice && (
         <p className="panel-notice" role="status">

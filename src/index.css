@@ -713,6 +713,20 @@ canvas {
   text-align: center;
 }
 
+/* Reset room (K.1.10): an icon button and its name, at the end of the panel. */
+.reset-room-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+.ui-icon-button.reset-room {
+  width: 36px;
+  height: 36px;
+}
+
 /* The floor area: a label and the value, read only. */
 .area-readout {
   display: flex;
