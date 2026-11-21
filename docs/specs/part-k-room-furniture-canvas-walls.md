@@ -271,7 +271,7 @@ Each task: implement only it, run `npm test`, `npm run lint`, `npm run build`, s
 - ✅ K.1.9 Door and Window removed from Plan's Objects section (buttons, notice, `OpeningList`); Build unchanged. *Check:* no openings group in Plan; an existing door still shows, can be clicked, edited and deleted; Build still places them; a Generate with a window still works.
 - ✅ K.1.10 Reset room. *Check:* resets shape, size, height and removes doors and windows; furniture inside; Ctrl+Z restores all of it.
 - ✅ K.1.11 Visual and accessibility pass: contrast numbers (light `--muted` fixed), 36 px targets, focus rings, aria-labels and tooltips, both themes, 1280 px and wide, divider at its 276 px minimum. *Check:* a table of ratios here.
-- ⬜ K.1.12 Docs: CLAUDE.md Structure (`roomMeasure.js`, `MeasureField`, `ShapeCard`), SPEC.md, Part J's J.9.4 changelog line, backlog.
+- ✅ K.1.12 Docs: CLAUDE.md Structure (`roomMeasure.js`, `MeasureField`, `ShapeCard`), SPEC.md, Part J's J.9.4 changelog line, backlog.
 
 ### K.2 Furniture
 Each task: implement only it, run `npm test`, `npm run lint`, `npm run build`, stop for review; commit after "good" and tick it here.

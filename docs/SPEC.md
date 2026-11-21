@@ -35,7 +35,7 @@ A 3D room editor: set room dimensions, add objects, arrange them, and later rend
 All units in meters.
 
 ```js
-room: { shape, height, corners: [{ x, z }, ...], openings: [{ id, type, wallIndex, offset, width, height, sill }] }  // openings: doors and windows (J.8, store/openings.js)  // shape: 'square' | 'rectangle' | 'l' | 'custom' (J.4, not saved: follows from the corners on Open); J.2: closed list of corners seen from above, world space (front wall at +z), every wall along x or z (store/roomShape.js)
+room: { shape, linked, height, corners: [{ x, z }, ...], openings: [{ id, type, wallIndex, offset, width, height, sill }] }  // openings: doors and windows (J.8, store/openings.js)  // shape: 'standard' | 'l' | 'custom' (J.4, K.1.4; Square and Rectangle are Standard; not saved: follows from the corners on Open)  // linked: a Standard keeps width and depth equal (K.1.4; not saved: on when the sides are equal on Open)  // limits: width and depth 1 to 30 m, height 2 to 6 m (K.1.3); J.2: closed list of corners seen from above, world space (front wall at +z), every wall along x or z (store/roomShape.js)
 objects: [{ id, type, number, position: [x, y, z], rotation: [x, y, z], size: { width, depth, height }, color, screenInches?, hidden? }]
 // type: 'sofa' | 'coffeeTable' | 'armchair' | 'bookshelf' | 'floorLamp' | 'tvStand' (defined in objects/catalog.js)
 // number: stable per-type count (Sofa 1, Sofa 2, ...), never reused

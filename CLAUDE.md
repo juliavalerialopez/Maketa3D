@@ -39,7 +39,10 @@ first.
     `useFileDropGuard` (a file dropped outside the cards is not opened by
     the browser)
   - `panel/`: HTML in the control panels (Plan and Personalize), built from
-    `Section` and `ui/`
+    `Section` and `ui/`. `RoomInputs` is Room configuration (`ShapeCards`,
+    the Floor, Cut-out and Ceiling groups, `LinkToggle`, `CornerPicker`,
+    `AreaReadout`, `GroupMessage`, Reset room); Plan's panel has no Door and
+    Window buttons (they are added in Build).
   - `scene/`: R3F room and rendering (floor, walls, objects renderer), the
     frame guide, the camera slots (`CameraSlots`), Undo and Redo
     (`HistoryButtons`), Plan camera restore, `ContextLossGuard` and the
@@ -49,11 +52,13 @@ first.
     reads theme colors for the scene). Scene helpers (selection box, future
     grids) set `userData.helper` so the snapshot hides them. `Walls.jsx` has
     a dev-only `?wallShades` switch for the I.15 prompt test.
+    `shadowBounds.js` sizes the sun's shadow box and map to the room.
   - `objects/`: one 3D model component per placeable type, plus `catalog.js`
     and `models.js`. Models are built from primitives with `Parts.jsx`, origin in the middle
     of the base, filling their size box.
-  - `ui/`: shared controls (`NumberField`, `ColorField`, `Button`,
-    `IconButton`, `ListItem`, `FieldGroup`, `SegmentedSwitch`, `Toggle`,
+  - `ui/`: shared controls (`NumberField`, `MeasureField` (a size typed as
+    text, K.1.5), `ColorField`, `Button`, `IconButton`, `ListItem`,
+    `FieldGroup`, `SegmentedSwitch`, `ShapeCard` (K.1.6), `Toggle`,
     `MenuButton`, `Dialog`, `Thumbnail`). Every number input, color input,
     action button, icon button, list row, menu, dialog and thumbnail uses
     these; change their look or behavior only here.
@@ -69,8 +74,10 @@ first.
 - `src/store/`: Zustand stores (room, objects, mode, ui, restyle,
   `historyStore` for undo and redo, `cameraSlotsStore`, `projectStore` for
   the project's file and name), plus plain helpers: `roomBounds.js` (wall
-  clamping, rotated footprint, angle helpers) and `layoutFile.js` (project
-  file: save, open, validate, new project).
+  clamping, rotated footprint, angle helpers), `roomMeasure.js` (typing and
+  checking room sizes: parse, limits, floor area, whether doors and windows
+  still fit) and `layoutFile.js` (project file: save, open, validate, new
+  project).
 - `src/index.css`: all styles. Colors are CSS variables per theme on
   `:root[data-theme="light"]` and `:root[data-theme="dark"]`; components use
   the role variables (`--accent`, `--on-accent`, `--soft`, ...), never a

@@ -13,6 +13,8 @@ later part already built, or that Part J plans as a task, were left out.
 - Walls drawn freely instead of cut and drag, after testing with real users. (Part J)
 - (added 2026-11-15) A front view of a wall while a window is placed or selected in Build, to see how tall it is and how high its sill sits, since Plan cannot change them yet. (Part J)
 
+- (added 2026-11-21) The door and window placing tools of Plan (J.9.4: `PlaceOpening*`, the wall layers, `TOOL_NOTICES_3D`) are not reachable any more, since K.1.9 removed their buttons from Plan's panel. Move them into Build's tools or delete them when the build-mode work comes. (Part K, K.1.9)
+
 ## Placing and moving objects
 - Move objects up and down (Y), for wall items and shelves; decide the floor and ceiling rules then. (Part D)
 - A tall object tilted over can poke through the ceiling (no ceiling clamp). (Part D)
@@ -26,6 +28,7 @@ later part already built, or that Part J plans as a task, were left out.
 - A `.glb` sofa model instead of primitives. (Part B)
 
 ## Views
+- (added 2026-11-21) The 2D view keeps its zoom when the room's size changes (it fits the room only on New and Open), so after a very small or very large room the room can look tiny or fill the view; and the 3D camera starts inside a 30 m room. "Fit room" below would cover both. (Part K, found in K.1.3)
 - (added 2026-11-21) "Fit room" and "Frame selection" camera buttons: Fit room fits the whole room in 2D and 3D (the 2D fit exists as `fitTopView`; 3D has none), Frame selection frames the selected piece, disabled with no selection. The existing "Frame" button (the 16:9 frame guide) stays as it is. (Part K, K.3, dropped from it by Julia)
 - (added 2026-11-21) Save a Walk position with each camera slot, so the Walk mini-map shows a pin for every bookmark (a slot is a 3D camera, usually outside the room, so most have no pin). (Part K, K.3)
 
