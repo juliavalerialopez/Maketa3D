@@ -1,6 +1,6 @@
 # Part J: Build the room, openings, shortcuts
 
-Status: **Done**. Builds on Part A (room), Part D (arrange), Part G (save and open) and Part I (history). Angled walls are Part K.
+Status: **Done**. Builds on Part A (room), Part D (arrange), Part G (save and open) and Part I (history). Angled walls are Part K (K.5).
 
 ## Goal
 1. I can start from a square, a rectangle or an L-shaped room, and I can reshape it in a new top view called **Build**.
@@ -11,7 +11,7 @@ Status: **Done**. Builds on Part A (room), Part D (arrange), Part G (save and op
 
 ## Decisions
 - Part J has two bundles. **J0** is small fixes and shortcuts that do not depend on room shape. **J** is the room itself. J0 goes first.
-- The room is stored as a **closed list of corners**. Square, rectangle and L are presets of that list. In Part J every wall is horizontal or vertical. Angles come in Part K.
+- The room is stored as a **closed list of corners**. Square, rectangle and L are presets of that list. In Part J every wall is horizontal or vertical. Angles come in Part K (K.5).
 - Measurements are **inside** measurements, as taken with a tape from the inside. Walls are drawn with a fixed thickness outward from the inside edge. Editing thickness is out of scope.
 - The **origin** is the bottom left corner of the room's bounding box (seen from above, front at the bottom). X grows to the right, Z grows toward the back. Stored positions do not change when walls move: only the numbers shown are recalculated, so furniture keeps its place in the room.
 - (added 2026-11-10, code survey) Stored positions stay in world coordinates, where the front wall is at +z. So shown X = `x − minX` and shown Z = `frontZ − z` (the front wall's z minus the z of the point shown; for Location that is the front left corner of the piece's footprint, see Coordinates). Old files keep their place: a 6 × 5 room imports as corners at ±3, ±2.5, and camera slots need no change. Only the shown numbers start at 0.
@@ -22,7 +22,7 @@ Status: **Done**. Builds on Part A (room), Part D (arrange), Part G (save and op
 - The distance readout appears when an object is **selected** (no Space key).
 
 ## Out of scope
-- Angled walls (Part K), drawing walls, curved walls, columns, sloped ceilings, balcony, several rooms, several floors.
+- Angled walls (Part K, K.5), drawing walls, curved walls, columns, sloped ceilings, balcony, several rooms, several floors.
 - Wall thickness editing, (an area label: now J.5.3) resize handles on openings, real holes or door swings in 3D, imperial units.
 
 ## Requirements
@@ -247,3 +247,4 @@ Order: fixes first, then the room data, then what I see. Each one follows the ch
 - 2026-11-17: Acceptance check in the running app (Claude, on Julia's request). Ticked: J0.2, J0.3.1, J0.4, J0.5, J0.6, J.1.1, J.3, J.4, J.5, J.10, J.11. Left open: J0.1 (checked at 1920 px with the divider fully left, panel 288 px, nothing cut off; 1280 px not checked), J.1.2 (not compared: Personalize from Walk and from 3D), J.2 (old file, L room and broken file pass; Walk stopping at the L's walls and the rectangle Room render looking as before not checked), J.6 to J.9 (5 cm snap, openings fitting wall and room height, and undo pass; the 0.5 m wall minimum, no crossing and dragging a door or window in Plan's 3D view not checked), and the last item (`npm test` passes, 187 of 187; `npm run lint` and `npm run build` cannot run in the Linux VM, run them on Windows; the live site works but misses the last two commits, which are not pushed; the console shows one error, J.11.3). New task J.11.3 (bug). Status stays In progress.
 - 2026-11-17: J.11.3 (bug) fixed. Personalize crashed ("Maximum update depth exceeded" in `ReferenceSection`) when the chosen Room render was missing or had no `openings`: the selector behind the door and window cards (`useRenderOpenings`, J.11.2) returned a new empty list on every read. It now returns one shared empty list. Reproduced in Chromium by making the second Room render fail (React: "The result of getSnapshot should be cached to avoid an infinite loop"); the exact steps (a sofa, Personalize, Plan, Personalize) did not crash in headless Chromium, so what made the Room render fail on Julia's machine is not known. No other selector has the same pattern.
 - 2026-11-18: Julia checked the rest of the acceptance list in the running app. Every criterion is ticked (J0.3 stays open on purpose: replaced by J0.3.1). Status: Done. The portfolio update waits for Part K.
+- 2026-11-21: Part K plans, in one spec: the Room Configuration panel (K.1), Furniture (K.2), canvas navigation (K.3), the architecture clean-ups (K.4), angled walls (K.5), wall thickness and snap (K.6), a controls redesign and toolbar (K.7), Walk (K.8). J.9.4's Door and Window buttons in Plan's panel are removed by K.1.9; the placing tools' code stays until the build-mode work. J.3's "typing a Location" is retired by K.2.8 (Location and Rotation leave Object details).
