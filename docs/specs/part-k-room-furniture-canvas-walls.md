@@ -247,7 +247,7 @@ Each task: implement only it, run `npm test`, `npm run lint`, `npm run build`, s
 - ✅ K.1.4 Store model: `'standard'`, `linked`, `setNotchCorner`, `resetRoom`, old Square/Rectangle logic removed; the old panel gets the least edit to keep running. *Check:* new project, Standard ↔ L ↔ Build, undo each, open an old file.
 - ✅ K.1.5 `MeasureField` in the panel's current fields. *Check:* comma and dot, Enter, blur and Escape, invalid value keeps the old one with a message, arrows 0.1 and Shift 1, one undo step per edit, wall highlight on hover and focus, a door that would not fit refuses the size with a message.
 - ✅ K.1.6 Shape cards (Custom opens Build). *Check:* each card, keyboard (Tab, Space, Enter), accessible names, both themes.
-- ⬜ K.1.7 Standard fields: groups, link toggle, Floor area. *Check:* link on sets Depth = Width; either field keeps both equal; off lets them differ; area updates; new project starts linked.
+- ✅ K.1.7 Standard fields: groups, link toggle, Floor area. *Check:* link on sets Depth = Width; either field keeps both equal; off lets them differ; area updates; new project starts linked.
 - ⬜ K.1.8 L-shape: Cut-out group, the four limits, corner picker; rotate button removed. *Check:* each corner in Plan 3D from two camera angles and in 2D; Width cannot go under cut-out + 0.5 and says why; area = w × d − cw × cd.
 - ⬜ K.1.9 Door and Window removed from Plan's Objects section (buttons, notice, `OpeningList`); Build unchanged. *Check:* no openings group in Plan; an existing door still shows, can be clicked, edited and deleted; Build still places them; a Generate with a window still works.
 - ⬜ K.1.10 Reset room. *Check:* resets shape, size, height and removes doors and windows; furniture inside; Ctrl+Z restores all of it.
