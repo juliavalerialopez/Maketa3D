@@ -17,8 +17,9 @@
   --border-strong: #c4bca6;
   --error: #b3261e;
   --track: #d9d3c2;         /* toggle track when off */
-  --control-border: #7c8278; /* outline of a control: 3:1 on the panel and the fields */
+  --control-border: #cbc4b0; /* a quiet outline for controls */
   --input-bg: #ebe6d8;      /* the box of a typed value */
+  --tint: color-mix(in srgb, var(--soft) 40%, transparent); /* the quiet fill of a chosen control */
   --plate: #e4dfd0;         /* plate behind icons and pictures */
   --overlay: rgba(245, 242, 234, 0.93); /* cards over the 3D view */
   --selection: #24533a;     /* selection box in the 3D scene */
@@ -42,8 +43,9 @@
   --border-strong: #3e5a47;
   --error: #ff8a80;
   --track: #101712;
-  --control-border: #6d7f73; /* outline of a control: 3:1 on the panel and the fields */
-  --input-bg: #111915;      /* the box of a typed value */
+  --control-border: #36463e; /* a quiet outline for controls */
+  --input-bg: #0e1411;      /* the box of a typed value */
+  --tint: color-mix(in srgb, var(--soft) 45%, transparent); /* the quiet fill of a chosen control */
   --plate: #2d3b35;         /* plate behind icons and pictures */
   --overlay: rgba(24, 33, 29, 0.93); /* cards over the 3D view */
   /* Not sage: the floor and walls stay light in both themes, and pale sage
@@ -635,14 +637,14 @@ canvas {
   height: 20px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.8;
+  stroke-width: 1.2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .link-toggle.on {
   border-color: var(--accent);
-  background: var(--soft);
+  background: var(--tint);
   color: var(--text);
 }
 
@@ -689,7 +691,7 @@ canvas {
 
 .corner-picker-button.on {
   border-color: var(--accent);
-  background: var(--soft);
+  background: var(--tint);
 }
 
 .corner-picker-button:focus-visible {
@@ -698,11 +700,11 @@ canvas {
 }
 
 .corner-picker-icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.6;
+  stroke-width: 1;
   stroke-linejoin: round;
 }
 
@@ -718,6 +720,10 @@ canvas {
 .ui-icon-button.reset-room {
   width: 36px;
   height: 36px;
+}
+
+.ui-icon-button.reset-room svg {
+  stroke-width: 1.2;
 }
 
 /* The floor area: a label and the value, read only. */
@@ -747,7 +753,7 @@ canvas {
   height: 28px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.8;
+  stroke-width: 1.2;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
@@ -773,7 +779,7 @@ canvas {
   padding: 8px 4px;
   border: 1px solid var(--control-border);
   border-radius: 12px;
-  background: var(--surface);
+  background: transparent;
   color: var(--text);
   font: inherit;
   font-size: 12px;
@@ -787,8 +793,7 @@ canvas {
 
 .ui-shape-card.active {
   border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
-  background: var(--soft);
+  background: var(--tint);
 }
 
 .ui-shape-card:focus-visible {
@@ -804,7 +809,7 @@ canvas {
   height: 14px;
   fill: none;
   stroke: var(--accent);
-  stroke-width: 2;
+  stroke-width: 1.4;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -1011,14 +1016,15 @@ canvas {
   background: transparent;
   color: var(--text);
   font: inherit;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 300;
   line-height: 1;
   cursor: pointer;
 }
 
 .ui-measure-step:hover:not(:disabled) {
   background: var(--hover);
+  border-color: var(--muted);
 }
 
 .ui-measure-step:focus-visible {
