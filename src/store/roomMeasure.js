@@ -49,7 +49,7 @@ export function stepMeasure(value, direction, shift = false) {
 }
 
 // The floor area in m² of a Standard or an L; `params` as in roomParams. A
-// room shaped in Build has no formula: use roomArea(corners).
+// room cut in Plan has no formula: use roomArea(corners).
 export function floorArea({ shape, width, depth, notchWidth = 0, notchDepth = 0 }) {
   return shape === 'l' ? width * depth - notchWidth * notchDepth : width * depth
 }

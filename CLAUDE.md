@@ -41,8 +41,11 @@ first.
   - `panel/`: HTML in the control panels (Plan and Personalize), built from
     `Section` and `ui/`. `RoomInputs` is Room configuration (`ShapeCards`,
     the Floor, Cut-out and Ceiling groups, `LinkToggle`, `CornerPicker`,
-    `AreaReadout`, `GroupMessage`, Reset room); Plan's panel has no Door and
-    Window buttons (they are added in Build).
+    `AreaReadout`, `GroupMessage`, Reset room; the Custom card is the Cut
+    tool). Doors and windows are added with the Door and Window buttons in
+    the Objects section. There is no Build mode (removed in K.1.17): wall
+    editing (select, drag, cut) lives in Plan's 2D view (`scene/WallEditor`,
+    `CutTool3D` for the 3D cut).
   - `scene/`: R3F room and rendering (floor, walls, objects renderer), the
     frame guide, the camera slots (`CameraSlots`), Undo and Redo
     (`HistoryButtons`), Plan camera restore, `ContextLossGuard` and the

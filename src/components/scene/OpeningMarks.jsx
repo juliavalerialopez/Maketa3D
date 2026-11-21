@@ -4,16 +4,16 @@ import { useRoomStore } from '../../store/roomStore'
 import { roomWalls } from '../../store/roomShape'
 import { openingLabel, openingsOf } from '../../store/openings'
 import { WALL_THICKNESS } from './wallBoxes'
-import { OpeningSymbol } from './BuildOpenings'
+import OpeningSymbol from './OpeningSymbol'
 import { PLAN_BAND, SYMBOL_Y } from './wallStrip'
 
 // In 2D a door or window is a flat rectangle on its wall, seen edge-on from
-// above, so it cannot be seen. Its mark (J.9.5) is the plan symbol Build
+// above, so it cannot be seen. Its mark (J.9.5) is the plan symbol
 // draws (a gap in the wall; a window with two thin lines, a door with its
 // swing, faint), on top of the wall, and its name.
 const BAND = PLAN_BAND
 const BAND_ACROSS = -(BAND - WALL_THICKNESS) / 2
-// The symbol sits just above the walls' top (Build draws it at SYMBOL_Y).
+// The symbol sits just above the walls' top (drawn at SYMBOL_Y).
 const ABOVE_WALL = 0.02
 // How far into the room the name sits, in meters.
 const NAME_GAP = 0.3

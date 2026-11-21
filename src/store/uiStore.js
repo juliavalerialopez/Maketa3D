@@ -42,21 +42,21 @@ export const useUiStore = create((set) => ({
   // how far it moved (J0.3.1); null when none.
   moving: null,
   // Room configuration's short notice, e.g. "2 objects were moved inside the
-  // room." after a new shape or leaving Build (J.4, J.5); null when none.
-  // Here so it survives the switch from Build to Plan.
+  // room." after a new shape or a wall drag (J.4, K.1.15); null when none.
   roomNotice: null,
-  // Build (J.7): the selected wall as its two corners, { a: { x, z }, b },
+  // Plan's 2D view (J.7, K.1.15): the selected wall as its two corners, { a: { x, z }, b },
   // so it stays selected when the walls are renumbered; null when none.
   selectedWall: null,
-  // Build's wall tool that is on, or null: 'cut' (J.7.1: a click splits a
+  // The wall tool that is on, or null: 'cut' (J.7.1: a click splits a
   // wall), 'door' (J.8.1: a click places a door) or 'window' (J.8.2: a
   // click where it starts, a second where it ends).
   tool: null,
-  // Build (J.8): the selected door or window's id, or null. A wall and an
-  // opening are never selected together.
+  // The selected door or window's id, or null. A wall and an opening are never
+  // selected together.
   selectedOpening: null,
-  // Build's short message (J.8), e.g. why a wall stopped; null when none.
-  buildNotice: null,
+  // A short message at the bottom of the view (J.8), e.g. why a wall stopped;
+  // null when none.
+  sceneNotice: null,
   // The walls (their numbers) that the Room configuration field under the
   // pointer changes, highlighted in the view (J.4.2); empty when none.
   highlightedWalls: [],
@@ -68,7 +68,7 @@ export const useUiStore = create((set) => ({
     set((state) => ({ selectedWall, tool: null, selectedOpening: selectedWall ? null : state.selectedOpening })),
   selectOpening: (selectedOpening) =>
     set((state) => ({ selectedOpening, selectedWall: selectedOpening ? null : state.selectedWall, tool: null })),
-  setBuildNotice: (buildNotice) => set({ buildNotice }),
+  setSceneNotice: (sceneNotice) => set({ sceneNotice }),
   // The highlight for a Room configuration field (J.4.2): the walls it moves,
   // and whether the walls' top edge lights up (Height).
   setHighlight: (highlightedWalls, highlightedTop = false) => set({ highlightedWalls, highlightedTop }),
@@ -83,8 +83,8 @@ export const useUiStore = create((set) => ({
   toggleFrame: () => set((state) => ({ frameVisible: !state.frameVisible })),
 }))
 
-// Build's messages (J.8): why a wall or a cut did not happen.
-export const BUILD_NOTICES = {
+// The scene's messages (J.8): why a wall or a cut did not happen.
+export const SCENE_NOTICES = {
   openings: 'A door or window would no longer fit its wall.',
   cut: 'A door or window is in the way of the cut.',
 }

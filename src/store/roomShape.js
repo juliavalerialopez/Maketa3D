@@ -59,7 +59,7 @@ export function lCorners(width, depth, notchWidth, notchDepth, notch = 0, center
 
 // What kind of room the corners make: { shape: 'rectangle', width, depth },
 // { shape: 'l', width, depth, notchWidth, notchDepth, notch } or
-// { shape: 'custom', width, depth } (anything else, e.g. shaped in Build).
+// { shape: 'custom', width, depth } (anything else, e.g. cut in Plan).
 // Width and depth are always the bounding box's.
 export function describeRoom(corners) {
   const box = boundingBox(corners)
@@ -301,7 +301,7 @@ export function splitWall(corners, index, along) {
 }
 
 // The index of the wall running from `a` to `b` ({ x, z }, either way round),
-// or -1. Build keeps the selected wall this way, so it survives renumbering.
+// or -1. The selected wall is kept this way, so it survives renumbering.
 export function findWall(corners, a, b) {
   const same = (p, q) => Math.abs(p.x - q.x) < EPSILON && Math.abs(p.z - q.z) < EPSILON
   return corners.findIndex((corner, index) => {
@@ -310,7 +310,7 @@ export function findWall(corners, a, b) {
   })
 }
 
-// The corners with wall `index` set to `length` meters (Build, J.5): its end
+// The corners with wall `index` set to `length` meters (J.5): its end
 // farther from the origin moves (the right end of a wall along x, the back end
 // of a wall along z), by moving the wall that meets it there, or, where that
 // end is a cut point, by sliding the cut point (J.7.1). The result may not be

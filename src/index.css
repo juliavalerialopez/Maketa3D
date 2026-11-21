@@ -1678,18 +1678,7 @@ canvas {
   user-select: none;
 }
 
-/* The selected wall's options in Build (J.8.3): Cut, Door and Window. */
-.wall-bar {
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 99px;
-  background: var(--surface);
-  box-shadow: var(--shadow-out-small);
-  white-space: nowrap;
-}
-
-/* A new window's width while it is placed in Build (J.8.2). */
+/* A new window's width while it is placed (J.8.2). */
 .wall-distance-width {
   background: var(--accent);
   color: var(--on-accent);
@@ -1726,10 +1715,7 @@ canvas {
   cursor: grabbing;
 }
 
-/* Walk: how to look and walk, at the bottom center; Build's short message
-   (J.8) in the same place. Clicks go through to the canvas. */
-.walk-hint,
-/* Build's scale legend: a square of dots, one meter wide at the view's zoom
+/* The scale legend of Plan's 2D view (J.5.5): a square of dots, one meter wide at the view's zoom
    (--meter and --legend-display are set by MeterScale), dots every 0.1 m. */
 .scale-legend {
   --dot: radial-gradient(circle, #a99f84 0 1px, transparent 1.4px);
@@ -1790,6 +1776,9 @@ canvas {
   user-select: none;
 }
 
+/* Walk: how to look and walk, at the bottom center; the scene's short message
+   (J.8) in the same place. Clicks go through to the canvas. */
+.walk-hint,
 .scene-notice {
   position: absolute;
   bottom: 12px;

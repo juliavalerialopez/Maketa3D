@@ -37,7 +37,7 @@ function toFileName(text) {
 //   the browser has them; Save then writes into that file without asking
 //   (I.17). Elsewhere, Open uses a file input, Save downloads, and Save As
 //   asks for a file name in a Dialog.
-// New and Open only work in Plan and Build: in Personalize they would leave
+// New and Open only work in Plan: in Personalize they would leave
 // the Room render out of date. An invalid file or a failed save shows a short message
 // for a few seconds.
 // Shortcuts (J0.5): Ctrl+S saves in every mode, Ctrl+O opens where Open
@@ -95,7 +95,7 @@ export default function ProjectMenu() {
     report(saveProjectAs(fileName))
   }
 
-  // Plan and Build (J.5).
+  // Plan.
   const inPlan = mode !== 'personalize'
 
   // Runs in the key press itself, with no wait before the system window, so

@@ -4,12 +4,12 @@ import { Plane, Vector3 } from 'three'
 import { WALL_SNAP, draggedRoom, reachableStep, startWallDrag, useRoomStore } from '../../store/roomStore'
 import { MIN_CUT_WALL, cutPoint, findWall, splitWall } from '../../store/roomShape'
 import { useObjectsStore } from '../../store/objectsStore'
-import { BUILD_NOTICES, movedInsideNotice, useUiStore } from '../../store/uiStore'
+import { SCENE_NOTICES, movedInsideNotice, useUiStore } from '../../store/uiStore'
 import { beginGesture, endGesture } from '../../store/historyStore'
-import BuildDistances from './BuildDistances'
+import ToolDistances from './ToolDistances'
 import { wallBoxes } from './wallBoxes'
 import {
-  BUILD_WALL_THICKNESS,
+  WALL_OVERLAY_THICKNESS,
   WALL_DRAW_HEIGHT,
   isWallDragActive,
   setWallDragActive,
@@ -17,7 +17,6 @@ import {
 } from './wallEditing'
 
 // The colors are the same in both themes, like the floor.
-const BUILD_WALL_COLOR = '#4a463f'
 // The selected wall (J.7): warm clay; a hovered one (J.6): a lighter clay.
 const SELECTED_COLOR = '#b5653d'
 const HOVER_COLOR = '#c98a63'
@@ -25,8 +24,9 @@ const HOVER_COLOR = '#c98a63'
 // distance to each end inside the room.
 const CUT_MARK_COLOR = '#f1e3c6'
 const CUT_MARK_WIDTH = 0.04
-// How wide the invisible strip to grab a wall is, in meters.
+// How wide the invisible strip to grab a wall is, and how thin, in meters.
 const WALL_GRAB = 0.4
+const STRIP_HEIGHT = 0.01
 // Drags happen on the floor.
 const FLOOR = new Plane(new Vector3(0, 1, 0), 0)
 const hit = new Vector3()
@@ -49,25 +49,12 @@ function alongWall(wall, x, z) {
 // - With Cut on, a point follows the pointer on any wall, with its distance
 //   to both ends; a press splits the wall in two there (J.7.1).
 //
-// Build draws the wall itself (`drawn`); Plan's 2D view has its walls already,
-// so there the wall shows a clay box only while it is hovered or selected
-// (`overlayY`, a helper), and the grab strip lies on the floor (`stripY`, thin)
-// so furniture and doors and windows above it get the press first. In Plan,
-// pieces left outside the walls when a drag ends are pushed inside
-// (`fitFurniture`), in the same undo step.
-export function EditableWall({
-  index,
-  box,
-  selected,
-  highlighted,
-  cutting,
-  onDragChange,
-  drawn = true,
-  overlayY = box.position[1],
-  stripY = box.position[1],
-  stripHeight = 0.1,
-  fitFurniture = false,
-}) {
+// Plan's 2D view has its walls already, so a wall shows a clay box only while
+// it is hovered or selected (`overlayY`, a helper, never in a Room render),
+// and the grab strip lies on the floor (`stripY`, thin) so furniture and doors
+// and windows above it get the press first. Pieces left outside the walls when
+// a drag ends are pushed inside, in the same undo step.
+function EditableWall({ index, box, selected, cutting, overlayY, stripY }) {
   const getThree = useThree((state) => state.get)
   const [hovered, setHovered] = useState(false)
   const hoveredRef = useRef(false)
@@ -96,17 +83,14 @@ export function EditableWall({
     document.body.style.cursor = on ? cursor : ''
   }
 
-  // Ends the drag: pieces left outside are pushed in (Plan), its undo step
+  // Ends the drag: pieces left outside are pushed in, its undo step
   // closes and pan comes back. A wall merged back in line is no longer
   // selected.
   function stopDrag() {
     dragRef.current = null
     setWallDragActive(false)
-    onDragChange(false)
-    if (fitFurniture) {
-      const moved = useObjectsStore.getState().fitToRoom(useRoomStore.getState().room)
-      useUiStore.getState().setRoomNotice(movedInsideNotice(moved))
-    }
+    const moved = useObjectsStore.getState().fitToRoom(useRoomStore.getState().room)
+    useUiStore.getState().setRoomNotice(movedInsideNotice(moved))
     endGesture()
     setControls(true)
     const { selectedWall, selectWall } = useUiStore.getState()
@@ -123,12 +107,11 @@ export function EditableWall({
       if (!dragRef.current) return
       dragRef.current = null
       setWallDragActive(false)
-      onDragChange(false)
       endGesture()
       const { controls } = getThree()
       if (controls) controls.enabled = true
     },
-    [getThree, onDragChange],
+    [getThree],
   )
 
   function handlePointerDown(event) {
@@ -139,14 +122,14 @@ export function EditableWall({
     if (!event.ray.intersectPlane(FLOOR, hit)) return
     const { room } = useRoomStore.getState()
     const ui = useUiStore.getState()
-    ui.setBuildNotice(null)
+    ui.setSceneNotice(null)
     if (cuttingHere) {
       // Split: Cut is off and nothing is selected, so either piece can be
       // picked next. A cut through a door or window is refused, Cut stays on.
       const corners = splitWall(room.corners, index, alongWall(wall, hit.x, hit.z))
       const problem = corners ? useRoomStore.getState().setCorners(corners) : 'shape'
       if (problem === 'openings') {
-        ui.setBuildNotice(BUILD_NOTICES.cut)
+        ui.setSceneNotice(SCENE_NOTICES.cut)
         return
       }
       if (problem) return
@@ -168,7 +151,6 @@ export function EditableWall({
       shown: room.corners,
     }
     setWallDragActive(true)
-    onDragChange(true)
     beginGesture()
     event.target.setPointerCapture(event.pointerId)
     setControls(false)
@@ -199,7 +181,7 @@ export function EditableWall({
     // Stopped by a door or window: say so (J.8).
     const direction = Math.sign(target - step)
     const blocked = direction && draggedRoom(current.room, current.drag, step + direction).problem === 'openings'
-    useUiStore.getState().setBuildNotice(blocked ? BUILD_NOTICES.openings : null)
+    useUiStore.getState().setSceneNotice(blocked ? SCENE_NOTICES.openings : null)
     if (step === current.step) return
     current.step = step
     useRoomStore.getState().setRoom(draggedRoom(current.room, current.drag, step).room)
@@ -215,21 +197,14 @@ export function EditableWall({
     stopDrag()
   }
 
-  // A Room configuration field under the pointer lights up the walls it
-  // changes (J.4.2), like a selected wall.
-  const color =
-    selected || highlighted
-      ? SELECTED_COLOR
-      : hovered && !isWallDragActive()
-        ? HOVER_COLOR
-        : BUILD_WALL_COLOR
-  const showBox = drawn || selected || highlighted || (hovered && !isWallDragActive())
+  const showBox = selected || (hovered && !isWallDragActive())
+  const color = selected ? SELECTED_COLOR : HOVER_COLOR
   const [x, , z] = box.position
 
   return (
     <>
       {showBox && (
-        <mesh position={[x, overlayY, z]} userData={drawn ? undefined : { helper: true }}>
+        <mesh position={[x, overlayY, z]} userData={{ helper: true }}>
           <boxGeometry args={box.size} />
           <meshBasicMaterial color={color} />
         </mesh>
@@ -255,7 +230,7 @@ export function EditableWall({
           hover(false)
         }}
       >
-        <boxGeometry args={alongX ? [box.size[0], stripHeight, WALL_GRAB] : [WALL_GRAB, stripHeight, box.size[2]]} />
+        <boxGeometry args={alongX ? [box.size[0], STRIP_HEIGHT, WALL_GRAB] : [WALL_GRAB, STRIP_HEIGHT, box.size[2]]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
     </>
@@ -276,16 +251,16 @@ function draggedWallEnds(current, step) {
 function CutMark({ wall, at, y }) {
   const [dx, dz] = [(wall.end.x - wall.start.x) / wall.length, (wall.end.z - wall.start.z) / wall.length]
   const [nx, nz] = wall.normal
-  const out = BUILD_WALL_THICKNESS / 2
+  const out = WALL_OVERLAY_THICKNESS / 2
   const alongX = Math.abs(dz) < 1e-9
-  const depth = BUILD_WALL_THICKNESS + 0.08
+  const depth = WALL_OVERLAY_THICKNESS + 0.08
   return (
     <>
       <mesh position={[wall.start.x + dx * at + nx * out, y + 0.01, wall.start.z + dz * at + nz * out]}>
         <boxGeometry args={alongX ? [CUT_MARK_WIDTH, 0.01, depth] : [depth, 0.01, CUT_MARK_WIDTH]} />
         <meshBasicMaterial color={CUT_MARK_COLOR} />
       </mesh>
-      <BuildDistances wall={wall} from={at} to={at} />
+      <ToolDistances wall={wall} from={at} to={at} />
     </>
   )
 }
@@ -299,7 +274,7 @@ export default function WallEditor() {
   const { corners, openings, height } = useRoomStore((state) => state.room)
   const selection = useUiStore((state) => state.selectedWall)
   const tool = useUiStore((state) => state.tool)
-  const walls = wallBoxes(corners, WALL_DRAW_HEIGHT, BUILD_WALL_THICKNESS)
+  const walls = wallBoxes(corners, WALL_DRAW_HEIGHT, WALL_OVERLAY_THICKNESS)
   const selectedIndex = selection ? findWall(corners, selection.a, selection.b) : -1
   useStaleSelection(corners, openings, selection)
 
@@ -310,16 +285,10 @@ export default function WallEditor() {
       index={index}
       box={box}
       selected={index === selectedIndex}
-      highlighted={false}
       cutting={tool === 'cut'}
-      onDragChange={noop}
-      drawn={false}
       overlayY={height + 0.03}
       stripY={0.015}
-      stripHeight={0.01}
-      fitFurniture
     />
   ))
 }
 
-const noop = () => {}

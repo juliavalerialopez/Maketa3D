@@ -25,7 +25,7 @@ function dimension(from, to, fixed, alongX) {
   }
 }
 
-// A dimension line for every wall (Build): parallel to the wall, `offset`
+// A dimension line for every wall (2D view): parallel to the wall, `offset`
 // meters outside it, from end to end with a tick at each end (across the
 // line) and the wall's length in the middle, e.g. "3.50 m". `walls` is
 // roomWalls of the room. Returns { lines: [[x1, z1, x2, z2]], labels: [{ x, z,

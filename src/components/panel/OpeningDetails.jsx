@@ -81,7 +81,7 @@ function removeOpening(id) {
   useUiStore.getState().selectOpening(null)
 }
 
-// Door or window `id`'s details, in Build (J.8) and Plan (J.9.1): which wall
+// Door or window `id`'s details, in Plan (J.8, J.9.1): which wall
 // it is on, where along it, its size, Default size (J.8.1.1) and Delete (the
 // Delete key too).
 // Nothing when it is gone.

@@ -37,17 +37,16 @@ function RoomGroup({ title, children }) {
 }
 
 // Room configuration: the shape cards, then the sizes in groups: Floor (Width,
-// Depth, the link between them, the area), Cut-out (an L's sizes and its
-// corner) and Ceiling (J.4, K.1.5, K.1.7, K.1.8). A size is typed as text and applied when it is final (Enter,
-// blur, an arrow key, a step button); one that is not a number, is outside its
-// limits or would leave a door or window not fitting its wall is refused, and
-// the message shows under its group. In Plan, objects move inside the walls
-// once a size is final (I.1), and right after a new shape or a new cut-out
-// corner; after a shape change a short notice says how many moved. A shape change and
-// the moves it causes are one undo step. In Build (`inBuild`, J.5) the same
-// cards and sizes show (J.5.4); objects are not moved there but when Build
-// closes.
-export default function RoomInputs({ inBuild = false }) {
+// Depth, the link between them), the floor area, Cut-out (an L's sizes and its
+// corner) and Ceiling (J.4, K.1.5, K.1.7, K.1.8). A size is typed as text and
+// applied when it is final (Enter, blur, an arrow key, a step button); one that
+// is not a number, is outside its limits or would leave a door or window not
+// fitting its wall is refused, and the message shows under its group. Objects
+// move inside the walls once a size is final (I.1), and right after a new
+// shape or a new cut-out corner; after a shape change a short notice says how
+// many moved. A shape change and the moves it causes are one undo step.
+// Custom is the Cut tool (K.1.16).
+export default function RoomInputs() {
   const room = useRoomStore((state) => state.room)
   const notice = useUiStore((state) => state.roomNotice)
   const cutting = useUiStore((state) => state.tool === 'cut')
@@ -75,7 +74,7 @@ export default function RoomInputs({ inBuild = false }) {
   useEffect(() => () => useUiStore.getState().setHighlight([]), [])
 
   // The store already has the committed size here. Returns how many moved.
-  const fitObjects = () => (inBuild ? 0 : useObjectsStore.getState().fitToRoom(useRoomStore.getState().room))
+  const fitObjects = () => useObjectsStore.getState().fitToRoom(useRoomStore.getState().room)
 
   // A change of the whole room (shape, notch corner, link): refused with a
   // message under the group of `key` when a door or window would not fit;
@@ -189,7 +188,7 @@ export default function RoomInputs({ inBuild = false }) {
 
   return (
     <div className="field-stack">
-      <ShapeCards shape={params.shape} cutting={cutting} cutDisabled={inWalk && !inBuild} onChoose={chooseShape} />
+      <ShapeCards shape={params.shape} cutting={cutting} cutDisabled={inWalk} onChoose={chooseShape} />
       {cutting && <p className="panel-notice">{TOOL_NOTICES.cut}</p>}
       {isCustom && !cutting && <p className="panel-notice">Custom shape. Drag its walls, or cut one with Custom.</p>}
 

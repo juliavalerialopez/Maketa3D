@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useRoomStore } from '../../store/roomStore'
 import { cutPoint, roomWalls, splitWall } from '../../store/roomShape'
-import { BUILD_NOTICES, useUiStore } from '../../store/uiStore'
-import BuildDistances from './BuildDistances'
+import { SCENE_NOTICES, useUiStore } from '../../store/uiStore'
+import ToolDistances from './ToolDistances'
 import { WallLayers, WallPreview } from './PlaceOpening3D'
 
-// The mark of the cut, like Build's pale sand line.
+// The mark of the cut, a pale sand line.
 const CUT_COLOR = '#f1e3c6'
 // A press that moved more than this many pixels was an orbit, not a click.
 const CLICK_SLOP = 4
@@ -47,10 +47,10 @@ export default function CutTool3D() {
     if (!target) return
     const corners = splitWall(current.corners, index, alongWall(target, point.x, point.z))
     const ui = useUiStore.getState()
-    ui.setBuildNotice(null)
+    ui.setSceneNotice(null)
     const problem = corners ? useRoomStore.getState().setCorners(corners) : 'shape'
     if (problem === 'openings') {
-      ui.setBuildNotice(BUILD_NOTICES.cut)
+      ui.setSceneNotice(SCENE_NOTICES.cut)
       return
     }
     if (problem) return
@@ -75,7 +75,7 @@ export default function CutTool3D() {
       {at !== null && (
         <>
           <WallPreview preview={{ point: { wallIndex: aim.wallIndex, along: at } }} walls={walls} height={room.height} color={CUT_COLOR} />
-          <BuildDistances wall={wall} from={at} to={at} />
+          <ToolDistances wall={wall} from={at} to={at} />
         </>
       )}
     </>

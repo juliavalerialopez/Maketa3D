@@ -53,7 +53,7 @@ export default function TopCamera() {
 
 // Pan and zoom for a top-down canvas: dragging empty space pans, the wheel
 // zooms toward the pointer, no turning. The view is the same in Plan's 2D and
-// in Build (J.5), kept by TopCamera.
+// kept by TopCamera.
 export function TopControls() {
   return (
     <>

@@ -23,7 +23,7 @@ import { shadowBounds } from './shadowBounds'
 
 // The 2D view's only light (J.1.3): even from every side, at the strength
 // that shows each color as it is, so nothing is shaded and nothing casts a
-// shadow, like Build.
+// shadow.
 const FLAT_LIGHT = Math.PI
 // How far outside each wall its dimension line sits in the 2D view (J.5.3),
 // past the thin walls.
@@ -75,7 +75,7 @@ export default function Scene() {
       <Objects />
       {flat && <ObjectNames />}
       {flat && <OpeningMarks />}
-      {/* The 2D view's floor aids (K.1.14, from Build): the grid, each wall's
+      {/* The 2D view's floor aids (K.1.14): the grid, each wall's
           length and the area. Helpers, so a Room render has none of them. */}
       {flat && (
         <>

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import { Box3, Vector2, Vector3 } from 'three'
-import { canvasToPng, canvasToThumbnail, planCanvasReady, snapshotBridge } from './snapshot'
+import { canvasToPng, canvasToThumbnail, snapshotBridge } from './snapshot'
 import { prepareRoomRender } from './roomRenderView'
 import {
   RENDER_HEIGHT,
@@ -131,11 +131,7 @@ export default function SnapshotBridge() {
         view: cameraView(renderCamera, RENDER_WIDTH, RENDER_HEIGHT),
       }))
     snapshotBridge.thumbnail = (view) => renderView(gl, scene, camera, view, canvasToThumbnail)
-    // A switch waiting for the Plan canvas (Build -> Personalize, J.5) goes
-    // on after the next frame, once the scene and its camera are drawn.
-    const frame = requestAnimationFrame(planCanvasReady)
     return () => {
-      cancelAnimationFrame(frame)
       snapshotBridge.capture = null
       snapshotBridge.thumbnail = null
       snapshotBridge.currentView = null

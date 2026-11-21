@@ -24,7 +24,7 @@ export const ROOM_LIMITS = SIZE_LIMITS
 // The room: { shape, linked, height, corners, openings } (J.2, J.4, J.8,
 // K.1.4). Corners as in roomShape.js, in world space with the front wall at
 // +z. `shape` is the card that made it: 'standard' (a rectangle), 'l' (each a
-// preset of corners) or 'custom' (shaped in Build). `linked`: a Standard
+// preset of corners) or 'custom' (cut or dragged in Plan's 2D view). `linked`: a Standard
 // room keeps its width and depth equal. Openings (doors and windows) as in
 // openings.js. The project file keeps height, corners and openings; the shape
 // and `linked` are worked out again when it opens (shapeFor, linkedFor).
@@ -41,8 +41,7 @@ const clamp = (value, [min, max]) => Math.min(max, Math.max(min, value))
 // To the nearest 5 cm.
 const roundToStep = (meters) => Math.round(meters * 20) / 20
 
-// The shape card for a room with these corners (a file just opened, or a Build
-// edit): any rectangle is a Standard.
+// The shape card for a room with these corners (a file just opened, or a wall drag): any rectangle is a Standard.
 export function shapeFor(corners) {
   const { shape } = describeRoom(corners)
   return shape === 'rectangle' ? 'standard' : shape
@@ -110,7 +109,7 @@ export function resizedRoom(room, size) {
 // The room as another shape (J.4): a Standard keeps the bounding box (and is
 // linked when its sides are equal), a new L keeps it too and cuts half of each
 // side away at the front right. The old names 'square' and 'rectangle' mean
-// Standard; Custom is made in Build only.
+// Standard; Custom is made by cutting and dragging walls, not chosen.
 export function reshapedRoom(room, name) {
   const shape = normalizeShape(name)
   const params = roomParams(room)
@@ -173,7 +172,7 @@ export function isAllowedRoom(corners) {
   return within(width, ROOM_LIMITS.width) && within(depth, ROOM_LIMITS.depth)
 }
 
-// The room with new corners (Build), its shape button following them, and
+// The room with new corners (a wall dragged or cut), its shape button following them, and
 // its doors and windows kept where they are (J.8; those on wall `moved.wall`
 // of the old corners move with it by `moved.shift`, [x, z]). Returns
 // { room }, or { problem }: 'shape' (not an allowed room) or 'openings' (a
@@ -182,13 +181,13 @@ export function roomWithCorners(room, corners, moved = { wall: -1, shift: [0, 0]
   if (!isAllowedRoom(corners)) return { problem: 'shape' }
   const openings = reanchorOpenings(room.corners, corners, openingsOf(room), moved.wall, moved.shift)
   if (!openings) return { problem: 'openings' }
-  // A Build edit that makes the sides unequal unlinks them.
+  // A wall drag that makes the sides unequal unlinks them.
   const linked = Boolean(room.linked) && linkedFor(corners)
   const next = { ...room, corners, openings, shape: shapeFor(corners), linked }
   return openingsProblem(next) ? { problem: 'openings' } : { room: next }
 }
 
-// Moving a wall in Build snaps to this, in meters (J.6).
+// Moving a wall snaps to this, in meters (J.6).
 export const WALL_SNAP = 0.05
 
 // Getting wall `index` of `room` ready to be dragged (J.6, J.7):
@@ -279,7 +278,7 @@ export const useRoomStore = create((set, get) => ({
   // Back to the default room: a linked 5 m Standard, 2.6 m high, no doors or
   // windows.
   resetRoom: () => set({ room: { ...DEFAULT_ROOM, corners: rectangleCorners(5, 5), openings: [] } }),
-  // Build (J.6, J.7): new corners, `moved` as in roomWithCorners. Returns
+  // Wall drag and cut (J.6, J.7): new corners, `moved` as in roomWithCorners. Returns
   // null when done, else the problem ('shape' or 'openings'), changing
   // nothing.
   setCorners: (corners, moved) => {
@@ -287,7 +286,7 @@ export const useRoomStore = create((set, get) => ({
     if (result.room) set({ room: result.room })
     return result.problem ?? null
   },
-  // Build (J.5): a typed wall length: null when done, else the problem as in
+  // A typed wall length (J.5; no field uses it since K.1.17): null when done, else the problem as in
   // setCorners.
   setWallLength: (index, length) => {
     const { corners } = get().room
@@ -298,7 +297,7 @@ export const useRoomStore = create((set, get) => ({
     const [nx, nz] = roomWalls(corners)[wall].normal
     return get().setCorners(moveWall(corners, wall, offset), { wall, shift: [nx * offset, nz * offset] })
   },
-  // Build (J.8.1, J.8.2): a new door or window, as placedOpening or
+  // The placing tools (J.8.1, J.8.2): a new door or window, as placedOpening or
   // spannedOpening make it (without its id). Returns { id }, or { problem:
   // 'full' } when it does not fit, changing nothing then.
   addOpening: (opening) => {
@@ -309,7 +308,7 @@ export const useRoomStore = create((set, get) => ({
     set({ room: next })
     return { id }
   },
-  // Build (J.8): changes opening `id`. Returns false and changes nothing when
+  // Changes opening `id`. Returns false and changes nothing when
   // it would not fit.
   updateOpening: (id, partial) => {
     const room = roomWithOpening(get().room, id, partial)

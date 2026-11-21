@@ -15,6 +15,10 @@ later part already built, or that Part J plans as a task, were left out.
 
 - (added 2026-11-21) The door and window placing tools of Plan (J.9.4: `PlaceOpening*`, the wall layers, `TOOL_NOTICES_3D`) are not reachable any more, since K.1.9 removed their buttons from Plan's panel. Move them into Build's tools or delete them when the build-mode work comes. (Part K, K.1.9)
 
+- (added 2026-11-21) Typing a wall's length (Build's Wall section, J.5) went with Build (K.1.17). The store action `setWallLength` and the helpers `wallLengthMove`, `slideCutPoint` and `setWallLength` in `roomShape.js` (and their tests) are still there, not used by any field; bring a field back or delete them. (Part K, K.1.17)
+
+- (added 2026-11-21) A **Measure** tool in the toolbar next to Undo: click two points in the 2D view and a line shows the distance in meters. The toolbar (K.1.20) leaves room for it. (Part K, from Julia)
+
 ## Placing and moving objects
 - Move objects up and down (Y), for wall items and shelves; decide the floor and ceiling rules then. (Part D)
 - A tall object tilted over can poke through the ceiling (no ceiling clamp). (Part D)

@@ -10,7 +10,7 @@ import { wallDimensionsFor } from './dimensionLines'
 // Just above the floor, flat.
 const LINE_Y = 0.03
 
-// Build's wall lengths as dimension lines (J.5.3), like Plan's: a line
+// The walls' lengths as dimension lines (J.5.3), like Plan's: a line
 // parallel to each wall, `offset` meters outside it, with a tick at each end
 // and the length in the middle. Replaces the plain number next to each wall
 // (J.5.1). The numbers let clicks through to the view.

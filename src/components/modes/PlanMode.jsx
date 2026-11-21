@@ -11,7 +11,7 @@ import CameraSlots from '../scene/CameraSlots'
 import ViewSwitch from '../scene/ViewSwitch'
 import MeterScale from '../scene/MeterScale'
 import ScaleLegend from '../scene/ScaleLegend'
-import BuildNotice from '../scene/BuildNotice'
+import SceneNotice from '../scene/SceneNotice'
 import WalkCamera from '../scene/WalkCamera'
 import { PLAN_FOV, WALK_FOV, topCameraSettings } from '../scene/planViews'
 import SplitLayout from '../layout/SplitLayout'
@@ -71,7 +71,7 @@ function OrbitCanvas() {
 
 // 2D (J.1): straight from above with no perspective, the front wall at the
 // bottom (up on screen is -z). Dragging empty space pans, the wheel zooms
-// toward the pointer, no turning (TopCamera keeps the view). Flat like Build,
+// toward the pointer, no turning (TopCamera keeps the view). Flat,
 // with no shading or shadows (J.1.3, Scene.jsx); `shadows` stays on for the
 // Room renders taken from here.
 function TopCanvas() {
@@ -134,7 +134,7 @@ export default function PlanMode() {
             <ViewCanvas key={sceneView} />
             {sceneView === 'walk' && <WalkHint />}
             {sceneView === '2d' && <ScaleLegend />}
-            {sceneView !== 'walk' && <BuildNotice />}
+            {sceneView !== 'walk' && <SceneNotice />}
             {/* The frame and the camera slots belong to the 3D camera: the
                 Room renders always come from it (J.1). */}
             {is3d && <FrameGuide />}

@@ -21,7 +21,7 @@ const IN_FRONT = 0.005
 // the room this far, where nothing else is, so furniture against the wall
 // stays pressable.
 const GRAB_DEPTH = 0.15
-// Dragged in 5 cm steps, like in Build.
+// Dragged in 5 cm steps, like the walls.
 const SNAP = 0.05
 const snap = (value) => Math.round(value / SNAP) * SNAP
 

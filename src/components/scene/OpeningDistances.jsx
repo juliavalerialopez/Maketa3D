@@ -9,7 +9,7 @@ import { useUiStore } from '../../store/uiStore'
 import { showWallFor } from './wallVisibility'
 import { openingPlacement } from './openingPlacement'
 import { themeColor } from './themeColor'
-import { meters } from './buildText'
+import { meters } from './lengthText'
 
 // Gaps smaller than this (touching) get no line or number.
 const MIN_GAP = 0.01
@@ -56,11 +56,11 @@ function measure(room, id, topView) {
 // floor and to the ceiling, with the distance in meters. Follows it while it
 // moves. A helper, so it is hidden in the Room render; it hides with its wall
 // when the camera is outside it. The numbers are HTML over the canvas.
-export default function OpeningDistances({ fromAbove = false }) {
+export default function OpeningDistances() {
   const room = useRoomStore((state) => state.room)
   const selectedId = useUiStore((state) => state.selectedOpening)
-  // Plan's 2D view, or Build (`fromAbove`), which always looks from above.
-  const topView = useUiStore((state) => state.sceneView === '2d') || fromAbove
+  // Plan's 2D view looks from above.
+  const topView = useUiStore((state) => state.sceneView === '2d')
   const color = themeColor('--selection', useUiStore((state) => state.theme))
   const groupRef = useRef(null)
   const labelRefs = useRef([])

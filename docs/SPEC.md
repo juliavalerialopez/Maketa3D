@@ -45,7 +45,7 @@ objects: [{ id, type, number, position: [x, y, z], rotation: [x, y, z], size: { 
 // rotation: radians, Euler order 'YXZ': y turns the object on the floor, x and z tilt it
 lastNumbers: { [type]: number }             // highest number handed out per type
 selectedId: string | null
-mode: 'build' | 'plan' | 'personalize'      // Build: the room's walls from above (Part J, J.5)
+mode: 'plan' | 'personalize'               // (Build, Part J, was removed in Part K, K.1.17: its wall tools are in Plan's 2D view)
 roomRenders: [{ image, objects, view } | null]  // one Room render per camera slot (empty until the first switch), taken on switching to Personalize, memory only (I.12, I.14.2):
 //   image: PNG data URL
 //   objects: [{ id, x, y, facing }], each object's centre in the render, percent, and which way its front faces there (one of eight, null without a front, I.19) (sent to the AI)

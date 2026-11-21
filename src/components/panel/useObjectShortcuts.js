@@ -40,7 +40,7 @@ export function focusIsFree() {
   return !element || element === document.body || element.tagName === 'CANVAS'
 }
 
-// Undo and redo for the key press, in Plan and in Build (J.10), also from a
+// Undo and redo for the key press, in Plan (J.10), also from a
 // field being typed in. Returns true when the key was one of them.
 export function runHistoryKey(event) {
   const action = historyAction(event)

@@ -3,12 +3,12 @@ import { useRoomStore } from '../../store/roomStore'
 import { findWall } from '../../store/roomShape'
 import { useUiStore } from '../../store/uiStore'
 
-// What Build's walls and Plan's 2D walls share (WallEditor.jsx).
+// What the wall editing of Plan's 2D view shares (WallEditor.jsx).
 
-// Walls drawn flat and dark, thicker than in 3D so they read from above
-// (Build). Outward from the inside edge, so the room's inside size is the
-// same.
-export const BUILD_WALL_THICKNESS = 0.12
+// The clay box of a hovered or selected wall, thicker than the wall so it
+// reads from above. Outward from the inside edge, so the room's inside size
+// is the same.
+export const WALL_OVERLAY_THICKNESS = 0.12
 export const WALL_DRAW_HEIGHT = 0.02
 
 // One wall is dragged at a time; meanwhile the others ignore the pointer.

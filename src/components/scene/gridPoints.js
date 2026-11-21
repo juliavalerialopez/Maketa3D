@@ -1,6 +1,6 @@
 import { boundingBox, containsPoint } from '../../store/roomShape.js'
 
-// Build's floor grid: dotted lines every meter from the origin corner (min x,
+// The 2D view's floor grid: dotted lines every meter from the origin corner (min x,
 // max z), solid lines every GRID_LINE_EVERY meters instead of a dotted one,
 // inside the room only.
 const GRID_EVERY = 1

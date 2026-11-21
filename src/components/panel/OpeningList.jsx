@@ -4,7 +4,7 @@ import { openingLabel, openingsOf } from '../../store/openings'
 import { useUiStore } from '../../store/uiStore'
 import ListItem from '../ui/ListItem'
 
-// The room's doors and windows as a list ("Door 1", "Window 1"), in Build
+// The room's doors and windows as a list ("Door 1", "Window 1"), in Plan
 // (J.8) and Plan (J.9.1). A click selects one (and lets go of any furniture,
 // J.9.1); a click on the selected one lets it go. Nothing when there are none.
 export default function OpeningList() {

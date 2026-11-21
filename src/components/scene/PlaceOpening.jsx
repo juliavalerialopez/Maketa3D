@@ -4,8 +4,9 @@ import { useRoomStore } from '../../store/roomStore'
 import { roomWalls } from '../../store/roomShape'
 import { nearestWall, openingStart, placedOpening, spannedOpening } from '../../store/openings'
 import { useUiStore } from '../../store/uiStore'
-import { OpeningSymbol, SELECTED_FILL } from './BuildOpenings'
-import BuildDistances from './BuildDistances'
+import OpeningSymbol from './OpeningSymbol'
+import { SELECTED_FILL } from './roomColors'
+import ToolDistances from './ToolDistances'
 import { WallLayers, WallPreview } from './PlaceOpening3D'
 import { WALL_THICKNESS } from './wallBoxes'
 import { PLAN_BAND } from './wallStrip'
@@ -16,9 +17,7 @@ const BLOCKED_FILL = '#c9665a'
 const PLACE_REACH = 1
 // A press that moved more than this many pixels was a pan, not a click.
 const CLICK_SLOP = 4
-// The invisible layer that takes the pointer sits above walls and openings,
-// so they ignore it meanwhile; the preview just above the openings.
-const LAYER_Y = 0.3
+// The preview sits just above the walls.
 const PREVIEW_LIFT = 0.01
 const LAYER_SIZE = 200
 // In Plan's 2D view the layer is above the furniture and the walls' top.
@@ -49,7 +48,7 @@ function previewOnWall(room, type, start, wallIndex, along) {
 }
 
 // What a click at `aim` would do, or null. `aim` is a floor point { x, z }
-// (Build and Plan's 2D view: the nearest wall within reach; a window's second
+// (Plan's 2D view: the nearest wall within reach; a window's second
 // click stays on the wall of its first) or a point on a wall { wallIndex,
 // along } (Plan's 3D view).
 function previewFor(room, type, start, aim) {
@@ -77,10 +76,9 @@ function PointMark({ wall, along, thickness, color }) {
   )
 }
 
-// The placing tools for a door or a window (J.8.1, J.8.2, J.9.4), in Build
-// (`view` 'build', `thickness` its wall thickness), Plan's 2D view ('2d') and
-// Plan's 3D view ('3d'). Red where it cannot go, and a click there does
-// nothing. Dragging still pans or orbits the view.
+// The placing tools for a door or a window (J.8.1, J.8.2, J.9.4), in Plan's 2D
+// view (`view` '2d') and Plan's 3D view ('3d'). Red where it cannot go, and a
+// click there does nothing. Dragging still pans or orbits the view.
 // - Door: a new one follows the pointer on the nearest wall in 5 cm steps,
 //   with its distance to the wall's ends; a click places it.
 // - Window: a point follows the pointer on the nearest wall, with its
@@ -89,7 +87,7 @@ function PointMark({ wall, along, thickness, color }) {
 //   click sets where it ends and places it.
 // A placed one is selected, which turns the tool off. In 3D the pointer is
 // on a wall's inside face; elsewhere it is on the floor.
-export default function PlaceOpening({ type, view = 'build', thickness = 0 }) {
+export default function PlaceOpening({ type, view = '2d' }) {
   const room = useRoomStore((state) => state.room)
   // The pointer: a floor point { x, z } or a point on a wall { wallIndex,
   // along } (see previewFor), or null when it is off the view.
@@ -123,7 +121,7 @@ export default function PlaceOpening({ type, view = 'build', thickness = 0 }) {
     }
     const result = useRoomStore.getState().addOpening(next.opening)
     if (result.problem) return
-    useUiStore.getState().setBuildNotice(null)
+    useUiStore.getState().setSceneNotice(null)
     // Selecting it turns the tool off.
     useUiStore.getState().selectOpening(result.id)
   }
@@ -161,17 +159,13 @@ export default function PlaceOpening({ type, view = 'build', thickness = 0 }) {
     )
   }
 
-  const flat2d = view === '2d'
   // In 2D the symbol is the wider one of the marks, over the walls' top.
-  const symbol = flat2d
-    ? { thickness: PLAN_BAND, across: -(PLAN_BAND - WALL_THICKNESS) / 2 }
-    : { thickness, across: 0 }
-  const markThickness = flat2d ? WALL_THICKNESS : thickness
+  const symbol = { thickness: PLAN_BAND, across: -(PLAN_BAND - WALL_THICKNESS) / 2 }
   let shown = null
   if (preview?.point) {
     shown = (
       <>
-        <PointMark wall={walls[preview.point.wallIndex]} along={preview.point.along} thickness={markThickness} color={color} />
+        <PointMark wall={walls[preview.point.wallIndex]} along={preview.point.along} thickness={WALL_THICKNESS} color={color} />
         <Distances preview={preview} walls={walls} type={type} />
       </>
     )
@@ -188,7 +182,7 @@ export default function PlaceOpening({ type, view = 'build', thickness = 0 }) {
   return (
     <>
       <mesh
-        position={[0, flat2d ? room.height + LAYER_ABOVE_ROOM : LAYER_Y, 0]}
+        position={[0, room.height + LAYER_ABOVE_ROOM, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         onPointerOver={follow}
         onPointerMove={follow}
@@ -200,7 +194,7 @@ export default function PlaceOpening({ type, view = 'build', thickness = 0 }) {
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
       {/* A helper: never in a Room render. */}
-      {shown && <group position={[0, (flat2d ? room.height : 0) + PREVIEW_LIFT, 0]} userData={{ helper: true }}>{shown}</group>}
+      {shown && <group position={[0, room.height + PREVIEW_LIFT, 0]} userData={{ helper: true }}>{shown}</group>}
     </>
   )
 }
@@ -210,11 +204,11 @@ export default function PlaceOpening({ type, view = 'build', thickness = 0 }) {
 function Distances({ preview, walls, type }) {
   if (preview.point) {
     const wall = walls[preview.point.wallIndex]
-    return <BuildDistances wall={wall} from={preview.point.along} to={preview.point.along} />
+    return <ToolDistances wall={wall} from={preview.point.along} to={preview.point.along} />
   }
   const { opening } = preview
   return (
-    <BuildDistances
+    <ToolDistances
       wall={walls[opening.wallIndex]}
       from={opening.offset}
       to={opening.offset + opening.width}

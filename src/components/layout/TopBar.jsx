@@ -9,15 +9,13 @@ import { useUiStore } from '../../store/uiStore'
 import { useRestyleStore } from '../../store/restyleStore'
 import { switchMode } from './modeSwitch'
 
-// Build is the room's shape from above (J.5); Plan stays the starting mode.
 const MODES = [
-  { value: 'build', label: 'Build' },
   { value: 'plan', label: 'Plan' },
   { value: 'personalize', label: 'Personalize' },
 ]
 
-// The keys that go to each mode (J.10).
-const MODE_KEYS = { 1: 'build', 2: 'plan', 3: 'personalize' }
+// The keys that go to each mode (J.10; Build is gone, K.1.17).
+const MODE_KEYS = { 1: 'plan', 2: 'personalize' }
 
 // Leaving Personalize clears the versions, so it asks first when there is
 // something to lose: a version, or a request still running.
@@ -57,7 +55,7 @@ export default function TopBar() {
     switchMode(next)
   }
 
-  // 1, 2 and 3 switch mode (J.10), the same way the switch does (so leaving
+  // 1 and 2 switch mode (J.10), the same way the switch does (so leaving
   // Personalize asks first), except while typing in a field or with a menu or
   // dialog open.
   const handleModeKey = useEffectEvent((event) => {

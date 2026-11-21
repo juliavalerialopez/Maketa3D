@@ -18,7 +18,7 @@ export const TOP_MAX_ZOOM = 1000
 // the very edge.
 const TOP_FILL = 0.8
 
-// The camera settings for a top-down canvas (2D in Plan, Build), from the
+// The camera settings for a top-down canvas (2D in Plan), from the
 // saved `topView` (modeStore) or a rough view until TopCamera fits the room
 // to the canvas size. The Canvas reads them once, so the first frame already
 // shows the saved view. The front wall is at the bottom (up on screen is -z).

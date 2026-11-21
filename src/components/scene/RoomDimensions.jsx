@@ -11,7 +11,7 @@ const LINE_Y = 0.03
 
 // The room's sizes (J.5.3): dimension lines along its back and left side with
 // the lengths, and its area in the middle of the floor. `gap` is how far the
-// first line sits outside the room. Build passes `withLines` false: it writes
+// first line sits outside the room. Plan's 2D view passes `withLines` false: it writes
 // each wall's length next to the wall already, so only the area shows there.
 // A helper, so it is hidden in a Room render; the
 // numbers are HTML over the canvas, which lets clicks through.

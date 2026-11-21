@@ -1,12 +1,11 @@
 import TopBar from './components/layout/TopBar'
-import BuildMode from './components/modes/BuildMode'
 import PlanMode from './components/modes/PlanMode'
 import PersonalizeMode from './components/modes/PersonalizeMode'
 import ErrorBoundary from './components/layout/ErrorBoundary'
 import useFileDropGuard from './components/layout/useFileDropGuard'
 import { useModeStore } from './store/modeStore'
 
-const MODES = { build: BuildMode, plan: PlanMode, personalize: PersonalizeMode }
+const MODES = { plan: PlanMode, personalize: PersonalizeMode }
 
 // The top bar and exactly one mode below it. A crash in a mode shows the
 // error screen there and keeps the top bar (I.3); switching modes starts the
