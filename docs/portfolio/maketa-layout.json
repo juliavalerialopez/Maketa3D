@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "room": {
+    "width": 5,
+    "depth": 4,
+    "height": 2.6
+  },
+  "objects": [
+    { "type": "tvStand", "number": 1, "x": 0, "z": -1.75, "rotation": 0, "color": "#5b6b60", "screenInches": 55 },
+    { "type": "bookshelf", "number": 1, "x": 1.85, "z": -1.75, "rotation": 0, "color": "#a0785a" },
+    { "type": "floorLamp", "number": 1, "x": -1.9, "z": -1.7, "rotation": 0, "color": "#d9d2bf" },
+    { "type": "sofa", "number": 1, "x": 0, "z": 0.9, "rotation": 180, "color": "#6f8f7a" },
+    { "type": "coffeeTable", "number": 1, "x": 0, "z": -0.2, "rotation": 0, "color": "#a0785a" },
+    { "type": "armchair", "number": 1, "x": -1.8, "z": 0.2, "rotation": 90, "color": "#c9b79c" }
+  ]
+}
