@@ -35,12 +35,16 @@ export default function ControlPanel() {
     ui.setTool(tool === type ? null : type)
   }
 
-  // A piece of furniture and an opening are never selected together (J.9.1):
-  // furniture selected any way (list, view, Add, Duplicate) lets the opening go.
+  // A piece of furniture, an opening and a wall are never selected together
+  // (J.9.1): furniture selected any way (list, view, Add, Duplicate) lets the
+  // opening and the wall go.
   useEffect(
     () =>
       useObjectsStore.subscribe((state, previous) => {
-        if (state.selectedId && state.selectedId !== previous.selectedId) useUiStore.getState().selectOpening(null)
+        if (!state.selectedId || state.selectedId === previous.selectedId) return
+        const ui = useUiStore.getState()
+        ui.selectOpening(null)
+        ui.selectWall(null)
       }),
     [],
   )

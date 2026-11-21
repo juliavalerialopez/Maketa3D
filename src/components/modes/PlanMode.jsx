@@ -11,6 +11,7 @@ import CameraSlots from '../scene/CameraSlots'
 import ViewSwitch from '../scene/ViewSwitch'
 import MeterScale from '../scene/MeterScale'
 import ScaleLegend from '../scene/ScaleLegend'
+import BuildNotice from '../scene/BuildNotice'
 import WalkCamera from '../scene/WalkCamera'
 import { PLAN_FOV, WALK_FOV, topCameraSettings } from '../scene/planViews'
 import SplitLayout from '../layout/SplitLayout'
@@ -32,6 +33,7 @@ function handlePointerMissed() {
   if (isWidgetActive() || useUiStore.getState().tool) return
   useObjectsStore.getState().selectObject(null)
   useUiStore.getState().selectOpening(null)
+  useUiStore.getState().selectWall(null)
 }
 
 // A press in the 3D view takes the focus off a panel field or button (J0.5),
@@ -132,6 +134,7 @@ export default function PlanMode() {
             <ViewCanvas key={sceneView} />
             {sceneView === 'walk' && <WalkHint />}
             {sceneView === '2d' && <ScaleLegend />}
+            {sceneView === '2d' && <BuildNotice />}
             {/* The frame and the camera slots belong to the 3D camera: the
                 Room renders always come from it (J.1). */}
             {is3d && <FrameGuide />}

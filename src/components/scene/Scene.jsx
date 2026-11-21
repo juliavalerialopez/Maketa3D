@@ -7,6 +7,7 @@ import OpeningMarks from './OpeningMarks'
 import RoomDimensions from './RoomDimensions'
 import RoomGrid from './RoomGrid'
 import WallDimensions from './WallDimensions'
+import WallEditor from './WallEditor'
 import SelectionBox from './SelectionBox'
 import OpeningOutline from './OpeningOutline'
 import OpeningDistances from './OpeningDistances'
@@ -86,6 +87,7 @@ export default function Scene() {
       )}
       {editing && (
         <>
+          {flat && <WallEditor />}
           <SelectionBox />
           <OpeningOutline />
           <OpeningDistances />

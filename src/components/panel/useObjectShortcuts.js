@@ -125,7 +125,11 @@ function openingKeys(event) {
   const ui = useUiStore.getState()
   const { room, removeOpening } = useRoomStore.getState()
   const opening = room.openings?.find((item) => item.id === ui.selectedOpening)
-  if (!opening) return
+  if (!opening) {
+    // The selected wall (K.1.15) lets go with Escape.
+    if (event.key === 'Escape' && ui.selectedWall) ui.selectWall(null)
+    return
+  }
   if (event.key === 'Escape') ui.selectOpening(null)
   if (event.key === 'Delete' || event.key === 'Backspace') {
     event.preventDefault()
