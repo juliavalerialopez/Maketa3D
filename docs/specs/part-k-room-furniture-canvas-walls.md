@@ -84,6 +84,25 @@ Whole part: curved walls, drawing walls freehand, several rooms, sloped ceilings
 #### Palette (K.1.1)
 The dark theme's role variables in `src/index.css` take: `--bg` #1b2420 (panel), `--surface` #222c27 (tiles), new `--plate` #2d3b35, `--accent` #b7d3a8 (sage), `--on-accent` #14201a, `--text` #eef4ef, `--muted` #a7b8ae, `--border` #34443d, and a new `--overlay` rgba(24,33,29,.93) (the light theme gets an ivory `--overlay` at .93). Colors only; the light theme and every component stay as they are. Text 4.5:1 or more, graphics 3:1 or more; the light theme's `--muted` on `--bg` is about 4.1:1 and is fixed in K.1.11.
 
+##### Measured contrast (K.1.11, 2026-11-21)
+Text needs 4.5:1, a control's outline and graphics 3:1. A new role variable `--control-border` is the outline of the Room panel's controls; the light theme's `--muted` went from #6f786f to #5f695f (it was 4.1:1 on the panel and 3.7:1 on the fields).
+
+| Pair | Light | Dark |
+|---|---|---|
+| Text on panel (`--text` on `--bg`) | 13.4 | 14.3 |
+| Text on field | 12.0 | 13.1 |
+| Muted text on panel | 5.1 (was 4.1) | 7.7 |
+| Muted text on field | 4.6 (was 3.7) | 7.1 |
+| Sage or forest (`--accent`) on panel | 7.9 | 9.8 |
+| `--accent` on the tinted fill (`--soft`) | 5.2 | 4.7 |
+| Text on the tinted fill | 8.8 | 6.8 |
+| Text on sage (`--on-accent`) | 10.3 (dark) | 10.3 |
+| Error text on panel | 5.8 | 7.0 |
+| Control outline (`--control-border`) on panel | 3.5 | 3.7 |
+| Control outline on field | 3.2 | 3.4 |
+
+The control outline is thin lines, so it needs 3:1: the old `--border` was 1.3 (light) and 1.6 (dark) and stays for dividers and cards only. Checked in the browser at 1280 px and 1920 px, in both themes, with the divider fully left (the panel is then 276 px wide): every button and field in Room configuration is at least 36 px, none sticks out of the panel, none lacks a name, and every icon-only button has a tooltip. Tab shows a 2 px focus ring on each control.
+
 #### Shape cards
 - Three cards in one row, each a floor-plan icon and a name. Active: sage (`--accent`) outline, `--soft` tinted fill and a small check (three cues). **Custom** has a dashed border and only opens Build, as the pencil button does today; when the room was shaped in Build, Custom shows active and its fields are read-only (Height still editable), with the note "Custom shape. Edit it in Build."
 - Standard = a rectangle (a Square is a Standard with the link on). L-shape = the existing L preset.
@@ -251,7 +270,7 @@ Each task: implement only it, run `npm test`, `npm run lint`, `npm run build`, s
 - ✅ K.1.8 L-shape: Cut-out group, the four limits, corner picker; rotate button removed. *Check:* each corner in Plan 3D from two camera angles and in 2D; Width cannot go under cut-out + 0.5 and says why; area = w × d − cw × cd.
 - ✅ K.1.9 Door and Window removed from Plan's Objects section (buttons, notice, `OpeningList`); Build unchanged. *Check:* no openings group in Plan; an existing door still shows, can be clicked, edited and deleted; Build still places them; a Generate with a window still works.
 - ✅ K.1.10 Reset room. *Check:* resets shape, size, height and removes doors and windows; furniture inside; Ctrl+Z restores all of it.
-- ⬜ K.1.11 Visual and accessibility pass: contrast numbers (light `--muted` fixed), 36 px targets, focus rings, aria-labels and tooltips, both themes, 1280 px and wide, divider at its 276 px minimum. *Check:* a table of ratios here.
+- ✅ K.1.11 Visual and accessibility pass: contrast numbers (light `--muted` fixed), 36 px targets, focus rings, aria-labels and tooltips, both themes, 1280 px and wide, divider at its 276 px minimum. *Check:* a table of ratios here.
 - ⬜ K.1.12 Docs: CLAUDE.md Structure (`roomMeasure.js`, `MeasureField`, `ShapeCard`), SPEC.md, Part J's J.9.4 changelog line, backlog.
 
 ### K.2 Furniture

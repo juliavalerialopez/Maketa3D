@@ -9,7 +9,7 @@
   --field: #ebe6d8;         /* inputs, list and button backgrounds */
   --hover: rgba(36, 83, 58, 0.07);
   --text: #1d2a22;
-  --muted: #6f786f;
+  --muted: #5f695f;
   --accent: #24533a;        /* forest */
   --on-accent: #f5f2ea;
   --soft: #b9cdb0;          /* sage: selected item, pressed button */
@@ -17,6 +17,7 @@
   --border-strong: #c4bca6;
   --error: #b3261e;
   --track: #d9d3c2;         /* toggle track when off */
+  --control-border: #7c8278; /* outline of a control: 3:1 on the panel and the fields */
   --plate: #e4dfd0;         /* plate behind icons and pictures */
   --overlay: rgba(245, 242, 234, 0.93); /* cards over the 3D view */
   --selection: #24533a;     /* selection box in the 3D scene */
@@ -40,6 +41,7 @@
   --border-strong: #3e5a47;
   --error: #ff8a80;
   --track: #101712;
+  --control-border: #6d7f73; /* outline of a control: 3:1 on the panel and the fields */
   --plate: #2d3b35;         /* plate behind icons and pictures */
   --overlay: rgba(24, 33, 29, 0.93); /* cards over the 3D view */
   /* Not sage: the floor and walls stay light in both themes, and pale sage
@@ -615,7 +617,7 @@ canvas {
   width: 36px;
   height: 36px;
   padding: 0;
-  border: 2px solid var(--border);
+  border: 2px solid var(--control-border);
   border-radius: 50%;
   background: var(--surface);
   color: var(--muted);
@@ -675,7 +677,7 @@ canvas {
   width: 36px;
   height: 36px;
   padding: 0;
-  border: 2px solid var(--border);
+  border: 2px solid var(--control-border);
   border-radius: 6px;
   background: var(--surface);
   color: var(--accent);
@@ -772,7 +774,7 @@ canvas {
   min-height: 64px;
   min-width: 0;
   padding: 8px 4px;
-  border: 2px solid var(--border);
+  border: 2px solid var(--control-border);
   border-radius: 12px;
   background: var(--surface);
   color: var(--text);
@@ -978,7 +980,7 @@ canvas {
   box-sizing: border-box;
   height: 36px;
   padding: 0 28px 0 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--control-border);
   border-radius: 99px;
   background: var(--field);
   color: inherit;
@@ -1012,7 +1014,7 @@ canvas {
   width: 36px;
   height: 36px;
   padding: 0;
-  border: 1px solid var(--border);
+  border: 1px solid var(--control-border);
   border-radius: 50%;
   background: var(--surface);
   color: var(--accent);
