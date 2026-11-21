@@ -1,0 +1,1 @@
+- 2026-11-10, Part I, 4466fdb: Draft for camera slots, Save into the project file, undo and redo, drag and drop upload, the error screen and prompt v8 and v9 (screenshots not taken yet).
