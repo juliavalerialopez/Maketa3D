@@ -249,7 +249,7 @@ Each task: implement only it, run `npm test`, `npm run lint`, `npm run build`, s
 - ✅ K.1.6 Shape cards (Custom opens Build). *Check:* each card, keyboard (Tab, Space, Enter), accessible names, both themes.
 - ✅ K.1.7 Standard fields: groups, link toggle, Floor area. *Check:* link on sets Depth = Width; either field keeps both equal; off lets them differ; area updates; new project starts linked.
 - ✅ K.1.8 L-shape: Cut-out group, the four limits, corner picker; rotate button removed. *Check:* each corner in Plan 3D from two camera angles and in 2D; Width cannot go under cut-out + 0.5 and says why; area = w × d − cw × cd.
-- ⬜ K.1.9 Door and Window removed from Plan's Objects section (buttons, notice, `OpeningList`); Build unchanged. *Check:* no openings group in Plan; an existing door still shows, can be clicked, edited and deleted; Build still places them; a Generate with a window still works.
+- ✅ K.1.9 Door and Window removed from Plan's Objects section (buttons, notice, `OpeningList`); Build unchanged. *Check:* no openings group in Plan; an existing door still shows, can be clicked, edited and deleted; Build still places them; a Generate with a window still works.
 - ⬜ K.1.10 Reset room. *Check:* resets shape, size, height and removes doors and windows; furniture inside; Ctrl+Z restores all of it.
 - ⬜ K.1.11 Visual and accessibility pass: contrast numbers (light `--muted` fixed), 36 px targets, focus rings, aria-labels and tooltips, both themes, 1280 px and wide, divider at its 276 px minimum. *Check:* a table of ratios here.
 - ⬜ K.1.12 Docs: CLAUDE.md Structure (`roomMeasure.js`, `MeasureField`, `ShapeCard`), SPEC.md, Part J's J.9.4 changelog line, backlog.
