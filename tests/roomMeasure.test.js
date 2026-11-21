@@ -127,7 +127,7 @@ test('a new shape that keeps the door as it is fits', () => {
 
 test('the name counts doors and windows per type, and only the one in the way is named', () => {
   const window = { id: 'win-a', type: 'window', wallIndex: 1, offset: 1, width: 1.2, height: 1.2, sill: 0.9 }
-  const room = { ...DEFAULT_ROOM, shape: 'rectangle', openings: [door, window] }
+  const room = { ...DEFAULT_ROOM, linked: false, openings: [door, window] }
   const result = openingsFit(room, resizedRoom(room, { depth: 1 }))
   assert.deepEqual(result, { ok: false, name: 'Window 1', message: 'Window 1 would not fit. Move or remove it first.' })
 })

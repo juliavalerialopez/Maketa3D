@@ -14,22 +14,23 @@ import {
   wallLengthMove,
 } from './roomShape.js'
 import { fitOpenings, openingsOf, openingsProblem, reanchorOpenings } from './openings.js'
-import { SIZE_LIMITS } from './roomMeasure.js'
+import { SIZE_LIMITS, normalizeShape } from './roomMeasure.js'
 
 // Allowed room size in meters, per dimension: [min, max]. Width and depth are
 // the room's size seen from above (its corners' bounding box). Used by the
 // Room inputs and by layout import.
 export const ROOM_LIMITS = SIZE_LIMITS
 
-// The room: { shape, height, corners, openings } (J.2, J.4, J.8). Corners as
-// in roomShape.js, in world space with the front wall at +z. `shape` is the
-// shape button that made it: 'square', 'rectangle', 'l' (each a preset of
-// corners) or 'custom' (shaped in Build). Openings (doors and windows) as in
+// The room: { shape, linked, height, corners, openings } (J.2, J.4, J.8,
+// K.1.4). Corners as in roomShape.js, in world space with the front wall at
+// +z. `shape` is the card that made it: 'standard' (a rectangle), 'l' (each a
+// preset of corners) or 'custom' (shaped in Build). `linked`: a Standard
+// room keeps its width and depth equal. Openings (doors and windows) as in
 // openings.js. The project file keeps height, corners and openings; the shape
-// is worked out again when it opens (shapeFor).
+// and `linked` are worked out again when it opens (shapeFor, linkedFor).
 
-// A new project's room: a 5 m square, 2.6 m high.
-export const DEFAULT_ROOM = { shape: 'square', height: 2.6, corners: rectangleCorners(5, 5), openings: [] }
+// A new project's room: a linked 5 m Standard, 2.6 m high.
+export const DEFAULT_ROOM = { shape: 'standard', linked: true, height: 2.6, corners: rectangleCorners(5, 5), openings: [] }
 
 // An L's cut away piece, per side: at least MIN_WALL, and leaving a leg of at
 // least MIN_WALL.
@@ -39,18 +40,18 @@ const near = (a, b) => Math.abs(a - b) < 1e-9
 const clamp = (value, [min, max]) => Math.min(max, Math.max(min, value))
 // To the nearest 5 cm.
 const roundToStep = (meters) => Math.round(meters * 20) / 20
-// A Rectangle made from a room with equal sides: its depth, as a share of
-// its width (J.4.1).
-const RECTANGLE_DEPTH = 0.75
 
-// The shape button for a room with these corners (a file just opened): a
-// rectangle is a Square when its sides are equal and Rectangle was not
-// chosen.
-export function shapeFor(corners, chosen) {
-  const { shape, width, depth } = describeRoom(corners)
-  if (shape !== 'rectangle') return shape
-  if (chosen === 'rectangle' || !near(width, depth)) return 'rectangle'
-  return 'square'
+// The shape card for a room with these corners (a file just opened, or a Build
+// edit): any rectangle is a Standard.
+export function shapeFor(corners) {
+  const { shape } = describeRoom(corners)
+  return shape === 'rectangle' ? 'standard' : shape
+}
+
+// Whether a room with these corners starts linked: its sides are equal.
+export function linkedFor(corners) {
+  const { width, depth } = describeRoom(corners)
+  return near(width, depth)
 }
 
 // The room's size seen from above: { width, depth } of its bounding box.
@@ -59,12 +60,19 @@ export function roomSize(room) {
   return { width, depth }
 }
 
-// Everything the Room inputs show and edit: { shape, height, width, depth },
-// plus notchWidth, notchDepth and notch for an L, and the middle (centerX,
-// centerZ), which stays where it is when sizes change.
+// Everything the Room inputs show and edit: { shape, linked, height, width,
+// depth }, plus notchWidth, notchDepth and notch for an L, and the middle
+// (centerX, centerZ), which stays where it is when sizes change.
 export function roomParams(room) {
   const box = boundingBox(room.corners)
-  return { ...describeRoom(room.corners), shape: room.shape, height: room.height, centerX: box.centerX, centerZ: box.centerZ }
+  return {
+    ...describeRoom(room.corners),
+    shape: room.shape,
+    linked: Boolean(room.linked),
+    height: room.height,
+    centerX: box.centerX,
+    centerZ: box.centerZ,
+  }
 }
 
 // The room for `params` (roomParams, changed). An L's notch is kept inside
@@ -78,8 +86,7 @@ export function shapedRoom(room, params) {
 function shapedCorners(room, params) {
   const { shape, height, width, depth, centerX, centerZ } = params
   const next = { ...room, shape, height }
-  if (shape === 'square') next.corners = rectangleCorners(width, width, centerX, centerZ)
-  if (shape === 'rectangle') next.corners = rectangleCorners(width, depth, centerX, centerZ)
+  if (shape === 'standard') next.corners = rectangleCorners(width, depth, centerX, centerZ)
   if (shape === 'l') {
     const notchWidth = clamp(params.notchWidth, notchLimits(width))
     const notchDepth = clamp(params.notchDepth, notchLimits(depth))
@@ -89,46 +96,62 @@ function shapedCorners(room, params) {
 }
 
 // The room with new sizes: { width, depth, height, notchWidth, notchDepth },
-// each optional. A Square's side is its width.
+// each optional. In a linked Standard, the side that was not typed follows the
+// one that was (Width wins when both are given).
 export function resizedRoom(room, size) {
   const params = { ...roomParams(room), ...size }
-  if (params.shape === 'square') params.depth = params.width
+  if (params.shape === 'standard' && room.linked) {
+    if ('depth' in size && !('width' in size)) params.width = params.depth
+    else params.depth = params.width
+  }
   return shapedRoom(room, params)
 }
 
-// The room as another preset shape (J.4), keeping width and depth where they
-// make sense: a Square takes the width as its side, a Rectangle keeps the
-// bounding box (one with equal sides gets a depth of 3/4 of its width, at
-// least 2 m, so it looks like a rectangle, J.4.1), a new L cuts half of each
-// side away at the front right.
-export function reshapedRoom(room, shape) {
+// The room as another shape (J.4): a Standard keeps the bounding box (and is
+// linked when its sides are equal), a new L keeps it too and cuts half of each
+// side away at the front right. The old names 'square' and 'rectangle' mean
+// Standard; Custom is made in Build only.
+export function reshapedRoom(room, name) {
+  const shape = normalizeShape(name)
   const params = roomParams(room)
-  if (shape === params.shape) return room
+  if (!shape || shape === 'custom' || shape === params.shape) return room
   const next = { ...params, shape }
-  if (shape === 'square') next.depth = next.width
-  if (shape === 'rectangle' && near(next.width, next.depth)) {
-    next.depth = Math.max(ROOM_LIMITS.depth[0], roundToStep(next.width * RECTANGLE_DEPTH))
-  }
   if (shape === 'l') {
     next.notchWidth = roundToStep(next.width / 2)
     next.notchDepth = roundToStep(next.depth / 2)
     next.notch = 0
   }
-  return shapedRoom(room, next)
+  const shaped = shapedRoom(room, next)
+  return shape === 'standard' ? { ...shaped, linked: near(next.width, next.depth) } : shaped
+}
+
+// An L with its cut away corner at corner `notch` (an index into
+// NOTCH_CORNERS: 0 front right, 1 front left, 2 back left, 3 back right).
+export function notchedRoom(room, notch) {
+  const params = roomParams(room)
+  if (params.shape !== 'l' || notch === params.notch) return room
+  return shapedRoom(room, { ...params, notch })
 }
 
 // An L with its cut away corner moved to the next corner, clockwise seen from
 // above (front at the bottom).
 export function rotatedNotch(room) {
   const params = roomParams(room)
-  if (params.shape !== 'l') return room
-  return shapedRoom(room, { ...params, notch: (params.notch + 1) % 4 })
+  return params.shape === 'l' ? notchedRoom(room, (params.notch + 1) % 4) : room
+}
+
+// A Standard room linked or unlinked. Linking makes the depth equal to the
+// width, so it is one change.
+export function linkedRoom(room, linked) {
+  if (room.shape !== 'standard' || Boolean(room.linked) === linked) return room
+  const next = { ...room, linked }
+  return linked ? resizedRoom(next, { width: roomParams(room).width }) : next
 }
 
 // The walls (their numbers) that a Room configuration field moves (J.4.2),
 // shown while the pointer is over the field. The room stays centred, so
 // Width moves every wall along z (left and right, and an L's notch wall
-// too), Depth every wall along x, a Square's Side all of them; Notch width
+// too), Depth every wall along x, both of them all walls in a linked Standard; Notch width
 // and Notch depth move the notch's inner wall along z or along x. Height
 // moves no wall: it shows as the walls' top edge instead.
 export function wallsChangedBy(room, key) {
@@ -140,7 +163,7 @@ export function wallsChangedBy(room, key) {
       ? !near(wall.start.x, box.minX) && !near(wall.start.x, box.maxX)
       : !near(wall.start.z, box.minZ) && !near(wall.start.z, box.maxZ)
   const pick = (keep) => walls.flatMap((wall, index) => (keep(wall) ? [index] : []))
-  if (key === 'width' && room.shape === 'square') return pick(() => true)
+  if ((key === 'width' || key === 'depth') && room.shape === 'standard' && room.linked) return pick(() => true)
   if (key === 'width') return pick(alongZ)
   if (key === 'depth') return pick((wall) => !alongZ(wall))
   if (key === 'notchWidth') return pick((wall) => alongZ(wall) && inner(wall))
@@ -166,7 +189,9 @@ export function roomWithCorners(room, corners, moved = { wall: -1, shift: [0, 0]
   if (!isAllowedRoom(corners)) return { problem: 'shape' }
   const openings = reanchorOpenings(room.corners, corners, openingsOf(room), moved.wall, moved.shift)
   if (!openings) return { problem: 'openings' }
-  const next = { ...room, corners, openings, shape: shapeFor(corners, room.shape) }
+  // A Build edit that makes the sides unequal unlinks them.
+  const linked = Boolean(room.linked) && linkedFor(corners)
+  const next = { ...room, corners, openings, shape: shapeFor(corners), linked }
   return openingsProblem(next) ? { problem: 'openings' } : { room: next }
 }
 
@@ -252,9 +277,16 @@ export const useRoomStore = create((set, get) => ({
   // to `base` (the room when the edit began; the current one if not given),
   // so a number half typed never moves or drops a door for good (J.8).
   setRoomSize: (size, base) => set((state) => ({ room: resizedRoom(base ?? state.room, size) })),
-  // 'square', 'rectangle' or 'l' (the shape buttons).
+  // 'standard' or 'l' (the shape cards); 'square' and 'rectangle' mean Standard.
   setShape: (shape) => set((state) => ({ room: reshapedRoom(state.room, shape) })),
   rotateNotch: () => set((state) => ({ room: rotatedNotch(state.room) })),
+  // An L's cut away corner, by index (NOTCH_CORNERS).
+  setNotchCorner: (notch) => set((state) => ({ room: notchedRoom(state.room, notch) })),
+  // A Standard's Width and Depth linked or not.
+  setLinked: (linked) => set((state) => ({ room: linkedRoom(state.room, linked) })),
+  // Back to the default room: a linked 5 m Standard, 2.6 m high, no doors or
+  // windows.
+  resetRoom: () => set({ room: { ...DEFAULT_ROOM, corners: rectangleCorners(5, 5), openings: [] } }),
   // Build (J.6, J.7): new corners, `moved` as in roomWithCorners. Returns
   // null when done, else the problem ('shape' or 'openings'), changing
   // nothing.

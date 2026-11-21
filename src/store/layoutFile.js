@@ -1,4 +1,4 @@
-import { DEFAULT_ROOM, ROOM_LIMITS, roomSize, shapeFor, useRoomStore } from './roomStore.js'
+import { DEFAULT_ROOM, ROOM_LIMITS, linkedFor, roomSize, shapeFor, useRoomStore } from './roomStore.js'
 import { isValidRoomCorners, rectangleCorners } from './roomShape.js'
 import { MIN_OPENING_SIZE, OPENING_TYPES, openingsOf, openingsProblem, hingeOf, swingOf } from './openings.js'
 import { useObjectsStore } from './objectsStore.js'
@@ -287,10 +287,11 @@ function parseLayout(text) {
   if (!Array.isArray(openings) || !openings.every((item) => isValidOpening(item, corners.length))) {
     return { problem: 'invalid' }
   }
-  // The file has no shape: Square, Rectangle, L or custom follow from the
-  // corners (J.4).
+  // The file has no shape: Standard, L or custom follow from the corners
+  // (J.4), and a Standard starts linked when its sides are equal.
   const room = {
     shape: shapeFor(corners),
+    linked: linkedFor(corners),
     height: data.room.height,
     corners,
     openings: openings.map(({ type, wall, offset, width, height, sill, swing, hinge }) => ({

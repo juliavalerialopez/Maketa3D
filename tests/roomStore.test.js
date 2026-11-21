@@ -5,6 +5,7 @@ import {
   draggedCorners,
   reachableStep,
   roomParams,
+  linkedFor,
   roomSize,
   shapeFor,
   startWallDrag,
@@ -34,39 +35,96 @@ const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-9
 
 beforeEach(() => newLayout())
 
-test('a new project starts as a 5 m square, 2.6 m high', () => {
+test('a new project starts as a linked 5 m Standard, 2.6 m high', () => {
   assert.deepEqual(room(), DEFAULT_ROOM)
-  assert.equal(params().shape, 'square')
+  assert.equal(params().shape, 'standard')
+  assert.equal(params().linked, true)
   assert.deepEqual(roomSize(room()), { width: 5, depth: 5 })
   assert.equal(room().height, 2.6)
 })
 
-test('a square keeps its sides equal; a rectangle has its own width and depth', () => {
-  const { setRoomSize, setShape } = useRoomStore.getState()
+test('a linked Standard keeps its sides equal, whichever one is typed; unlinked they are independent', () => {
+  const { setRoomSize, setLinked } = useRoomStore.getState()
   setRoomSize({ width: 4 })
   assert.deepEqual(roomSize(room()), { width: 4, depth: 4 })
-  // From a square, a Rectangle keeps the width and is 3/4 as deep (J.4.1).
-  setShape('rectangle')
-  assert.deepEqual(roomSize(room()), { width: 4, depth: 3 })
+  setRoomSize({ depth: 3 })
+  assert.deepEqual(roomSize(room()), { width: 3, depth: 3 })
+  setLinked(false)
+  assert.equal(room().linked, false)
+  setRoomSize({ width: 6 })
   setRoomSize({ depth: 3.5 })
-  assert.deepEqual(roomSize(room()), { width: 4, depth: 3.5 })
-  // Back to a square: the width is the side.
+  assert.deepEqual(roomSize(room()), { width: 6, depth: 3.5 })
+  // Linking again makes the depth equal to the width, in one change.
+  setLinked(true)
+  assert.equal(room().linked, true)
+  assert.deepEqual(roomSize(room()), { width: 6, depth: 6 })
+})
+
+test('linking does nothing to an L or a custom room', () => {
+  const { setShape, setLinked } = useRoomStore.getState()
+  setShape('l')
+  const before = room()
+  setLinked(false)
+  assert.equal(room(), before)
+})
+
+test('the old names Square and Rectangle mean Standard, and Custom is not a choice', () => {
+  const { setShape } = useRoomStore.getState()
+  setShape('l')
+  setShape('rectangle')
+  assert.equal(room().shape, 'standard')
+  setShape('l')
   setShape('square')
-  assert.deepEqual(roomSize(room()), { width: 4, depth: 4 })
+  assert.equal(room().shape, 'standard')
+  const before = room()
+  setShape('custom')
+  setShape('round')
+  assert.equal(room(), before)
 })
 
 test('a new L keeps the size and cuts half of each side away at the front right', () => {
-  const { setShape } = useRoomStore.getState()
-  setShape('rectangle')
+  const { setShape, setLinked } = useRoomStore.getState()
+  setLinked(false)
   useRoomStore.getState().setRoomSize({ width: 6, depth: 4 })
   setShape('l')
   assert.deepEqual(room().corners, lCorners(6, 4, 3, 2, 0))
   assert.deepEqual(roomSize(room()), { width: 6, depth: 4 })
   const { notchWidth, notchDepth, notch } = params()
   assert.deepEqual([notchWidth, notchDepth, notch], [3, 2, 0])
-  // Back to a rectangle: the same bounding box.
-  setShape('rectangle')
+  // Back to Standard: the same bounding box, linked only when the sides are equal.
+  setShape('standard')
   assert.deepEqual(room().corners, rectangleCorners(6, 4))
+  assert.equal(room().linked, false)
+  setShape('l')
+  useRoomStore.getState().setRoomSize({ width: 4 })
+  setShape('standard')
+  assert.equal(room().linked, true)
+})
+
+test('the corner picker puts the cut away corner at any of the four corners', () => {
+  const { setShape, setNotchCorner } = useRoomStore.getState()
+  setShape('l')
+  for (const notch of [2, 3, 1, 0]) {
+    setNotchCorner(notch)
+    assert.equal(params().notch, notch)
+    assert.deepEqual(room().corners, lCorners(5, 5, 2.5, 2.5, notch))
+  }
+  // A Standard has no cut away corner.
+  setShape('standard')
+  const before = room()
+  setNotchCorner(2)
+  assert.equal(room(), before)
+})
+
+test('reset puts back the default room: Standard, linked, 5 m, 2.6 m high, no doors or windows', () => {
+  const { setShape, setRoomSize, resetRoom, setLinked } = useRoomStore.getState()
+  setLinked(false)
+  setRoomSize({ width: 8, height: 3 })
+  setShape('l')
+  useRoomStore.getState().addOpening({ type: 'window', wallIndex: 0, offset: 1, width: 1.2, height: 1.2, sill: 0.9 })
+  resetRoom()
+  assert.deepEqual(room(), DEFAULT_ROOM)
+  assert.notEqual(room().corners, DEFAULT_ROOM.corners)
 })
 
 test('the rotate button moves the cut away corner clockwise around the room', () => {
@@ -92,10 +150,11 @@ test('each leg of the L stays at least 0.5 m', () => {
   assert.equal(params().notchWidth, 2.5)
 })
 
-test('an opened file gets its shape from the corners', () => {
-  assert.equal(shapeFor(rectangleCorners(5, 5)), 'square')
-  assert.equal(shapeFor(rectangleCorners(5, 5), 'rectangle'), 'rectangle')
-  assert.equal(shapeFor(rectangleCorners(6, 5)), 'rectangle')
+test('an opened file gets its shape from the corners, and starts linked when its sides are equal', () => {
+  assert.equal(shapeFor(rectangleCorners(5, 5)), 'standard')
+  assert.equal(shapeFor(rectangleCorners(6, 5)), 'standard')
+  assert.equal(linkedFor(rectangleCorners(5, 5)), true)
+  assert.equal(linkedFor(rectangleCorners(6, 5)), false)
   assert.equal(shapeFor(lCorners(6, 5, 2, 1.5, 3, 1, -1)), 'l')
   // A notch that is not at a corner (as Build can make) is custom.
   const tShape = [
@@ -141,7 +200,8 @@ test('a typed wall length that keeps the room allowed is applied, its shape foll
   // The square's back wall to 6 m: now a 6 x 5 rectangle.
   assert.equal(setWallLength(0, 6), null)
   assert.deepEqual(roomSize(room()), { width: 6, depth: 5 })
-  assert.equal(room().shape, 'rectangle')
+  assert.equal(room().shape, 'standard')
+  assert.equal(room().linked, false)
   // Under 0.5 m, or over the 30 m limit: refused, nothing changes.
   const before = room()
   assert.equal(setWallLength(0, 0.2), 'shape')
@@ -305,13 +365,15 @@ test('tidying merges corners on top of each other and straight corners where a w
 })
 
 test('each Room configuration field highlights the walls it moves', () => {
-  const rect = { shape: 'rectangle', height: 2.6, corners: rectangleCorners(6, 5), openings: [] }
+  const rect = { shape: 'standard', linked: false, height: 2.6, corners: rectangleCorners(6, 5), openings: [] }
   // Walls: 0 back, 1 right, 2 front, 3 left.
   assert.deepEqual(wallsChangedBy(rect, 'width'), [1, 3])
   assert.deepEqual(wallsChangedBy(rect, 'depth'), [0, 2])
   // Height moves no wall (its top edge lights up instead).
   assert.deepEqual(wallsChangedBy(rect, 'height'), [])
-  assert.deepEqual(wallsChangedBy({ ...rect, shape: 'square' }, 'width'), [0, 1, 2, 3])
+  // Linked, either side moves all of them.
+  assert.deepEqual(wallsChangedBy({ ...rect, linked: true }, 'width'), [0, 1, 2, 3])
+  assert.deepEqual(wallsChangedBy({ ...rect, linked: true }, 'depth'), [0, 1, 2, 3])
   // The L's notch at the front right: its inner walls are 2 (along x, at
   // z = 0) and 3 (along z, at x = 0).
   const l = { ...rect, shape: 'l', corners: lCorners(4, 4, 2, 2, 0) }
@@ -333,6 +395,6 @@ test('a new shape pushes pieces inside, counts them, and undoes in one step', ()
   assert.equal(moved, 1)
   assert.notDeepEqual(useObjectsStore.getState().objects[0].position, [1.8, 0, 1.8])
   useHistoryStore.getState().undo()
-  assert.equal(params().shape, 'square')
+  assert.equal(params().shape, 'standard')
   assert.deepEqual(useObjectsStore.getState().objects[0].position, [1.8, 0, 1.8])
 })

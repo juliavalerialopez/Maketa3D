@@ -8,6 +8,7 @@ import { switchMode } from '../layout/modeSwitch'
 import NumberField from '../ui/NumberField'
 import SegmentedSwitch from '../ui/SegmentedSwitch'
 import IconButton from '../ui/IconButton'
+import Toggle from '../ui/Toggle'
 
 // How long the "moved inside" notice stays, in seconds.
 const NOTICE_SECONDS = 5
@@ -20,8 +21,7 @@ const icon = (children) => (
 
 // The shape buttons (J.4). Build opens the Build tab (J.5).
 const SHAPES = [
-  { value: 'square', title: 'Square', label: icon(<rect x="4" y="4" width="16" height="16" rx="1" />) },
-  { value: 'rectangle', title: 'Rectangle', label: icon(<rect x="2" y="6" width="20" height="12" rx="1" />) },
+  { value: 'standard', title: 'Standard', label: icon(<rect x="2" y="6" width="20" height="12" rx="1" />) },
   // The cut away corner at the front right, as a new L starts.
   { value: 'l', title: 'L shape', label: icon(<path d="M4 4h16v9h-7v7H4z" />) },
   { value: 'build', title: 'Build: shape the walls', label: icon(<path d="M15 4l5 5L9 20H4v-5z" />) },
@@ -33,10 +33,9 @@ const ROTATE_ICON = (
   </svg>
 )
 
-// The fields per shape: [key, label, limits]. A Square's side is its width.
+// The fields per shape: [key, label, limits].
 const FIELDS = {
-  square: [['width', 'Side', ROOM_LIMITS.width]],
-  rectangle: [
+  standard: [
     ['width', 'Width', ROOM_LIMITS.width],
     ['depth', 'Depth', ROOM_LIMITS.depth],
   ],
@@ -61,7 +60,7 @@ const FIELDS = {
 // sizes show (J.5.4); objects are not moved there but when Build closes.
 export default function RoomInputs({ inBuild = false }) {
   const room = useRoomStore((state) => state.room)
-  const { setRoomSize, setShape, rotateNotch } = useRoomStore.getState()
+  const { setRoomSize, setShape, rotateNotch, setLinked } = useRoomStore.getState()
   const notice = useUiStore((state) => state.roomNotice)
   const params = roomParams(room)
   // The room when the field being edited was entered: each typed number is
@@ -171,6 +170,15 @@ export default function RoomInputs({ inBuild = false }) {
           </div>
         )
       })}
+      {params.shape === 'standard' && (
+        // Until the Floor group of K.1.7 has its own link toggle.
+        <Toggle
+          label="Equal width and depth"
+          checked={params.linked}
+          onChange={(linked) => changeRoom(() => setLinked(linked))}
+          after={<span>Equal sides</span>}
+        />
+      )}
       {notice && (
         <p className="panel-notice" role="status">
           {notice}

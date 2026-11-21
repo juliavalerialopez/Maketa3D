@@ -25,7 +25,7 @@ import { useHistoryStore } from '../src/store/historyStore.js'
 
 const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-9, `${actual} is not ${expected}`)
 // A 6 x 5 room, 2.6 m high. Wall 0 is the back wall, from x -3 to 3.
-const roomWith = (openings) => ({ shape: 'rectangle', height: 2.6, corners: rectangleCorners(6, 5), openings })
+const roomWith = (openings) => ({ shape: 'standard', linked: false, height: 2.6, corners: rectangleCorners(6, 5), openings })
 const door = (props) => ({ id: 'd', type: 'door', wallIndex: 0, offset: 1, width: 0.9, height: 2.05, sill: 0, ...props })
 const window = (props) => ({ id: 'w', type: 'window', wallIndex: 0, offset: 3, width: 1.2, height: 1.2, sill: 0.9, ...props })
 const room = () => useRoomStore.getState().room
@@ -268,8 +268,8 @@ test('after a new shape or size, openings slide or get lower to fit, or are left
 })
 
 test('after a new shape a door stays on the wall facing the same way, nearest to where it was', () => {
-  const { setShape, rotateNotch, setRoomSize } = useRoomStore.getState()
-  setShape('rectangle')
+  const { setShape, rotateNotch, setRoomSize, setLinked } = useRoomStore.getState()
+  setLinked(false)
   setRoomSize({ width: 6 })
   setRoomSize({ depth: 5 })
   // A door on the front wall (wall 2 of a rectangle, facing +z), at the left.
