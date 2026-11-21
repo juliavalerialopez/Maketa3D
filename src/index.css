@@ -757,6 +757,96 @@ canvas {
   text-align: center;
 }
 
+/* ui/MeasureField: a size typed as text, with the unit inside the field. */
+.ui-measure-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-measure-label {
+  flex: 0 0 56px;
+  color: var(--muted);
+}
+
+.ui-measure-input {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-measure-input input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 28px 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--field);
+  color: inherit;
+  font: inherit;
+  font-weight: 500;
+  text-align: right;
+}
+
+.ui-measure-input input[aria-invalid="true"] {
+  border-color: var(--error);
+}
+
+.ui-measure-input input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ui-measure-unit {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.ui-measure-step {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ui-measure-step:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.ui-measure-step:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ui-measure-field.disabled input,
+.ui-measure-field.disabled .ui-measure-step {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* The message under a group of fields when a value was refused. */
+.panel-problem {
+  margin: 0;
+  color: var(--error);
+  font-size: 13px;
+}
+
 /* ui/FieldGroup */
 .ui-field-group {
   display: flex;

@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
-import { ROOM_LIMITS, notchLimits, roomParams, useRoomStore, wallsChangedBy } from '../../store/roomStore'
+import { useEffect, useId, useState } from 'react'
+import { linkedRoom, reshapedRoom, resizedRoom, roomParams, rotatedNotch, useRoomStore, wallsChangedBy } from '../../store/roomStore'
 import { useObjectsStore } from '../../store/objectsStore'
 import { movedInsideNotice, useUiStore } from '../../store/uiStore'
 import { tallestOpening } from '../../store/openings'
-import { beginGesture, editGesture, endGesture } from '../../store/historyStore'
+import { limitsFor, openingsFit } from '../../store/roomMeasure'
+import { beginGesture, endGesture } from '../../store/historyStore'
 import { switchMode } from '../layout/modeSwitch'
-import NumberField from '../ui/NumberField'
+import MeasureField from '../ui/MeasureField'
 import SegmentedSwitch from '../ui/SegmentedSwitch'
 import IconButton from '../ui/IconButton'
 import Toggle from '../ui/Toggle'
@@ -33,15 +34,15 @@ const ROTATE_ICON = (
   </svg>
 )
 
-// The fields per shape: [key, label, limits].
+// The fields per shape: [key, label].
 const FIELDS = {
   standard: [
-    ['width', 'Width', ROOM_LIMITS.width],
-    ['depth', 'Depth', ROOM_LIMITS.depth],
+    ['width', 'Width'],
+    ['depth', 'Depth'],
   ],
   l: [
-    ['width', 'Width', ROOM_LIMITS.width],
-    ['depth', 'Depth', ROOM_LIMITS.depth],
+    ['width', 'Width'],
+    ['depth', 'Depth'],
     ['notchWidth', 'Notch width'],
     ['notchDepth', 'Notch depth'],
   ],
@@ -52,35 +53,23 @@ const FIELDS = {
   ],
 }
 
-// Room configuration: the shape buttons and the sizes of that shape (J.4).
-// In Plan, objects move inside the walls once a size is final (I.1), never
-// while typing, and right after a new shape or a turned notch; after a shape
+// Room configuration: the shape buttons and the sizes of that shape (J.4,
+// K.1.5). A size is typed as text and applied when it is final (Enter, blur, an
+// arrow key, a step button); one that is not a number, is outside its limits or
+// would leave a door or window not fitting its wall is refused, and the message
+// shows under the fields. In Plan, objects move inside the walls once a size is
+// final (I.1), and right after a new shape or a turned notch; after a shape
 // change a short notice says how many moved. A shape change and the moves it
 // causes are one undo step. In Build (`inBuild`, J.5) the same buttons and
 // sizes show (J.5.4); objects are not moved there but when Build closes.
 export default function RoomInputs({ inBuild = false }) {
   const room = useRoomStore((state) => state.room)
-  const { setRoomSize, setShape, rotateNotch, setLinked } = useRoomStore.getState()
   const notice = useUiStore((state) => state.roomNotice)
   const params = roomParams(room)
-  // The room when the field being edited was entered: each typed number is
-  // applied to it, so doors and windows fitted to a number half typed come
-  // back with the next one (J.8). Null when no field is being edited.
-  const [base, setBase] = useState(null)
-  // The same object every render: NumberField ends an edit when these change.
-  const sizeGesture = useMemo(
-    () => ({
-      onEditStart: () => {
-        setBase(useRoomStore.getState().room)
-        editGesture.onEditStart()
-      },
-      onEditEnd: () => {
-        setBase(null)
-        editGesture.onEditEnd()
-      },
-    }),
-    [],
-  )
+  // The last refused value: { key, message } (key is the field, or null for a
+  // change of the whole room), or null.
+  const [problem, setProblem] = useState(null)
+  const problemId = useId()
 
   useEffect(() => {
     if (!notice) return
@@ -101,11 +90,21 @@ export default function RoomInputs({ inBuild = false }) {
   // The store already has the committed size here. Returns how many moved.
   const fitObjects = () => (inBuild ? 0 : useObjectsStore.getState().fitToRoom(useRoomStore.getState().room))
 
-  // A change of the whole room (shape, notch corner) and the objects it
-  // pushes inside, as one undo step, with the notice.
+  // A change of the whole room (shape, notch corner, link): refused with a
+  // message when a door or window would not fit; otherwise applied with the
+  // objects it pushes inside as one undo step, and the notice.
   function changeRoom(change) {
+    const current = useRoomStore.getState().room
+    const next = change(current)
+    if (next === current) return
+    const fit = openingsFit(current, next)
+    if (!fit.ok) {
+      setProblem({ key: null, message: fit.message })
+      return
+    }
+    setProblem(null)
     beginGesture()
-    change()
+    useRoomStore.getState().setRoom(next)
     const moved = fitObjects()
     endGesture()
     useUiStore.getState().setRoomNotice(movedInsideNotice(moved))
@@ -113,20 +112,21 @@ export default function RoomInputs({ inBuild = false }) {
 
   function chooseShape(shape) {
     if (shape === 'build') switchMode('build')
-    else changeRoom(() => setShape(shape))
+    else changeRoom((current) => reshapedRoom(current, shape))
   }
 
-  const fields = FIELDS[params.shape]
-  // Never lower than the tallest door or window (J.8), as it was before this
-  // edit.
-  const heightLimits = [Math.max(ROOM_LIMITS.height[0], tallestOpening(base ?? room)), ROOM_LIMITS.height[1]]
-
-  const limitsFor = (key, limits) => {
-    if (limits) return limits
-    if (key === 'notchWidth') return notchLimits(params.width)
-    if (key === 'notchDepth') return notchLimits(params.depth)
-    return []
+  // A final size from a field: null when applied, else the reason it was
+  // refused.
+  function commitSize(key, value) {
+    const current = useRoomStore.getState().room
+    const fit = openingsFit(current, resizedRoom(current, { [key]: value }))
+    if (!fit.ok) return fit.message
+    useRoomStore.getState().setRoomSize({ [key]: value })
+    fitObjects()
+    return null
   }
+
+  const tallest = tallestOpening(room)
 
   return (
     <div className="field-stack">
@@ -140,44 +140,50 @@ export default function RoomInputs({ inBuild = false }) {
           stretch
         />
         {params.shape === 'l' && (
-          <IconButton label="Turn the L (move the cut away corner)" size="small" onClick={() => changeRoom(rotateNotch)}>
+          <IconButton label="Turn the L (move the cut away corner)" size="small" onClick={() => changeRoom(rotatedNotch)}>
             {ROTATE_ICON}
           </IconButton>
         )}
       </div>
       {params.shape === 'custom' && !inBuild && <p className="panel-notice">Custom shape. Edit it in Build.</p>}
-      {[...fields, ['height', 'Height', heightLimits]].map(([key, label, limits]) => {
-        const [min, max] = limitsFor(key, limits)
-        // While the pointer is over a field, the walls it changes light up
-        // in the view (J.4.2).
-        return (
-          <div
-            key={`${params.shape}-${key}`}
-            onPointerEnter={() => highlight(key)}
-            onPointerLeave={() => highlight(null)}
-          >
-            <NumberField
-              label={label}
-              value={params[key]}
-              onChange={(value) => setRoomSize({ [key]: value }, base ?? undefined)}
-              onCommit={fitObjects}
-              {...sizeGesture}
-              min={min}
-              max={max}
-              unit="m"
-              disabled={params.shape === 'custom' && key !== 'height'}
-            />
-          </div>
-        )
-      })}
+      {[...FIELDS[params.shape], ['height', 'Height']].map(([key, label]) => (
+        // While the pointer is over a field or it has the focus, the walls it
+        // changes light up in the view (J.4.2).
+        <div
+          key={`${params.shape}-${key}`}
+          onPointerEnter={() => highlight(key)}
+          onPointerLeave={() => highlight(null)}
+          onFocus={() => highlight(key)}
+          onBlur={() => highlight(null)}
+        >
+          <MeasureField
+            label={label}
+            value={params[key]}
+            limits={limitsFor(params, key, tallest)}
+            unit="m"
+            disabled={params.shape === 'custom' && key !== 'height'}
+            invalid={problem?.key === key}
+            describedBy={problemId}
+            onCommit={(value) => commitSize(key, value)}
+            onProblem={(message) => setProblem(message ? { key, message } : null)}
+            onEditStart={beginGesture}
+            onEditEnd={endGesture}
+          />
+        </div>
+      ))}
       {params.shape === 'standard' && (
         // Until the Floor group of K.1.7 has its own link toggle.
         <Toggle
           label="Equal width and depth"
           checked={params.linked}
-          onChange={(linked) => changeRoom(() => setLinked(linked))}
+          onChange={(linked) => changeRoom((current) => linkedRoom(current, linked))}
           after={<span>Equal sides</span>}
         />
+      )}
+      {problem && (
+        <p id={problemId} className="panel-problem" role="status">
+          {problem.message}
+        </p>
       )}
       {notice && (
         <p className="panel-notice" role="status">
