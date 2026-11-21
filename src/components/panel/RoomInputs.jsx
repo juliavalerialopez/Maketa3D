@@ -7,26 +7,12 @@ import { limitsFor, openingsFit } from '../../store/roomMeasure'
 import { beginGesture, endGesture } from '../../store/historyStore'
 import { switchMode } from '../layout/modeSwitch'
 import MeasureField from '../ui/MeasureField'
-import SegmentedSwitch from '../ui/SegmentedSwitch'
+import ShapeCards from './ShapeCards'
 import IconButton from '../ui/IconButton'
 import Toggle from '../ui/Toggle'
 
 // How long the "moved inside" notice stays, in seconds.
 const NOTICE_SECONDS = 5
-
-const icon = (children) => (
-  <svg className="room-shape-icon" viewBox="0 0 24 24" aria-hidden="true">
-    {children}
-  </svg>
-)
-
-// The shape buttons (J.4). Build opens the Build tab (J.5).
-const SHAPES = [
-  { value: 'standard', title: 'Standard', label: icon(<rect x="2" y="6" width="20" height="12" rx="1" />) },
-  // The cut away corner at the front right, as a new L starts.
-  { value: 'l', title: 'L shape', label: icon(<path d="M4 4h16v9h-7v7H4z" />) },
-  { value: 'build', title: 'Build: shape the walls', label: icon(<path d="M15 4l5 5L9 20H4v-5z" />) },
-]
 
 const ROTATE_ICON = (
   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -110,9 +96,12 @@ export default function RoomInputs({ inBuild = false }) {
     useUiStore.getState().setRoomNotice(movedInsideNotice(moved))
   }
 
+  // Custom opens Build (where the walls are shaped); in Build it is already
+  // there.
   function chooseShape(shape) {
-    if (shape === 'build') switchMode('build')
-    else changeRoom((current) => reshapedRoom(current, shape))
+    if (shape === 'custom') {
+      if (!inBuild) switchMode('build')
+    } else changeRoom((current) => reshapedRoom(current, shape))
   }
 
   // A final size from a field: null when applied, else the reason it was
@@ -130,21 +119,15 @@ export default function RoomInputs({ inBuild = false }) {
 
   return (
     <div className="field-stack">
-      <div className="room-shapes">
-        <SegmentedSwitch
-          options={SHAPES}
-          value={params.shape}
-          onChange={chooseShape}
-          label="Room shape"
-          size="small"
-          stretch
-        />
-        {params.shape === 'l' && (
+      <ShapeCards shape={params.shape} onChoose={chooseShape} />
+      {params.shape === 'l' && (
+        // Until the corner picker of K.1.8.
+        <div className="room-shapes">
           <IconButton label="Turn the L (move the cut away corner)" size="small" onClick={() => changeRoom(rotatedNotch)}>
             {ROTATE_ICON}
           </IconButton>
-        )}
-      </div>
+        </div>
+      )}
       {params.shape === 'custom' && !inBuild && <p className="panel-notice">Custom shape. Edit it in Build.</p>}
       {[...FIELDS[params.shape], ['height', 'Height']].map(([key, label]) => (
         // While the pointer is over a field or it has the focus, the walls it

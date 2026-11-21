@@ -590,28 +590,81 @@ canvas {
   gap: 8px;
 }
 
-/* Room configuration (J.4): the shape buttons across the panel, and the L's
-   turn button after them. */
+/* Room configuration (J.4): the L's turn button under the shape cards. */
 .room-shapes {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.room-shapes .ui-segmented {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
 /* The shape icons, drawn as lines like the other icons. */
 .room-shape-icon {
-  width: 18px;
-  height: 18px;
+  width: 28px;
+  height: 28px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.8;
   stroke-linejoin: round;
   stroke-linecap: round;
+}
+
+/* The shape cards (K.1.6), three in a row. */
+.shape-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+/* ui/ShapeCard: flat, a thin outline; the chosen one has a sage outline, a
+   tinted fill and a check. */
+.ui-shape-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 64px;
+  min-width: 0;
+  padding: 8px 4px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ui-shape-card.dashed {
+  border-style: dashed;
+}
+
+.ui-shape-card:hover:not(.active) {
+  background: var(--hover);
+}
+
+.ui-shape-card.active {
+  border-color: var(--accent);
+  background: var(--soft);
+}
+
+.ui-shape-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ui-shape-card-check {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* Objects: one Add button per type, wrapping, above the list. */
