@@ -134,7 +134,7 @@ export default function PlanMode() {
             <ViewCanvas key={sceneView} />
             {sceneView === 'walk' && <WalkHint />}
             {sceneView === '2d' && <ScaleLegend />}
-            {sceneView === '2d' && <BuildNotice />}
+            {sceneView !== 'walk' && <BuildNotice />}
             {/* The frame and the camera slots belong to the 3D camera: the
                 Room renders always come from it (J.1). */}
             {is3d && <FrameGuide />}

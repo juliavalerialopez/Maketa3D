@@ -6,16 +6,17 @@ const icon = (children) => (
   </svg>
 )
 
-// The three shapes of Room configuration (K.1.6): Standard, L-shape and
-// Custom. Custom is not chosen here: it opens Build, where the walls are
-// shaped, and shows as chosen while the room is one.
+// The three cards of Room configuration (K.1.6, K.1.16): Standard and
+// L-shape are shapes; Custom is not one but a tool: it turns the Cut tool on
+// and off, and shows pressed only while the tool is on, never as the room's
+// shape (a room with cut walls has no card chosen).
 const CARDS = [
   { value: 'standard', label: 'Standard', title: 'Standard: a rectangle', icon: icon(<rect x="3" y="6" width="18" height="12" rx="1" />) },
   { value: 'l', label: 'L-shape', title: 'L-shape: a rectangle with a corner cut out', icon: icon(<path d="M4 4h16v9h-7v7H4z" />) },
   {
     value: 'custom',
     label: 'Custom',
-    title: 'Custom: shape the walls in Build',
+    title: 'Custom: cut a wall, then drag the pieces',
     // A free outline with a dot on each corner.
     icon: icon(
       <>
@@ -28,13 +29,20 @@ const CARDS = [
   },
 ]
 
-// `shape` is the room's shape ('standard', 'l' or 'custom'); `onChoose`
-// gets 'standard', 'l' or 'custom' (which the panel turns into opening Build).
-export default function ShapeCards({ shape, onChoose }) {
+// `shape` is the room's shape ('standard', 'l' or 'custom'); `cutting` is
+// whether the Cut tool is on; `cutDisabled` greys Custom out (Walk); `onChoose`
+// gets 'standard', 'l' or 'custom' (the panel turns it into the Cut tool).
+export default function ShapeCards({ shape, cutting, cutDisabled, onChoose }) {
   return (
     <div className="shape-cards" role="group" aria-label="Room shape">
       {CARDS.map(({ value, ...card }) => (
-        <ShapeCard key={value} {...card} pressed={shape === value} onClick={() => onChoose(value)} />
+        <ShapeCard
+          key={value}
+          {...card}
+          pressed={value === 'custom' ? cutting : shape === value}
+          disabled={value === 'custom' && cutDisabled}
+          onClick={() => onChoose(value)}
+        />
       ))}
     </div>
   )

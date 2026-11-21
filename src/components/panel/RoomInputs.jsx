@@ -6,9 +6,9 @@ import { movedInsideNotice, useUiStore } from '../../store/uiStore'
 import { tallestOpening } from '../../store/openings'
 import { floorArea, limitsFor, openingsFit } from '../../store/roomMeasure'
 import { beginGesture, endGesture } from '../../store/historyStore'
-import { switchMode } from '../layout/modeSwitch'
 import MeasureField from '../ui/MeasureField'
 import IconButton from '../ui/IconButton'
+import { TOOL_NOTICES } from './toolNotices'
 import ShapeCards from './ShapeCards'
 import CornerPicker from './CornerPicker'
 import LinkToggle from './LinkToggle'
@@ -50,6 +50,8 @@ function RoomGroup({ title, children }) {
 export default function RoomInputs({ inBuild = false }) {
   const room = useRoomStore((state) => state.room)
   const notice = useUiStore((state) => state.roomNotice)
+  const cutting = useUiStore((state) => state.tool === 'cut')
+  const inWalk = useUiStore((state) => state.sceneView === 'walk')
   const params = roomParams(room)
   // The last refused value: { key, message } (key is the field it was typed
   // in, or the group's first field for a change of the whole room), or null.
@@ -108,12 +110,23 @@ export default function RoomInputs({ inBuild = false }) {
     useUiStore.getState().setRoomNotice(movedInsideNotice(moved))
   }
 
-  // Custom opens Build (where the walls are shaped); in Build it is already
-  // there.
+  // Custom is the Cut tool (K.1.16): it turns on and off, with nothing else
+  // selected. Standard and L-shape change the room.
   function chooseShape(shape) {
-    if (shape === 'custom') {
-      if (!inBuild) switchMode('build')
-    } else changeRoom((current) => reshapedRoom(current, shape), 'width')
+    if (shape !== 'custom') {
+      changeRoom((current) => reshapedRoom(current, shape), 'width')
+      return
+    }
+    const ui = useUiStore.getState()
+    if (ui.tool === 'cut') {
+      ui.setTool(null)
+      return
+    }
+    useObjectsStore.getState().selectObject(null)
+    // Selecting nothing ends any other tool; then the Cut tool starts.
+    ui.selectOpening(null)
+    ui.selectWall(null)
+    ui.setTool('cut')
   }
 
   // A final size from a field: null when applied, else the reason it was
@@ -176,8 +189,9 @@ export default function RoomInputs({ inBuild = false }) {
 
   return (
     <div className="field-stack">
-      <ShapeCards shape={params.shape} onChoose={chooseShape} />
-      {isCustom && !inBuild && <p className="panel-notice">Custom shape. Edit it in Build.</p>}
+      <ShapeCards shape={params.shape} cutting={cutting} cutDisabled={inWalk && !inBuild} onChoose={chooseShape} />
+      {cutting && <p className="panel-notice">{TOOL_NOTICES.cut}</p>}
+      {isCustom && !cutting && <p className="panel-notice">Custom shape. Drag its walls, or cut one with Custom.</p>}
 
       <RoomGroup title="Floor">
         {field('width', 'Width')}

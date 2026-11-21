@@ -71,7 +71,9 @@ export default function ControlPanel() {
             </Button>
           ))}
         </div>
-        {tool && <p className="panel-notice">{(sceneView === '3d' ? TOOL_NOTICES_3D : TOOL_NOTICES)[tool]}</p>}
+        {(tool === 'door' || tool === 'window') && (
+          <p className="panel-notice">{(sceneView === '3d' ? TOOL_NOTICES_3D : TOOL_NOTICES)[tool]}</p>
+        )}
         {openingCount > 0 && <OpeningList />}
       </Section>
       {selectedId && (

@@ -8,6 +8,7 @@ import RoomDimensions from './RoomDimensions'
 import RoomGrid from './RoomGrid'
 import WallDimensions from './WallDimensions'
 import WallEditor from './WallEditor'
+import CutTool3D from './CutTool3D'
 import SelectionBox from './SelectionBox'
 import OpeningOutline from './OpeningOutline'
 import OpeningDistances from './OpeningDistances'
@@ -95,6 +96,7 @@ export default function Scene() {
           <ObjectWidget />
           <MoveReadout />
           {(tool === 'door' || tool === 'window') && <PlaceOpening key={tool} type={tool} view={sceneView} />}
+          {tool === 'cut' && sceneView === '3d' && <CutTool3D />}
         </>
       )}
     </>
